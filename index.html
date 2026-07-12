@@ -445,6 +445,15 @@ body{
 
 const SPREADSHEET_ID = '1XXX71bkr3bEgAD9lBuLHFgmy68Qp3qh26llyEUV0xxI';
 
+/* 【選用】Google Apps Script 網頁應用程式網址（結尾為 /exec）
+   若有填寫，會優先使用 Apps Script 讀取資料（較穩定、Sheet 也可設為不公開）；
+   留空則沿用原本的公開連結（gviz）讀取方式。
+   取得方式請參考另外提供的 Code.gs 及部署說明。 */
+const APPS_SCRIPT_URL =https://script.google.com/macros/s/AKfycbxUua6sZnlAFfziImZkPQloh_l8aDmZeAU4hW19GfXQmdQzOcF7-zpr0EyN8LZIJMEwZg/exec '';
+
+/* 自動更新頻率（秒）。設為 0 代表關閉自動更新，只有重新整理頁面才會抓新資料。 */
+const AUTO_REFRESH_SECONDS = 60;
+
 /* 頭像圖片網址（可自行替換，或改由 profile 工作表擴充讀取） */
 const AVATAR_URL = 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=300&h=300&fit=crop';
 
@@ -493,6 +502,11 @@ document.getElementById('avatarImg').src = AVATAR_URL;
 /* ---------- Google Sheet 讀取 ---------- */
 async function fetchSheet(sheetName){
   try{
+    if(APPS_SCRIPT_URL){
+      const res = await fetch(`${APPS_SCRIPT_URL}?sheet=${encodeURIComponent(sheetName)}`);
+      const data = await res.json();
+      return Array.isArray(data) ? data : null;
+    }
     const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
     const res = await fetch(url);
     const raw = await res.text();
@@ -993,6 +1007,13 @@ async function init(){
   renderServices(serviceRows);
 }
 init();
+
+/* 自動更新：每隔 AUTO_REFRESH_SECONDS 秒重新抓一次 Sheet 資料並更新畫面
+   （若當下「尋光指引」或方案分頁有展開的內容，畫面會在這次更新時收合重置，
+    屬正常現象，避免和使用者操作互相打架） */
+if(AUTO_REFRESH_SECONDS > 0){
+  setInterval(init, AUTO_REFRESH_SECONDS * 1000);
+}
 </script>
 </body>
 </html>
