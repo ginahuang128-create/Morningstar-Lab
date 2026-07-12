@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Morningstar ｜ 見習仙子的魔法傳送門</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#0A0A0A;
+  --void-2:#151515;
+  --void-3:#1C1C1C;
+  --glass:#181818;
+  --gold-1:#EAD3A0;
+  --gold-2:#CBA463;
+  --gold-3:#8F6E3F;
+  --parchment:#EAE1CE;
+  --parchment-soft:rgba(234,225,206,0.72);
+  --line: rgba(203,164,99,0.35);
+  --serif: 'Cormorant Garamond','Noto Serif TC',serif;
+  --serif-tc:'Noto Serif TC',serif;
+}
+
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; }
+
+body{
+  min-height:100vh;
+  font-family: var(--serif-tc);
+  background:
+    radial-gradient(ellipse at 15% -10%, rgba(203,164,99,0.12) 0%, transparent 45%),
+    radial-gradient(ellipse at 100% 15%, rgba(203,164,99,0.07) 0%, transparent 42%),
+    radial-gradient(ellipse at 50% 100%, rgba(203,164,99,0.06) 0%, transparent 50%),
+    var(--void);
+  background-attachment:fixed;
+  position:relative;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  padding: 0 0 40px;
+}
+
+/* ---------- 模糊光暈 ---------- */
+.glow-orb{ position:fixed; border-radius:50%; pointer-events:none; z-index:0; filter:blur(80px); }
+.glow-orb.g1{ width:280px; height:280px; top:-70px; left:-90px; background:rgba(203,164,99,0.16); }
+.glow-orb.g2{ width:240px; height:240px; top:38%; right:-100px; background:rgba(203,164,99,0.10); }
+.glow-orb.g3{ width:260px; height:260px; bottom:-70px; left:15%; background:rgba(234,211,160,0.10); }
+
+/* ---------- 全域顆粒質感 ---------- */
+.grain-overlay{
+  position:fixed; inset:0; z-index:5; pointer-events:none;
+  background-image:url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:180px 180px;
+  mix-blend-mode:overlay;
+  opacity:.35;
+}
+
+/* ---------- 外層星空裝飾 ---------- */
+.cosmic-bg{ position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+.star-dot{ position:absolute; top:0; left:0; width:1.5px; height:1.5px; border-radius:50%; background:transparent; }
+.star-dot.a{ animation: twinkle 5s ease-in-out infinite; opacity:.5; }
+.star-dot.b{ animation: twinkle 6.5s ease-in-out infinite .7s; opacity:.7; }
+.star-dot.c{ animation: twinkle 4s ease-in-out infinite 1.4s; opacity:.9; }
+@keyframes twinkle{ 0%,100%{opacity:.3;} 50%{opacity:1;} }
+
+.hidden{ display:none !important; }
+
+/* ---------- 版面容器 ---------- */
+.page{ position:relative; z-index:1; max-width:450px; margin:0 auto; }
+
+/* ============================================================
+   統一「篇章」系統：不再用一格一格獨立卡片，
+   改為連續的深色卷軸，段落間用細線＋符徽分隔（signature divider）
+   ============================================================ */
+.section{ position:relative; padding: 8px 28px 56px; }
+
+.section:not(:first-child)::before{
+  content:'';
+  display:block;
+  height:16px;
+  margin: 4px 0 40px;
+  background-image:
+    linear-gradient(90deg, transparent, var(--line) 42%, transparent 47%),
+    linear-gradient(90deg, transparent 53%, var(--line) 58%, transparent),
+    radial-gradient(circle, var(--gold-1), var(--gold-3) 65%, transparent 72%);
+  background-repeat:no-repeat;
+  background-size: 42% 1px, 42% 1px, 7px 7px;
+  background-position: left center, right center, center center;
+  opacity:.9;
+}
+
+.section-eyebrow{
+  display:block; text-align:center;
+  font-size:10.5px; letter-spacing:4px; text-transform:uppercase;
+  color:var(--gold-3); margin: 0 0 10px; font-weight:600;
+}
+.section-title{
+  font-family:var(--serif); font-weight:700; font-style:italic;
+  font-size:25px; color:var(--gold-1); text-align:center;
+  margin:0 0 12px; letter-spacing:.4px;
+  text-shadow: 0 0 22px rgba(203,164,99,.35);
+}
+.section-sub{
+  font-size:13.5px; line-height:1.9; color:var(--parchment-soft);
+  text-align:center; margin: 0 auto 22px; max-width:300px; letter-spacing:.2px;
+}
+
+/* ============================================================
+   卷首：品牌印記（Hero）— 有機水滴形頭像，非方框
+   ============================================================ */
+.section-hero{ text-align:center; padding-top:50px; position:relative; }
+
+.rune-spark{
+  position:absolute; width:4px; height:4px; border-radius:50%;
+  background:var(--gold-1); box-shadow:0 0 10px 2px rgba(234,211,160,.65);
+  animation: twinkle 4s ease-in-out infinite;
+}
+.rune-spark.rs1{ top:70px; left:16%; }
+.rune-spark.rs2{ top:190px; right:14%; animation-delay:1.3s; }
+
+.avatar-wrap{
+  width:186px; height:186px; margin:0 auto; position:relative;
+  border-radius: 42% 58% 63% 37% / 45% 41% 59% 55%;
+  overflow:hidden;
+  animation: morph 11s ease-in-out infinite, breathe 4.4s ease-in-out infinite;
+  box-shadow: 0 0 0 3px rgba(203,164,99,.55), 0 10px 40px rgba(0,0,0,.5);
+}
+.avatar-wrap::after{
+  content:''; position:absolute; inset:0;
+  box-shadow: inset 0 -14px 22px rgba(0,0,0,.4), inset 0 10px 16px rgba(255,255,255,.08);
+}
+@keyframes morph{
+  0%,100%{ border-radius: 42% 58% 63% 37% / 45% 41% 59% 55%; }
+  50%{ border-radius: 58% 42% 38% 62% / 55% 60% 40% 45%; }
+}
+@keyframes breathe{
+  0%,100%{ box-shadow: 0 0 0 3px rgba(203,164,99,.45), 0 10px 32px rgba(0,0,0,.45); }
+  50%{ box-shadow: 0 0 0 3px rgba(203,164,99,.75), 0 10px 46px rgba(203,164,99,.35); }
+}
+.avatar-img{ width:100%; height:100%; object-fit:cover; display:block; background:var(--void-2); }
+
+.brand-row{ margin-top:-10px; position:relative; z-index:2; }
+.brand-title{
+  font-family:var(--serif); font-weight:600; font-style:italic;
+  font-size:35px; letter-spacing:1px; color:var(--gold-1); margin:0;
+  text-shadow: 0 0 20px rgba(203,164,99,.4);
+}
+.brand-sub{
+  font-size:12.5px; letter-spacing:4px; color:var(--gold-3);
+  margin: 6px 0 22px; text-transform:uppercase;
+}
+.tagline{
+  font-family:var(--serif); font-style:italic; font-size:15px; line-height:1.95;
+  color:var(--parchment-soft); letter-spacing:.4px; margin:0 auto; max-width:290px;
+}
+
+.card-dark-star{ position:absolute; width:1.5px; height:1.5px; border-radius:50%; background:transparent; }
+.card-dark-star.a{ opacity:.6; }
+.card-dark-star.b{ opacity:.85; }
+
+/* ============================================================
+   仙子近況 — 信箋式清單，非白色圓角按鈕格
+   ============================================================ */
+.news-banner{
+  text-decoration:none; display:flex; align-items:center; gap:14px;
+  padding:16px 18px 16px 20px; margin-bottom:13px; position:relative;
+  background: rgba(24,24,24,.55);
+  border:1px solid rgba(203,164,99,0.22);
+  border-radius: 4px 20px 4px 20px;
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  overflow:hidden;
+  transition: transform .4s cubic-bezier(.2,.8,.2,1), box-shadow .4s ease, border-color .4s ease;
+}
+.news-banner::before{
+  content:''; position:absolute; left:0; top:10%; bottom:10%; width:2.5px;
+  background: var(--gold-2);
+}
+.news-banner:last-child{ margin-bottom:0; }
+.news-banner:hover{
+  transform: translateX(5px) translateY(-2px);
+  border-color: var(--gold-2);
+  box-shadow: 0 14px 30px rgba(0,0,0,.4), 0 0 22px rgba(203,164,99,.15);
+}
+.news-banner .nb-body{ flex:1 1 auto; min-width:0; }
+.news-banner .nb-tag{
+  font-size:10.5px; letter-spacing:1.8px; color:var(--gold-2);
+  display:block; margin-bottom:4px; font-weight:600; opacity:.9; text-transform:uppercase;
+}
+.news-banner .nb-text{
+  font-size:13.5px; color:var(--parchment); font-weight:600; line-height:1.4;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+
+/* ============================================================
+   共用：想讓人點下去的按鈕（單色暗底金框，呼應符文圓球質感）
+   套用於 nb-pill / gem-btn / service-btn
+   ============================================================ */
+.nb-pill, .gem-btn, .service-btn{
+  position:relative; display:inline-block; text-decoration:none;
+  background: var(--void-3);
+  color: var(--gold-1); font-weight:700; letter-spacing:1.5px; text-transform:uppercase;
+  border:1px solid rgba(203,164,99,.5);
+  box-shadow:
+    inset 0 2px 3px rgba(255,255,255,.05),
+    inset 0 -10px 16px rgba(0,0,0,.5),
+    0 8px 20px rgba(0,0,0,.45);
+  transition: transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s ease, border-color .3s ease, background .3s ease;
+}
+.nb-pill:hover, .gem-btn:hover, .service-btn:hover{
+  transform: translateY(-3px);
+  border-color: var(--gold-1);
+  background: rgba(203,164,99,.08);
+  box-shadow:
+    inset 0 2px 3px rgba(255,255,255,.08),
+    inset 0 -10px 16px rgba(0,0,0,.4),
+    0 12px 26px rgba(0,0,0,.5),
+    0 0 20px rgba(203,164,99,.3);
+}
+.nb-pill:active, .gem-btn:active, .service-btn:active{
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 2px 3px rgba(255,255,255,.05),
+    inset 0 -4px 8px rgba(0,0,0,.5),
+    0 4px 10px rgba(0,0,0,.5);
+}
+.nb-pill{ flex:0 0 auto; font-size:11px; padding:9px 18px; border-radius:999px; }
+.gem-btn{ font-size:12.5px; padding:13px 26px; border-radius:24px; }
+.service-btn{ display:block; text-align:center; padding:14px; border-radius:26px; margin-top:8px; font-size:12.5px; }
+
+/* ============================================================
+   尋光指引 — 符文錯落排列，暗色玻璃指引卡（非白色方框）
+   ============================================================ */
+.gem-row{ display:flex; justify-content:center; align-items:flex-end; gap:30px; margin: 8px 0 26px; position:relative; }
+.gem-item{ text-align:center; cursor:pointer; position:relative; z-index:1; }
+.gem-item:nth-child(2){ transform: translateY(-14px); }
+.gem-item:nth-child(3){ transform: translateY(5px); }
+.gem-item:nth-child(3n+1):nth-child(n+4){ transform: translateY(-6px); }
+.gem-circle{
+  width:76px; height:76px; border-radius:50%; margin:0 auto; position:relative;
+  background: var(--void-3);
+  border:1px solid rgba(203,164,99,.45);
+  box-shadow:
+    inset 0 2px 3px rgba(255,255,255,.06),
+    inset 0 -8px 14px rgba(0,0,0,.55),
+    0 8px 20px rgba(0,0,0,.5);
+  transition: transform .5s cubic-bezier(.2,.8,.2,1), box-shadow .4s ease, border-color .4s ease;
+  display:flex; align-items:center; justify-content:center;
+}
+.gem-item:hover .gem-circle{ transform: translateY(-4px); border-color: rgba(234,211,160,.65); }
+.gem-item.active .gem-circle{
+  transform: scale(1.12);
+  border-color: var(--gold-1);
+  box-shadow:
+    inset 0 2px 3px rgba(255,255,255,.1),
+    inset 0 -8px 14px rgba(0,0,0,.45),
+    0 0 22px rgba(203,164,99,.5);
+}
+.gem-icon{ width:34px; height:34px; opacity:.5; transform:scale(.9); transition: opacity .35s ease, transform .35s ease, color .35s ease; color:var(--gold-3); }
+.gem-item:hover .gem-icon{ opacity:.75; color:var(--gold-2); }
+.gem-item.active .gem-icon{ opacity:1; transform:scale(1); color:var(--gold-1); }
+.gem-icon svg{ width:100%; height:100%; display:block; }
+
+.gem-panel{ max-height:0; overflow:hidden; opacity:0; transition: max-height .5s ease, opacity .4s ease, margin .4s ease; }
+.gem-panel.show{ max-height:520px; opacity:1; margin-bottom:6px; }
+.gem-panel-inner{
+  background: rgba(14,14,14,.88);
+  border:1px solid rgba(203,164,99,.3);
+  border-radius: 6px 26px 6px 26px;
+  padding: 26px 22px; text-align:center;
+  backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 18px 44px rgba(0,0,0,.45);
+}
+.gem-name-tag{
+  display:inline-block; font-size:11.5px; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+  color:var(--gold-2); margin-bottom:10px;
+}
+.gem-quote{
+  font-family:var(--serif); font-style:italic; font-weight:600;
+  font-size:18px; color:var(--gold-1); line-height:1.6; margin:0 0 12px;
+}
+.gem-guidance{ font-size:14px; line-height:1.9; color:var(--parchment-soft); margin:0 0 18px; }
+
+/* ============================================================
+   魔法聊天室 — tabs ＋ 方案（不對稱玻璃卡，蠟封角標）
+   ============================================================ */
+.tabs{ display:flex; justify-content:center; gap:6px; margin: 4px 0 24px; }
+.tab-btn{
+  background:transparent; border:none; cursor:pointer;
+  font-family:var(--serif-tc); font-size:14px; letter-spacing:.5px;
+  color:var(--parchment-soft); padding:9px 16px 11px; position:relative;
+  transition: color .3s ease;
+}
+.tab-btn::after{
+  content:''; position:absolute; left:50%; bottom:0; width:0; height:2px;
+  transform:translateX(-50%);
+  background: var(--gold-2);
+  transition: width .35s ease;
+}
+.tab-btn.active{ color: var(--gold-1); font-weight:700; }
+.tab-btn.active::after{ width:60%; }
+
+.service-panel{ display:none; flex-direction:column; gap:22px; }
+.service-panel.active{ display:flex; }
+
+.service-card{
+  position:relative;
+  background: rgba(14,14,14,.9);
+  border-radius: 8px 30px 8px 30px;
+  overflow:visible;
+  border:1px solid rgba(203,164,99,.22);
+  box-shadow: 0 14px 34px rgba(0,0,0,.4);
+  transition: box-shadow .35s ease, border-color .35s ease, transform .35s ease;
+  padding-top:16px;
+}
+.service-card:hover{
+  box-shadow: 0 22px 46px rgba(0,0,0,.5), 0 0 26px rgba(203,164,99,.18);
+  border-color: rgba(203,164,99,.5);
+  transform: translateY(-3px);
+}
+.service-img-wrap{ width:108px; height:108px; margin: -30px auto 6px; position:relative; }
+.service-img-wrap:empty{ display:none; margin:0; }
+.service-img{
+  width:100%; height:100%; object-fit:cover; display:block;
+  border-radius: 46% 54% 58% 42% / 50% 46% 54% 50%;
+  border:3px solid var(--void-2);
+  box-shadow: 0 0 0 2px rgba(203,164,99,.5), 0 12px 26px rgba(0,0,0,.45);
+}
+.service-body{ padding: 6px 22px 24px; text-align:center; }
+.service-badge{
+  display:inline-block; font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase;
+  color:var(--gold-2); background:rgba(203,164,99,.1); border:1px solid rgba(203,164,99,.28);
+  padding:4px 12px; border-radius:999px; margin-bottom:10px;
+}
+.service-name{
+  font-family:var(--serif); font-size:20px; font-weight:700; color:var(--gold-1);
+  margin:0 0 10px; letter-spacing:.3px;
+}
+.service-desc{ font-size:13.5px; line-height:1.85; color:var(--parchment-soft); margin:0 0 8px; }
+.service-note{ font-size:11.5px; color:rgba(234,225,206,.5); line-height:1.75; margin:0 0 4px; }
+
+/* ============================================================
+   底部
+   ============================================================ */
+.footer{
+  text-align:center; padding: 24px 0 2px; color:var(--parchment-soft);
+  font-family:var(--serif); font-style:italic;
+  font-size:12.5px; letter-spacing:.5px; line-height:1.8;
+}
+.footer::before{
+  content:''; display:block; width:40px; height:1px; margin:0 auto 16px;
+  background: var(--line);
+}
+
+.loading-text{ text-align:center; color:var(--parchment-soft); font-size:12.5px; padding:14px 0; }
+
+@media (max-width:360px){
+  .brand-title{ font-size:30px; }
+  .gem-row{ gap:18px; }
+  .gem-circle{ width:66px; height:66px; }
+  .section{ padding:8px 20px 48px; }
+}
+</style>
+</head>
+<body>
+
+<div class="cosmic-bg" id="cosmicBg"></div>
+<div class="glow-orb g1"></div>
+<div class="glow-orb g2"></div>
+<div class="glow-orb g3"></div>
+<div class="grain-overlay"></div>
+
+<div class="page">
+
+  <!-- ============ 卷首：品牌印記（Hero） ============ -->
+  <div class="section section-hero" id="heroDark">
+    <span class="rune-spark rs1"></span>
+    <span class="rune-spark rs2"></span>
+
+    <div class="avatar-wrap">
+      <img class="avatar-img" id="avatarImg" src="https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=300&h=300&fit=crop" alt="頭像">
+    </div>
+
+    <div class="brand-row">
+      <h1 class="brand-title">Morningstar</h1>
+      <p class="brand-sub">見習仙子++</p>
+    </div>
+
+    <p class="tagline">
+      靈感・女巫符文・水晶・魔法儀式<br>
+      願你記得，你就是光
+    </p>
+  </div>
+
+  <!-- ============ 仙子近況 ============ -->
+  <div class="section section-news hidden" id="newsSection">
+    <span class="section-eyebrow">Fairy Updates</span>
+    <h2 class="section-title">仙子近況</h2>
+    <p class="section-sub">看看最近有什麼好玩的魔法限定活動？錯過就敲不到囉！</p>
+    <div id="newsList"></div>
+  </div>
+
+  <!-- ============ 尋光指引 ============ -->
+  <div class="section section-guide" id="guideSection">
+    <span class="section-eyebrow">Guidance</span>
+    <h2 class="section-title">尋光指引</h2>
+    <p class="section-sub">心裡總覺得卡卡的？選一顆命定符文，偷偷看宇宙送你的突破指引</p>
+    <div class="gem-row" id="gemRow"></div>
+    <div class="gem-panel" id="gemPanel">
+      <div class="gem-panel-inner" id="gemPanelInner"></div>
+    </div>
+  </div>
+
+  <!-- ============ 魔法聊天室 ============ -->
+  <div class="section section-service" id="serviceSection">
+    <span class="section-eyebrow">Sanctuary</span>
+    <h2 class="section-title">魔法聊天室</h2>
+    <p class="section-sub">按下傳送鍵，把你的心事打包交給見習仙子吧</p>
+    <div class="tabs" id="tabsRow"></div>
+    <div id="panelsWrap"></div>
+    <div class="footer">© Morningstar．願你記得，你就是光</div>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   ▍設定區
+   將下方 SPREADSHEET_ID 換成你的 Google Sheet ID
+   （網址 https://docs.google.com/spreadsheets/d/【這一段】/edit）
+   並將該 Sheet 設為「知道連結的人皆可檢視」
+
+   ▍工作表欄位規劃：
+
+   1) profile 工作表（僅用來放「仙子近況」橫幅，品牌文字已寫死於 HTML）
+      category   | title        | url
+      仙子近況    | 活動標題      | 連結
+      （無資料則此卡片自動隱藏）
+
+   2) quiz 工作表（可覆蓋預設的「尋光指引」三張符文，欄位如下；留空則使用內建預設文案）
+      symbol(star/scythe/waves) | name | quote | guidance_text | button_text | button_url
+
+   3) services 工作表（可覆蓋預設方案，欄位如下；留空則使用內建預設方案）
+      tab(線上諮詢/實體面談) | badge | name | description | note | image_url | button_text | button_url
+   ============================================================ */
+
+const SPREADSHEET_ID = '1XXX71bkr3bEgAD9lBuLHFgmy68Qp3qh26llyEUV0xxI';
+
+/* 頭像圖片網址（可自行替換，或改由 profile 工作表擴充讀取） */
+const AVATAR_URL = 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=300&h=300&fit=crop';
+
+/* Instagram 私訊／直播小盒子連結
+   請自行填入你的帳號，例如：
+   'https://instagram.com/direct/inbox/'  或
+   'https://m.me/morningstar.lab'
+   【尋光指引】翻牌指引按鈕、【魔法聊天室】所有方案卡片按鈕，
+   只要 Google Sheet 沒有另外填 button_url，就會統一導向這裡。 */
+const IG_DM_URL = 'https://instagram.com/direct/inbox/';
+
+/* ---------- 星空粒子（純 CSS box-shadow） ---------- */
+(function initStars(){
+  function genShadow(count, area, color){
+    let arr = [];
+    for(let i=0;i<count;i++){
+      arr.push(`${Math.floor(Math.random()*area)}px ${Math.floor(Math.random()*area)}px ${color}`);
+    }
+    return arr.join(',');
+  }
+  const style = document.createElement('style');
+  style.textContent = `
+    .star-dot.a{ box-shadow:${genShadow(55,1400,'#DFC79A')}; }
+    .star-dot.b{ box-shadow:${genShadow(34,1400,'#FFFFFF')}; }
+    .star-dot.c{ box-shadow:${genShadow(16,1400,'#B4915C')}; }
+    .card-dark-star.a{ box-shadow:${genShadow(20,300,'#DFC79A')}; }
+    .card-dark-star.b{ box-shadow:${genShadow(10,300,'#FFFFFF')}; }
+  `;
+  document.head.appendChild(style);
+  const bg = document.getElementById('cosmicBg');
+  ['a','b','c'].forEach(cls=>{
+    const el = document.createElement('div');
+    el.className = 'star-dot '+cls;
+    bg.appendChild(el);
+  });
+  const hero = document.getElementById('heroDark');
+  ['a','b'].forEach(cls=>{
+    const el = document.createElement('div');
+    el.className = 'card-dark-star '+cls;
+    hero.insertBefore(el, hero.firstChild);
+  });
+})();
+
+document.getElementById('avatarImg').src = AVATAR_URL;
+
+/* ---------- Google Sheet 讀取 ---------- */
+async function fetchSheet(sheetName){
+  try{
+    const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+    const res = await fetch(url);
+    const raw = await res.text();
+    const jsonStr = raw.substring(raw.indexOf('{'), raw.lastIndexOf('}')+1);
+    const data = JSON.parse(jsonStr);
+    const cols = data.table.cols.map((c,i)=> (c.label || c.id || ('col'+i)).toString().trim());
+    return data.table.rows.map(r=>{
+      const obj = {};
+      cols.forEach((col,i)=>{
+        const cell = r.c[i];
+        obj[col] = cell ? (cell.v ?? '') : '';
+      });
+      return obj;
+    });
+  }catch(err){
+    console.warn(`[Sheet:${sheetName}] 讀取失敗或尚未設定`, err);
+    return null;
+  }
+}
+
+/* ---------- 內建預設資料 ---------- */
+/* DEFAULT_NEWS：僅在「尚未設定／連線失敗」時作為預覽用示範內容。
+   一旦 SPREADSHEET_ID 設定正確且 profile 工作表有資料，會自動改用真實資料；
+   若 Sheet 已連上但單純沒有「仙子近況」的資料列，仍會照規則自動隱藏此卡片。 */
+const DEFAULT_NEWS = [
+  { category:'仙子近況', title:'（示範預覽）七月限定占星工作坊開放報名中', url:'#' }
+];
+
+const DEFAULT_QUIZ = [
+  {
+    symbol:'star', name:'星星',
+    quote:'「你其實早就知道答案，只是不敢相信自己。」',
+    guidance_text:'最近卡住，是因為你太想用理智去拼湊完美，反而困在焦慮裡。星星在提醒你：試著放鬆，允許自己盲測一步。你的直覺，從來沒錯。',
+    button_text:'能量梳理（方案 B）｜ 陪你撥開迷霧，找回你的幸運與方向。',
+    button_url:IG_DM_URL
+  },
+  {
+    symbol:'scythe', name:'鐮刀',
+    quote:'「不剪掉枯萎的枝葉，新芽就沒有空間長出來。」',
+    guidance_text:'最近的沉重，是因為你正試圖抓住某些不再適合的人事物。結束，正是最強大的新生。勇敢放手吧，停止消耗。',
+    button_text:'深度療癒（方案 C）｜ 陪你果斷斷捨離，找回內在的自由與力量。',
+    button_url:IG_DM_URL
+  },
+  {
+    symbol:'waves', name:'波浪',
+    quote:'「允許情緒如浪潮般流動，不要與它對抗。」',
+    guidance_text:'最近卡住，是因為你正試圖控製你無法控製的局面。順應流動吧，允許自己哭、允許自己困惑。臣服當下，答案就會自然浮現。',
+    button_text:'直覺快問（方案 A）｜ 針對單一煩惱，精準切入核心快速決策。',
+    button_url:IG_DM_URL
+  }
+];
+
+const DEFAULT_SERVICES = [
+  { tab:'線上諮詢', badge:'方案 A', name:'直覺快問', description:'專注於妳當下面臨的單一煩惱。用符文的精準焦點，為妳的關鍵決策提供一記溫柔的破局線索。', note:'', image_url:'', button_text:'敲小盒子，迅速解惑', button_url:IG_DM_URL },
+  { tab:'線上諮詢', badge:'方案 B', name:'能量梳理', description:'結合女巫符文與神諭卡，全方位拆解事件的深層走向，溫柔梳理妳卡住的思緒與能量。', note:'', image_url:'', button_text:'私訊仙子，預約梳理', button_url:IG_DM_URL },
+  { tab:'線上諮詢', badge:'方案 C', name:'深度療癒', description:'一場一對一的靈魂深處對話。適合正處於巨大迷惘、需要釋放情感並找回內在力量的妳。', note:'', image_url:'', button_text:'開啟聊天室，深度對話', button_url:IG_DM_URL },
+  { tab:'實體面談', badge:'方案 D', name:'實體深度面談', description:'面對面感受最強大的能量連結，結合符文與直覺感應。由 Gina 陪妳在城市的優雅咖啡廳裡，靜心尋找屬於妳的光。', note:'地點以雙北捷運沿線咖啡廳為主。費用不含店內低消，需預先支付全額或訂金以完成預約。', image_url:'', button_text:'私訊仙子，預約面談', button_url:IG_DM_URL }
+];
+
+/* ---------- 符文圖騰 SVG ---------- */
+const ICONS = {
+  star: `<svg viewBox="0 0 283.464 283.464" fill="currentColor" stroke="currentColor" stroke-width="1">
+<g>
+	<g>
+		<line x1="142.25" y1="0" x2="141.878" y2="283.464"/>
+		<path d="M142.25,0c0,0,0.182,1.107,0.522,3.185c0.288,2.078,0.82,5.123,1.282,8.997c0.49,3.879,1.13,8.584,1.698,13.983
+			c0.588,5.399,1.176,11.492,1.747,18.134c1.132,13.289,2.117,28.792,2.768,45.403c0.194,4.151,0.313,8.375,0.436,12.649
+			c0.133,4.274,0.255,8.598,0.309,12.958c0.194,8.72,0.212,17.577,0.252,26.438c-0.062,8.857-0.09,17.714-0.308,26.435
+			c-0.07,4.36-0.184,8.685-0.338,12.958c-0.141,4.274-0.255,8.494-0.462,12.646c-0.69,16.61-1.718,32.11-2.887,45.396
+			c-0.591,6.643-1.196,12.731-1.801,18.131c-0.586,5.395-1.236,10.1-1.743,13.975c-0.477,3.875-1.018,6.92-1.315,8.997
+			c-0.345,2.074-0.532,3.182-0.532,3.182s-0.184-1.107-0.524-3.186c-0.292-2.073-0.825-5.122-1.291-8.997
+			c-0.496-3.875-1.134-8.583-1.708-13.981c-0.589-5.399-1.179-11.488-1.754-18.135c-1.132-13.289-2.119-28.792-2.768-45.402
+			c-0.194-4.151-0.298-8.371-0.428-12.646c-0.144-4.273-0.245-8.598-0.302-12.958c-0.198-8.721-0.202-17.581-0.239-26.438
+			c0.063-8.857,0.103-17.717,0.322-26.438c0.064-4.36,0.198-8.684,0.345-12.958c0.131-4.271,0.26-8.494,0.463-12.646
+			c0.697-16.607,1.722-32.11,2.89-45.396c0.586-6.643,1.19-12.732,1.793-18.127c0.583-5.399,1.233-10.104,1.734-13.979
+			c0.473-3.875,1.012-6.919,1.307-8.994C142.066,1.107,142.25,0,142.25,0z"/>
+	</g>
+	<g>
+		<line x1="2.213" y1="113.026" x2="281.919" y2="170.442"/>
+		<path d="M2.213,113.026c0,0,1.129,0.047,3.246,0.129c2.106,0.137,5.219,0.227,9.137,0.554c3.925,0.302,8.699,0.622,14.141,1.15
+			c5.445,0.51,11.574,1.161,18.246,1.938c13.343,1.567,28.843,3.724,45.367,6.427c4.137,0.647,8.329,1.38,12.57,2.121
+			c4.245,0.726,8.537,1.481,12.853,2.304c8.646,1.563,17.392,3.332,26.145,5.076c8.731,1.84,17.468,3.652,26.032,5.618
+			c4.288,0.945,8.533,1.93,12.721,2.94c4.189,1,8.332,1.958,12.391,2.998c16.254,4.019,31.348,8.146,44.227,11.967
+			c6.439,1.915,12.329,3.734,17.534,5.413c5.212,1.66,9.726,3.246,13.447,4.521c3.731,1.244,6.628,2.387,8.616,3.095
+			c1.98,0.759,3.035,1.165,3.035,1.165s-1.13-0.043-3.247-0.126c-2.106-0.133-5.22-0.223-9.14-0.55
+			c-3.925-0.291-8.696-0.614-14.141-1.14c-5.447-0.51-11.576-1.157-18.248-1.93c-13.344-1.564-28.842-3.721-45.366-6.428
+			c-4.138-0.643-8.325-1.391-12.57-2.124c-4.245-0.723-8.537-1.491-12.851-2.312c-8.645-1.563-17.39-3.343-26.141-5.09
+			c-8.729-1.844-17.464-3.666-26.028-5.633c-4.29-0.941-8.531-1.94-12.723-2.947c-4.191-0.988-8.331-1.966-12.387-3.001
+			c-16.254-4.022-31.348-8.148-44.231-11.966c-6.438-1.913-12.327-3.728-17.534-5.406c-5.21-1.657-9.723-3.242-13.449-4.511
+			c-3.729-1.244-6.626-2.387-8.618-3.091C3.268,113.429,2.213,113.026,2.213,113.026z"/>
+	</g>
+	<g>
+		<line x1="56.767" y1="32.818" x2="227.368" y2="250.647"/>
+		<path d="M56.767,32.818c0,0,0.809,0.741,2.33,2.125c1.477,1.417,3.734,3.422,6.434,6.114c2.721,2.671,6.062,5.892,9.765,9.684
+			c3.717,3.782,7.852,8.091,12.306,12.84c8.902,9.504,19.022,20.798,29.551,33.145c2.654,3.066,5.293,6.237,7.965,9.439
+			c2.682,3.199,5.385,6.445,8.056,9.759c5.41,6.574,10.765,13.361,16.135,20.136c5.293,6.841,10.611,13.656,15.697,20.485
+			c2.574,3.39,5.09,6.779,7.545,10.154c2.467,3.368,4.922,6.679,7.264,9.993c9.47,13.178,18.006,25.708,25.095,36.632
+			c3.541,5.464,6.736,10.511,9.515,15.028c2.793,4.504,5.117,8.52,7.057,11.805c1.96,3.268,3.371,5.942,4.389,7.718
+			c0.978,1.808,1.499,2.771,1.499,2.771s-0.813-0.737-2.333-2.121c-1.481-1.413-3.736-3.422-6.438-6.11
+			c-2.729-2.667-6.068-5.888-9.774-9.677c-3.718-3.781-7.854-8.091-12.311-12.84c-8.904-9.5-19.026-20.791-29.549-33.142
+			c-2.658-3.066-5.284-6.243-7.962-9.446c-2.69-3.192-5.38-6.448-8.052-9.759c-5.412-6.574-10.753-13.372-16.125-20.147
+			c-5.289-6.837-10.598-13.663-15.685-20.493c-2.577-3.386-5.079-6.787-7.542-10.158c-2.473-3.361-4.916-6.682-7.257-9.997
+			C94.875,93.58,86.336,81.046,79.244,70.125c-3.542-5.46-6.738-10.507-9.518-15.025c-2.796-4.5-5.121-8.516-7.063-11.801
+			c-1.962-3.264-3.374-5.935-4.394-7.71C57.289,33.781,56.767,32.818,56.767,32.818z"/>
+	</g>
+	<g>
+		<line x1="25.202" y1="229.54" x2="258.929" y2="53.925"/>
+		<path d="M25.202,229.54c0,0,0.804-0.83,2.31-2.391c1.537-1.521,3.724-3.835,6.639-6.61c2.897-2.796,6.391-6.229,10.496-10.032
+			c4.094-3.82,8.756-8.069,13.886-12.649c10.266-9.151,22.444-19.558,35.735-30.388c3.305-2.731,6.711-5.445,10.158-8.195
+			c3.438-2.757,6.93-5.539,10.487-8.289c7.066-5.568,14.353-11.079,21.628-16.607c7.333-5.449,14.647-10.924,21.959-16.161
+			c3.635-2.649,7.265-5.244,10.879-7.771c3.604-2.542,7.151-5.068,10.695-7.48c14.098-9.755,27.484-18.555,39.131-25.866
+			c5.83-3.648,11.209-6.945,16.019-9.81c4.801-2.883,9.067-5.284,12.564-7.282c3.477-2.027,6.311-3.483,8.199-4.533
+			c1.92-1.01,2.942-1.549,2.942-1.549s-0.804,0.834-2.306,2.394c-1.537,1.521-3.725,3.839-6.638,6.614
+			c-2.896,2.804-6.388,6.233-10.49,10.04c-4.091,3.825-8.753,8.073-13.883,12.656c-10.264,9.152-22.44,19.562-35.732,30.385
+			c-3.304,2.735-6.719,5.438-10.162,8.192c-3.435,2.768-6.936,5.532-10.492,8.285c-7.067,5.568-14.36,11.067-21.636,16.596
+			c-7.333,5.446-14.655,10.913-21.97,16.15c-3.63,2.653-7.272,5.23-10.881,7.765c-3.6,2.548-7.155,5.064-10.697,7.477
+			c-14.101,9.752-27.487,18.551-39.134,25.866c-5.823,3.652-11.204,6.948-16.014,9.816c-4.795,2.887-9.062,5.284-12.556,7.29
+			c-3.476,2.027-6.31,3.482-8.195,4.54C26.225,229,25.202,229.54,25.202,229.54z"/>
+	</g>
+</g>
+</svg>`,
+  scythe: `<svg viewBox="0 0 283.464 283.464" fill="currentColor" stroke="currentColor" stroke-width="1">
+<g>
+	<g>
+		<path d="M77.357,10.105c0,0,0.522-0.217,1.499-0.563c0.979-0.315,2.413-0.863,4.237-1.399c3.652-1.118,8.869-2.495,15.136-3.734
+			c6.262-1.246,13.574-2.348,21.411-3.11c1.959-0.222,3.951-0.364,5.968-0.51c2.015-0.165,4.057-0.312,6.116-0.391
+			c4.116-0.221,8.296-0.36,12.479-0.39c4.18-0.03,8.364,0.026,12.483,0.196c2.059,0.048,4.101,0.146,6.119,0.289
+			c2.02,0.124,4.012,0.225,5.975,0.42c7.847,0.641,15.173,1.636,21.456,2.795c6.282,1.148,11.52,2.454,15.186,3.523
+			c1.835,0.515,3.276,1.04,4.259,1.348c0.983,0.33,1.507,0.54,1.507,0.54s-0.52,0.221-1.499,0.563
+			c-0.979,0.322-2.413,0.871-4.236,1.411c-3.652,1.122-8.869,2.506-15.136,3.749c-6.263,1.249-13.575,2.353-21.409,3.11
+			c-1.961,0.222-3.951,0.353-5.97,0.506c-2.015,0.173-4.056,0.3-6.116,0.379c-4.113,0.229-8.295,0.345-12.479,0.379
+			c-4.179,0.029-8.363-0.045-12.483-0.21c-2.057-0.045-4.101-0.162-6.12-0.297c-2.019-0.116-4.011-0.232-5.972-0.424
+			c-7.849-0.646-15.174-1.64-21.457-2.795c-6.283-1.145-11.521-2.446-15.187-3.508c-1.834-0.511-3.275-1.036-4.259-1.339
+			C77.881,10.315,77.357,10.105,77.357,10.105z"/>
+		<path d="M72.279,245.488l2.782,3.237l2.902,3.043l3.075,2.849l3.179,2.675c4.323,3.447,9.061,6.243,13.934,8.535
+			c9.792,4.528,20.409,6.601,30.776,6.146l0.972-0.025l0.483-0.017l0.121-0.004c-0.113,0.004,0.341-0.006-0.236,0.004l0.063-0.008
+			l0.267-0.025l2.109-0.229l4.223-0.456c1.292-0.227,2.415-0.545,3.62-0.796c1.192-0.289,2.346-0.409,3.579-0.871
+			c2.428-0.796,4.885-1.431,7.174-2.544c1.155-0.521,2.341-0.953,3.467-1.523l3.328-1.796c0.55-0.305,1.114-0.58,1.65-0.9
+			l1.565-1.06l3.123-2.09l2.902-2.382l1.455-1.172c0.481-0.393,0.897-0.865,1.351-1.291l2.676-2.603
+			c0.87-0.885,1.617-1.894,2.435-2.823c1.697-1.81,2.986-3.944,4.43-5.941c0.766-0.972,1.26-2.125,1.904-3.167
+			c0.582-1.089,1.302-2.096,1.774-3.235c0.958-2.263,2.143-4.423,2.808-6.795l1.17-3.478l0.849-3.563l0.435-1.781
+			c0.123-0.596,0.169-1.207,0.261-1.811l0.502-3.628c0.184-1.205,0.107-2.439,0.184-3.656l0.069-1.83l0.035-0.91l0.012-0.23
+			l0.004-0.059c-0.007-0.396,0.011,0.476,0.007,0.359l-0.007-0.131l-0.031-0.531l-0.21-4.234l-0.052-1.057
+			c-0.019-0.351-0.083-0.576-0.12-0.869l-0.251-1.657c-0.203-2.15-0.854-4.574-1.378-6.938c-0.293-1.178-0.735-2.313-1.088-3.474
+			l-0.551-1.737l-0.702-1.681c-1.681-4.563-4.187-8.784-6.964-12.769l-2.188-2.927l-2.416-2.742
+			c-0.765-0.957-1.673-1.775-2.548-2.626c-0.897-0.822-1.698-1.766-2.683-2.493c-3.658-3.261-7.857-5.821-12.149-8.179
+			c-4.36-2.267-9.037-3.835-13.812-5.095l-0.746-0.2c-3.816-1.005-6.307-4.51-6.195-8.292c0.326-11.034,0.698-22.065,1.179-33.1
+			l0.79-16.547l0.932-16.55c0.702-11.031,1.452-22.066,2.397-33.097c0.433-5.52,1.028-11.035,1.532-16.551
+			c0.524-5.515,1.151-11.035,1.834-16.55c0.685,5.515,1.313,11.035,1.833,16.55c0.508,5.516,1.102,11.031,1.531,16.551
+			c0.95,11.031,1.697,22.066,2.4,33.097l0.932,16.55l0.792,16.547c0.481,11.035,0.852,22.066,1.178,33.1l-6.94-8.494
+			c6.246,1.239,12.408,3.077,18.235,5.752c5.778,2.735,11.327,6.053,16.264,10.169c1.303,0.941,2.415,2.107,3.62,3.171
+			c1.18,1.087,2.389,2.148,3.444,3.361l3.251,3.563l2.935,3.827c3.74,5.219,7.063,10.807,9.384,16.831l0.916,2.237l0.731,2.308
+			c0.463,1.541,1.009,3.064,1.388,4.629c0.695,3.153,1.475,6.21,1.813,9.7c0.54,3.635,0.52,6.22,0.646,9.076l0.015,0.528
+			l0.004,0.132c0-0.071,0.019,0.841,0.01,0.491l-0.006,0.075l-0.016,0.301l-0.07,1.204l-0.146,2.404
+			c-0.133,1.601-0.127,3.208-0.395,4.796l-0.778,4.755c-0.143,0.79-0.244,1.587-0.427,2.367l-0.619,2.329l-1.26,4.645
+			c-0.521,1.516-1.136,3.002-1.706,4.5c-1.048,3.036-2.657,5.821-4.073,8.682c-0.7,1.437-1.657,2.729-2.48,4.093
+			c-0.892,1.32-1.635,2.744-2.658,3.971c-1.978,2.498-3.861,5.069-6.15,7.286c-1.114,1.125-2.164,2.319-3.339,3.381l-3.603,3.1
+			c-1.17,1.063-2.449,1.991-3.761,2.882l-3.896,2.678l-4.124,2.315l-2.061,1.144c-0.701,0.35-1.434,0.646-2.15,0.974l-4.311,1.879
+			c-1.456,0.578-2.978,0.986-4.46,1.478c-2.944,1.06-6.038,1.589-9.073,2.237c-3.041,0.6-6.449,0.821-9.52,1.077l-4.248-0.031
+			l-2.123-0.014h-0.265h-0.065c-0.623,0.014-0.213,0-0.371,0l-0.143-0.012l-0.575-0.05l-1.147-0.092
+			c-12.232-0.974-24.07-5.131-33.881-11.887c-4.935-3.331-9.302-7.383-13.12-11.78C77.829,255.583,74.66,250.621,72.279,245.488z"/>
+	</g>
+</g>
+</svg>`,
+  waves: `<svg viewBox="0 0 283.464 283.464" fill="currentColor" stroke="currentColor" stroke-width="1">
+<g>
+	<path d="M61.663,270.501c0,0,0.447-1.271,0.892-3.686c0.463-2.397,0.797-6.019,0.209-10.351c-0.62-4.314-2.39-9.305-6.072-13.736
+		c-1.913-2.163-4.05-4.344-6.768-6.187c-0.668-0.467-1.344-0.937-2.026-1.414c-0.837-0.613-1.568-1.072-2.369-1.623
+		c-1.579-1.072-3.17-2.093-4.883-3.437c-1.711-1.271-3.433-2.61-5.052-4.047c-0.824-0.712-1.674-1.417-2.5-2.162
+		c-0.812-0.771-1.626-1.554-2.453-2.339c-1.697-1.527-3.191-3.33-4.819-5.06c-1.496-1.851-3.126-3.657-4.533-5.702
+		c-5.878-7.946-10.625-17.83-12.791-28.823c-2.198-10.979-1.669-22.905,1.573-34.162c1.667-5.618,3.802-11.163,6.791-16.373
+		c1.452-2.622,3.123-5.163,4.98-7.645c0.925-1.256,1.924-2.442,3.011-3.694l2.651-2.941c3.769-4.031,7.36-7.744,10.725-11.478
+		c3.253-3.775,6.565-7.428,9.242-11.298c1.483-1.88,2.578-3.888,3.885-5.812c0.422-0.672,1.329-2.225,1.748-3.029
+		c0.482-0.9,0.973-1.821,1.446-2.857c1.933-4.006,3.276-8.166,4.127-12.124c0.345-1.96,0.613-3.907,0.595-5.676
+		c-0.04-1.755-0.198-3.404-0.588-4.766c-0.236-0.635-0.407-1.326-0.736-1.843l-0.205-0.426l-0.05-0.11
+		c0.375,0.488,0.068,0.084,0.136,0.169l-0.065-0.088l-0.258-0.356c-0.322-0.444-0.723-1.024-0.983-1.351
+		c-0.209-0.228-0.406-0.47-0.595-0.724c-0.216-0.257-0.532-0.532-0.79-0.811c-0.554-0.514-1.101-1.036-1.707-1.432
+		c-2.355-1.708-5.199-2.449-8.125-2.254c-2.919,0.169-5.813,1.373-7.887,3.125c-2.111,1.751-3.305,3.969-3.503,6.279
+		c-0.092,1.164,0.017,2.387,0.419,3.598c0.066,0.309,0.233,0.599,0.341,0.903l0.176,0.452l0.044,0.114
+		c-0.349-0.514-0.073-0.103-0.14-0.202l0.041,0.066l0.162,0.268c0.198,0.316,0.466,0.804,0.593,0.977
+		c0.149,0.202,0.259,0.422,0.422,0.639c1.416,1.858,2.958,2.603,4.665,2.332c0.433-0.052,0.841-0.224,1.254-0.4
+		c0.182-0.121,0.402-0.209,0.575-0.349l0.271-0.198l0.035-0.022c0.152-0.187-0.169,0.228-0.12,0.166l0.079-0.088l0.16-0.184
+		c0.193-0.224,0.47-0.506,0.586-0.679c0.061-0.128,0.138-0.25,0.233-0.375c0.162-0.29,0.364-0.756,0.446-1.153
+		c0.391-1.704-0.028-3.371-1.041-4.274c-0.87-0.907-2.254-0.617-3.095,0.114c-0.863,0.708-1.314,1.568-1.557,2.141
+		c-0.246,0.584-0.315,0.918-0.314,0.918c-0.001,0-0.031-0.334,0.037-0.988c0.084-0.643,0.224-1.674,1.041-2.805
+		c0.408-0.554,1.002-1.153,1.91-1.505c0.885-0.375,2.159-0.338,3.202,0.217l0.309,0.146c0.257,0.176,0.268,0.199,0.417,0.309
+		c0.233,0.191,0.468,0.382,0.71,0.577c0.426,0.426,0.819,0.951,1.151,1.513c0.58,1.157,0.982,2.508,0.957,3.973
+		c0.005,0.746-0.09,1.454-0.309,2.302c-0.144,0.433-0.309,0.877-0.496,1.318c-0.173,0.378-0.311,0.583-0.47,0.888l-0.117,0.209
+		l-0.059,0.106l-0.25,0.319l-0.411,0.496c-0.275,0.337-0.611,0.62-0.933,0.933c-0.69,0.569-1.456,1.116-2.35,1.501
+		c-1.753,0.833-3.977,1.102-6.084,0.602c-2.119-0.466-4.039-1.586-5.594-2.948c-0.406-0.349-0.802-0.768-1.201-1.171
+		c-0.424-0.433-0.589-0.65-0.897-0.991l-0.206-0.235l-0.052-0.059c-0.095-0.143,0.147,0.228-0.229-0.33l-0.104-0.162l-0.422-0.654
+		c-0.268-0.448-0.583-0.87-0.815-1.362c-1.039-1.891-1.785-4.142-2.058-6.576c-0.599-4.927,1.324-10.299,4.735-14.213
+		c3.409-3.973,8.199-6.792,13.703-8.008c5.482-1.23,11.867-0.47,17.325,2.475c1.379,0.705,2.664,1.568,3.879,2.508
+		c0.597,0.492,1.183,0.94,1.784,1.498c0.606,0.587,1.207,1.19,1.8,1.803c0.507,0.543,0.8,0.907,1.215,1.374l0.29,0.331l0.072,0.084
+		c0.111,0.143-0.149-0.206,0.27,0.341l0.184,0.264l0.73,1.065c1.026,1.421,1.724,2.959,2.424,4.501
+		c2.521,6.268,2.554,12.543,1.928,18.348c-0.726,5.812-2.308,11.364-4.502,16.673c-0.518,1.307-1.142,2.684-1.809,4.076
+		c-0.714,1.491-1.066,2.181-1.911,3.749c-1.483,2.401-2.842,4.972-4.496,7.245l-2.41,3.499l-2.554,3.338
+		c-1.68,2.269-3.52,4.296-5.31,6.418c-3.637,4.112-7.331,8.038-10.749,11.739l-2.68,2.916c-0.643,0.734-1.366,1.557-2.01,2.419
+		c-1.316,1.726-2.58,3.576-3.688,5.544c-2.262,3.906-4.142,8.111-5.546,12.414c-1.372,4.314-2.295,8.728-2.749,13.127
+		c-0.435,4.402-0.356,8.782,0.149,13.063c1.092,8.545,3.993,16.663,8.175,23.793c0.958,1.833,2.174,3.503,3.25,5.226
+		c1.227,1.623,2.324,3.315,3.609,4.847c0.625,0.782,1.245,1.561,1.858,2.327c0.654,0.742,1.304,1.477,1.948,2.203
+		c1.278,1.495,2.604,2.81,3.883,4.139c1.211,1.325,2.702,2.658,4.09,3.947c0.672,0.635,1.439,1.303,2.01,1.891
+		c0.729,0.716,1.45,1.425,2.161,2.122c2.824,2.791,5.092,5.93,6.846,9.036c3.518,6.323,4.146,12.778,3.754,17.625
+		c-0.367,4.927-1.863,8.471-2.904,10.758C62.485,269.436,61.663,270.501,61.663,270.501z"/>
+	<path d="M131.72,65.725c0.048-0.015-0.338-0.643-0.578-2.012c-0.27-1.373-0.104-3.687,1.612-5.974
+		c0.811-1.156,2.028-2.25,3.629-3.037c1.583-0.786,3.661-1.263,5.865-0.73c2.205,0.503,4.303,2.1,5.625,4.189l0.277,0.382
+		c0.184,0.29,0.166,0.294,0.262,0.452c0.133,0.261,0.268,0.474,0.406,0.775c0.287,0.665,0.537,1.351,0.688,2.008
+		c0.32,1.348,0.398,2.791,0.234,4.23c-0.744,5.75-4.926,11.324-11.407,14.019c-3.228,1.344-7.144,1.773-10.924,0.852
+		c-1.884-0.441-3.734-1.153-5.449-2.115c-0.431-0.235-0.835-0.506-1.257-0.764l-0.314-0.194l-0.158-0.099
+		c-0.021-0.007-0.396-0.297-0.297-0.22l-0.511-0.386c-0.693-0.547-1.336-0.958-2.089-1.626c-0.771-0.738-1.579-1.491-2.31-2.284
+		c-0.643-0.833-1.335-1.641-1.936-2.541c-1.142-1.843-2.166-3.877-2.698-6.121c-0.655-2.221-0.72-4.579-0.617-6.917
+		c0.246-2.31,0.694-4.652,1.579-6.815c0.819-2.203,1.946-4.285,3.341-6.216l1.08-1.436l1.204-1.351
+		c0.393-0.462,0.835-0.885,1.291-1.304l0.677-0.631l0.344-0.312l0.509-0.4l0.605-0.47l0.97-0.628
+		c0.712-0.463,1.215-0.698,1.799-1.014c1.139-0.58,2.272-1.057,3.426-1.487c2.299-0.837,4.656-1.439,7.087-1.843
+		c4.847-0.808,10.075-0.742,15.374,0.705l1.969,0.646l0.494,0.169l0.662,0.283l0.773,0.338c0.729,0.386,1.598,0.841,2.189,1.23
+		c0.59,0.396,1.227,0.771,1.773,1.201c2.283,1.66,4.303,3.598,6.072,5.805c3.635,4.34,5.996,9.892,6.998,15.627
+		c0.213,1.432,0.354,2.886,0.467,4.336c-0.004,1.432,0.055,2.897-0.037,4.329c-0.146,1.414-0.238,2.864-0.465,4.267l-0.404,2.085
+		l-0.209,1.042l-0.105,0.525l-0.053,0.261c0.113-0.334-0.213,0.752-0.205,0.716l-0.559,1.751l-0.287,0.885l-0.555,1.249
+		c-0.381,0.83-0.781,1.66-1.197,2.479c-0.416,0.72-0.838,1.347-1.268,2.027c-1.703,2.68-3.799,4.92-5.986,7.039
+		c-4.48,4.068-9.621,7.178-15.227,9.418c-5.604,2.24-11.773,3.583-18.488,3.231c-1.656-0.011-3.395-0.371-5.104-0.635
+		c-0.161-0.033-0.084-0.004-0.447-0.088l-0.241-0.055l-0.479-0.114l-0.966-0.224l-2.32-0.628c-2.923-0.855-5.787-1.939-8.618-3.231
+		c-5.617-2.64-11.151-6.238-15.675-11.269c-4.553-4.953-8.004-11.213-9.748-17.779c-0.426-1.634-0.714-3.286-1.054-4.942
+		l-0.063-0.309c0.025,0.297-0.1-0.76-0.096-0.742l-0.052-0.514l-0.103-1.028l-0.202-2.06c-0.044-1.777-0.073-3.756,0.012-5.526
+		c0.18-1.667,0.257-3.375,0.565-5.012c1.088-6.621,3.411-12.826,6.437-18.524c3.036-5.717,6.869-10.879,11.408-15.645
+		c1.2-1.168,2.342-2.346,3.687-3.452c0.657-0.562,1.285-1.124,2.033-1.66l1.084-0.812l0.547-0.404l0.804-0.521l1.8-1.12l0.901-0.558
+		l1.188-0.635c1.594-0.812,3.319-1.773,4.799-2.328c12.146-5.174,25.61-6.964,38.885-4.324c13.273,2.481,25.609,10.272,33.881,20.41
+		l1.594,1.88l0.396,0.47c-0.176-0.257,0.459,0.621,0.449,0.606l0.15,0.22l0.6,0.874c0.418,0.624,0.766,1.072,1.236,1.843
+		l1.463,2.581l0.695,1.296l0.529,1.197l1.035,2.397c0.568,1.605,1.16,3.224,1.607,4.832c1.809,6.448,2.49,12.774,2.693,18.873
+		c0.361,12.208-1.1,23.65-2.73,34.702c-1.658,11.048-3.59,21.696-5.168,32.04c-1.568,10.317-2.688,20.407-2.441,29.752
+		c0.064,1.153,0.127,2.303,0.189,3.451c0.141,1.179,0.279,2.357,0.416,3.532l0.559,2.985c0.27,1.058,0.539,2.111,0.811,3.161
+		c1.223,4.164,3.014,8.111,5.273,11.754c4.512,7.299,10.871,13.317,17.898,17.812c7.016,4.487,14.801,7.607,22.271,8.596
+		c3.715,0.525,7.359,0.434,10.348-0.367l1.08-0.331c-0.484,0.229-0.033,0.019-0.096,0.048l0.174-0.077l0.346-0.154l0.693-0.308
+		l1.377-0.617c0.465-0.206,0.947-0.411,1.201-0.609c0.627-0.393,1.256-0.778,1.91-1.131c0.623-0.488,1.24-0.97,1.854-1.45
+		c2.32-2.038,3.932-4.564,4.75-7.406c0.826-2.835,0.859-5.938,0.33-8.915c-0.527-2.981-1.592-5.846-2.984-8.397
+		c-0.355-0.635-0.689-1.285-1.111-1.854l-0.594-0.885l-0.148-0.22l-0.074-0.11c-0.051-0.073,0.221,0.242,0.059,0.055l-0.383-0.444
+		l-0.76-0.885l-0.373-0.44l-0.32-0.261c-0.459-0.33-0.742-0.774-1.311-1.072c-3.988-2.875-9.502-2.644-12.697-0.048
+		c-3.33,2.549-3.738,7.039-2.77,10.436c0.465,1.682,1.371,3.063,2.484,4.027c1.111,0.988,2.451,1.491,3.678,1.727
+		c1.238,0.231,2.389,0.18,3.35-0.004c0.961-0.191,1.6-0.683,2.096-1.149c0.945-0.973,1.244-1.648,1.244-1.648
+		s-0.193,0.701-1.031,1.84c-0.426,0.535-1.123,1.229-2.145,1.571c-0.998,0.341-2.232,0.555-3.643,0.466
+		c-1.398-0.095-3.021-0.478-4.52-1.502c-1.498-1.002-2.842-2.592-3.648-4.567c-0.182-0.495-0.42-1.064-0.549-1.549
+		c-0.117-0.533-0.285-0.878-0.367-1.587c-0.068-0.569-0.143-1.152-0.213-1.744c-0.084-0.591,0.029-1.215,0.053-1.843
+		c0.223-2.501,1.363-5.218,3.484-7.259c4.17-4.153,11.742-5.336,18.027-1.814c0.801,0.342,1.576,1.032,2.369,1.579l0.588,0.448
+		l0.418,0.396l0.844,0.804l0.426,0.407c-0.096-0.113,0.25,0.269,0.25,0.275l0.104,0.129l0.205,0.25l0.826,1.021
+		c0.576,0.668,1.053,1.41,1.553,2.148c1.971,2.97,3.586,6.348,4.602,10.122c1.004,3.761,1.398,7.986,0.551,12.338
+		c-0.813,4.34-3.045,8.68-6.305,12.065c-0.854,0.797-1.711,1.597-2.578,2.401c-0.99,0.723-2.02,1.421-3.063,2.118
+		c-0.553,0.393-0.982,0.603-1.42,0.834l-1.334,0.708l-0.672,0.353l-0.334,0.18l-0.168,0.089c-0.18,0.084,0.162-0.063-0.443,0.209
+		l-1.791,0.701c-4.816,1.656-9.688,1.965-14.443,1.652c-9.539-0.643-18.863-3.72-27.684-8.529
+		c-8.783-4.851-16.93-11.878-23.197-20.914c-3.117-4.517-5.715-9.547-7.586-14.93c-0.453-1.348-0.846-2.721-1.268-4.091
+		c-0.342-1.476-0.684-2.955-1.025-4.438c-0.221-1.337-0.443-2.677-0.664-4.024c-0.146-1.396-0.295-2.794-0.441-4.2
+		c-0.898-11.181,0.18-22.061,1.377-32.863c1.229-10.802,2.949-21.531,4.277-32.23c1.293-10.674,2.365-21.406,1.926-31.603
+		c-0.236-5.078-0.904-9.995-2.211-14.393c-0.324-1.102-0.738-2.126-1.107-3.18l-0.674-1.476l-0.326-0.742l-0.32-0.565
+		c-0.209-0.367-0.404-0.742-0.592-1.127c-0.25-0.444-0.764-1.124-1.131-1.674l-0.605-0.874l-0.15-0.216
+		c-0.109-0.162,0.422,0.573,0.125,0.184l-0.293-0.334l-1.172-1.344c-6.102-7.329-14.199-12.293-23.334-14.019
+		c-9.045-1.928-19.176-0.672-27.834,3.003c-1.184,0.43-1.909,0.911-2.858,1.333c-0.234,0.114-0.438,0.194-0.701,0.337l-0.903,0.555
+		l-1.807,1.105l-0.228,0.14c-0.374,0.242,0.25-0.176,0.136-0.092l-0.307,0.228l-0.618,0.448c-0.415,0.268-0.837,0.653-1.26,0.999
+		c-0.855,0.665-1.686,1.517-2.524,2.291c-3.276,3.349-6.291,7.237-8.553,11.39c-2.29,4.142-3.929,8.511-4.74,12.833
+		c-0.248,1.08-0.279,2.155-0.456,3.231l-0.137,2.757l0.152,2.063l0.076,1.028l0.039,0.518c0.017,0.191-0.079-0.701-0.021-0.231
+		l0.037,0.195c0.213,1.039,0.349,2.111,0.582,3.136c1.94,8.107,7.648,14.466,15.665,18.491c1.986,0.988,4.068,1.869,6.198,2.574
+		l1.483,0.466l0.955,0.257l0.477,0.128l0.237,0.063c-0.2-0.048,0.038,0.003,0.038,0c0.891,0.125,1.715,0.408,2.688,0.418
+		c3.752,0.334,8.015-0.253,11.995-1.645c3.992-1.366,7.769-3.426,10.853-5.956c1.465-1.307,2.883-2.658,3.896-4.127l0.771-1.068
+		c0.141-0.283,0.297-0.555,0.473-0.819l0.275-0.396l0.324-0.852l0.641-1.722c0.064-0.18-0.227,0.76-0.084,0.275l0.045-0.184
+		l0.088-0.371l0.184-0.742l0.371-1.476c0.209-0.984,0.297-1.954,0.471-2.926c0.109-0.966,0.096-1.91,0.172-2.868
+		c-0.041-0.933-0.08-1.865-0.158-2.783c-0.473-3.621-1.709-7.035-3.779-9.929c-0.998-1.465-2.215-2.798-3.516-3.888
+		c-0.318-0.297-0.654-0.503-0.975-0.768c-0.33-0.253-0.465-0.315-0.693-0.514l-0.738-0.386l-0.184-0.096
+		c-0.293-0.136,0.184,0.07,0.086,0.03l-0.295-0.118l-1.168-0.481c-3.207-1.12-6.876-1.505-10.471-1.138
+		c-3.518,0.323-7.284,1.355-9.504,2.816l-0.16,0.107c-0.229,0.172,0.133-0.11,0.056-0.048l-0.231,0.191l-0.463,0.378
+		c-0.315,0.246-0.628,0.496-0.903,0.79l-0.866,0.841l-0.786,0.915c-1.014,1.237-1.932,2.559-2.577,3.961
+		c-0.734,1.381-1.102,2.831-1.414,4.256c-0.158,1.421-0.297,2.86,0.004,4.211c0.18,1.38,0.716,2.673,1.327,3.933
+		c0.34,0.617,0.771,1.193,1.137,1.803c0.428,0.518,0.852,1.032,1.271,1.539c0.484,0.54,1.241,1.142,1.841,1.704l0.476,0.426
+		c0.18,0.147-0.113-0.077-0.044-0.026l0.106,0.077l0.213,0.158c0.283,0.206,0.559,0.437,0.849,0.628
+		c1.15,0.786,2.364,1.366,3.602,1.777c2.471,0.823,5.078,0.833,7.483,0.132c4.835-1.374,8.631-5.434,9.542-9.51
+		c0.225-1.017,0.275-2.031,0.152-2.993c-0.059-0.503-0.174-0.918-0.277-1.326c-0.072-0.231-0.209-0.518-0.311-0.767
+		c-0.037-0.088-0.143-0.36-0.129-0.294l-0.184-0.308c-0.859-1.766-2.186-3.033-3.715-3.591c-1.527-0.58-3.194-0.448-4.59,0.048
+		c-1.41,0.488-2.602,1.307-3.434,2.24c-1.751,1.832-2.245,3.94-2.159,5.247C131.467,65.027,131.771,65.721,131.72,65.725z"/>
+	<path d="M263.966,234.644c-0.889-0.015-1.924-0.213-2.682-0.984c-0.762-0.76-1.023-1.913-0.957-2.948
+		c0.127-2.111,1.273-4.131,3.15-5.416c0.928-0.665,2.08-1.05,3.244-1.171l0.885-0.052l0.111-0.004
+		c0.117,0.011-0.104-0.036,0.291,0.029l0.172,0.019l0.344,0.04c0.234,0.03,0.445,0.045,0.699,0.089
+		c0.314,0.095,0.639,0.198,0.959,0.312c2.408,0.914,4.162,2.633,5.23,4.917c1.051,2.266,1.127,4.986,0.42,7.299
+		c-0.285,1.223-0.867,2.211-1.391,3.279c-0.619,0.933-1.248,1.924-1.973,2.739c-2.896,3.308-6.389,5.669-9.908,7.52l-0.66,0.371
+		l-0.332,0.184l-0.641,0.265l-1.271,0.532c-0.863,0.349-1.66,0.716-2.58,1.046l-3.25,0.855l-1.648,0.4
+		c-0.539,0.121-1.02,0.158-1.535,0.242c-2.023,0.287-4.08,0.613-6.072,0.621l-3.021,0.113l-2.971-0.088
+		c-7.932-0.261-15.559-1.682-22.99-3.422c-7.404-1.821-14.66-4.017-21.682-6.463l-10.35-3.562
+		c-3.496-1.211-6.855-2.375-10.172-3.396c-6.633-2.049-13.078-3.583-19.395-4.079c-6.285-0.4-12.358,0.088-18.039,1.946
+		c-1.384,0.573-2.823,0.973-4.179,1.634l-2.043,0.958l-0.512,0.235l-0.258,0.117c-0.128,0.07,0.882-0.506,0.419-0.238l-0.073,0.044
+		l-0.147,0.088l-1.177,0.709l-2.352,1.421l-0.572,0.353l-0.313,0.283l-0.635,0.543c-0.427,0.371-0.882,0.657-1.322,1.058
+		c-0.419,0.463-0.849,0.914-1.287,1.362c-3.401,3.609-4.588,7.835-3.874,12.264c0.436,2.185,1.379,4.354,2.712,6.076
+		c0.169,0.213,0.311,0.459,0.488,0.657l0.561,0.54l0.536,0.573c0.201,0.128,0.398,0.268,0.589,0.411
+		c0.192,0.143,0.382,0.294,0.567,0.455l0.582,0.282c0.19,0.1,0.376,0.217,0.562,0.342c-0.173-0.055,0.434,0.154-0.376-0.113
+		l0.082,0.025l0.162,0.055l0.326,0.114l0.65,0.22c4.652,1.722,9.977,1.233,13.53-1.307c1.784-1.274,3.14-3.044,4.065-5.295
+		c0.229-0.565,0.484-1.131,0.592-1.78c0.139-0.632,0.367-1.237,0.393-1.939l0.119-1.021l0.068-0.514l0.006-0.063
+		c0.016,0.224-0.021-0.595,0.037,0.484l-0.006-0.173l-0.012-0.341l-0.055-1.377l-0.016-0.346c-0.004-0.124-0.008-0.234-0.025-0.228
+		c-0.029-0.051-0.051-0.106-0.066-0.157c-0.029-0.11-0.033-0.225-0.016-0.36c-0.064-0.18-0.15-0.382-0.205-0.587
+		c-0.055-0.456-0.383-0.746-0.527-1.176c-0.559-0.675-1.15-1.486-2.169-2.008c-1.87-1.227-4.65-1.729-7.282-1.546
+		c-1.3,0.161-2.633,0.418-3.775,0.966c-0.626,0.209-1.116,0.568-1.665,0.881l-0.104,0.059l-0.051,0.029
+		c0.059-0.063-0.206,0.184,0.119-0.132l-0.261,0.224l-0.523,0.452c-0.224,0.184-0.209,0.205-0.299,0.286
+		c-0.072,0.066-0.147,0.132-0.229,0.198c-1.535,1.627-2.31,4.329-1.664,6.841c0.188,0.591,0.386,1.215,0.72,1.726
+		c0.066,0.146,0.15,0.271,0.242,0.389l0.129,0.191l0.066,0.096l0.033,0.048c0.044,0.047-0.294-0.243-0.121-0.092
+		c0.15,0.139,0.374,0.363,0.459,0.429c0.059,0.037,0.105,0.089,0.157,0.154c1.058,0.709,2.593,1.274,4.022,1.362
+		c1.441,0.104,2.873-0.143,3.968-1.05c1.134-0.859,1.966-2.335,2.448-3.999l-0.007,0.118c0.057-0.353-0.004-0.76-0.191-1.175
+		c-0.18-0.419-0.491-0.823-0.841-1.197c-0.703-0.757-1.582-1.417-2.529-1.961c1.061,0.271,2.115,0.653,3.095,1.271
+		c0.485,0.315,0.964,0.68,1.362,1.187c0.396,0.495,0.72,1.138,0.797,1.876l-0.007,0.121c-0.089,1.935-0.525,4.075-1.957,5.875
+		c-1.419,1.821-3.729,2.816-5.912,3.113c-2.232,0.305-4.388,0.073-6.646-0.771c-0.347-0.161-0.696-0.337-1.037-0.528l-0.645-0.386
+		c0.13,0.114-0.259-0.209-0.252-0.202l-0.086-0.073l-0.175-0.154l-0.347-0.305c-0.234-0.201-0.459-0.415-0.653-0.646
+		c-0.863-0.893-1.483-1.932-2.049-3.004c-2.105-4.307-1.932-9.752,0.81-14.114c2.809-4.311,7.158-6.829,11.682-8.008
+		c2.28-0.529,4.63-0.841,7.021-0.676c1.193,0,2.397,0.275,3.599,0.459c1.189,0.367,2.408,0.587,3.576,1.168
+		c2.387,0.902,4.619,2.559,6.568,4.523c0.861,1.094,1.842,2.151,2.441,3.429c0.336,0.625,0.666,1.237,0.967,1.896
+		c0.26,0.752,0.498,1.52,0.709,2.294l0.297,1.168c0.105,0.438,0.086,0.514,0.137,0.786l0.203,1.362l0.049,0.341l0.025,0.169
+		l0.033,0.657l0.002,0.106l0.006,0.863v1.722c0.043,1.143-0.154,2.332-0.293,3.507c-0.104,1.183-0.404,2.364-0.729,3.551
+		c-1.244,4.735-4.045,9.347-7.92,12.751c-3.857,3.447-8.675,5.57-13.548,6.437c-1.223,0.198-2.452,0.422-3.679,0.44
+		c-1.23,0.077-2.46,0.125-3.679,0.019l-1.833-0.117c-0.653-0.081-1.347-0.202-2.016-0.32l-2.016-0.382l-1.329-0.352l-0.665-0.177
+		l-0.33-0.088l-0.169-0.044l-0.081-0.022c-0.866-0.282-0.31-0.106-0.536-0.184l-1.935-0.812c-0.635-0.286-1.285-0.572-1.9-0.889
+		l-1.709-1.087l-1.686-1.134l-1.483-1.289l-1.461-1.325c-0.459-0.459-0.855-0.959-1.281-1.443c-3.367-3.896-5.702-8.492-6.91-13.46
+		c-1.128-4.979-1.003-10.317,0.352-15.3c0.394-1.227,0.676-2.516,1.22-3.668c0.528-1.161,1.079-2.313,1.648-3.455
+		c0.584-1.131,1.34-2.108,2.03-3.154l1.083-1.524c0.375-0.491,0.803-0.906,1.205-1.358l2.489-2.633
+		c0.899-0.848,1.94-1.634,2.926-2.431l1.512-1.175l0.762-0.576l0.595-0.371l2.339-1.446l1.168-0.724l0.146-0.088l0.643-0.371
+		l0.363-0.18l0.729-0.353l2.922-1.406c1.935-0.958,4.044-1.564,6.069-2.332c8.309-2.6,17.125-3.312,25.428-2.456
+		c8.293,0.926,16.15,3.019,23.381,5.717c3.631,1.318,7.133,2.735,10.504,4.094l10.189,4.289c6.676,2.79,13.252,5.497,19.926,7.77
+		c6.643,2.316,13.369,4.211,20.041,5.335l2.506,0.404l2.473,0.213c1.678,0.209,3.271,0.161,4.906,0.187c0.396,0,0.838,0.029,1.201,0
+		l1.053-0.103l2.158-0.154c0.838-0.165,1.768-0.433,2.645-0.646l1.34-0.334l0.166-0.04l0.084-0.019
+		c0.1-0.033-0.555,0.213-0.242,0.096l0.291-0.106l0.582-0.209c3.211-1.021,6.117-2.512,8.475-4.318
+		c0.6-0.448,1.039-0.966,1.566-1.458c0.361-0.528,0.875-1.043,1.092-1.604c0.574-1.094,0.869-2.254,0.633-3.444
+		c-0.184-1.16-1.047-2.383-1.959-3.018c-0.098-0.073-0.193-0.158-0.295-0.25c-0.184-0.077-0.428-0.146-0.639-0.224l-0.328-0.11
+		l-0.164-0.052c0.34,0.052,0.061,0.008,0.121,0.019l-0.061-0.011l-0.49-0.077c-0.336-0.081-0.654-0.004-1.004-0.022
+		c-0.314,0.104-0.682,0.096-0.998,0.258c-1.34,0.451-2.596,1.685-3.063,3.19c-0.246,0.749-0.264,1.586,0.139,2.276
+		C262.265,233.913,263.062,234.375,263.966,234.644z"/>
+	<path d="M91.518,233.586c0,0-1.78-0.632-4.979-2.174c-3.173-1.571-7.859-3.925-13.346-7.773
+		c-5.465-3.837-11.989-8.963-17.982-16.533c-2.989-3.778-5.82-8.181-8.104-13.273c-2.31-5.075-3.868-10.928-4.336-17.188
+		l-0.088-1.179l-0.044-0.592l-0.011-0.146c-0.009,0.15,0.001-0.382,0.001-0.371l-0.001-0.268c0-0.713,0-1.425,0.001-2.145
+		c0.006-1.436,0.009-2.886,0.013-4.352c0.139-1.619,0.283-3.249,0.426-4.897c0.077-0.83,0.158-1.66,0.237-2.497
+		c0.114-0.818,0.281-1.615,0.42-2.431c0.301-1.619,0.584-3.264,0.925-4.913c0.47-1.626,0.944-3.268,1.421-4.924
+		c0.422-1.674,1.125-3.282,1.781-4.924c0.683-1.63,1.252-3.326,2.17-4.898c3.073-6.546,7.832-12.638,13.6-17.855
+		c5.783-5.21,12.873-9.415,20.551-11.849c1.888-0.778,3.851-1.167,5.813-1.652c1.963-0.452,3.937-1.017,5.934-1.168
+		c1.998-0.231,4.004-0.466,6.017-0.701c1.999-0.07,4.002-0.077,6.016-0.106c1.007-0.007,2.02-0.037,3.024-0.019l2.982,0.243
+		c1.992,0.169,3.992,0.337,5.995,0.506c2.487,0.434,3.501,0.489,6.02,1.102c1.091,0.261,2.232,0.5,3.275,0.804l3.088,0.951
+		c8.171,2.757,16.288,7.406,22.456,14.301c6.229,6.793,10.459,15.429,12.125,24.451c1.641,9.032,0.859,18.45-2.455,27.127
+		c-1.662,4.329-3.963,8.485-7,12.153c-1.557,1.854-3.105,3.488-5.064,5.185c-0.768,0.628-1.262,1.105-2.363,1.92
+		c-0.98,0.745-1.982,1.498-2.904,2.071c-3.75,2.479-7.814,4.45-12.039,5.853c-4.234,1.381-8.638,2.155-13.059,2.357
+		c-8.803,0.407-17.925-1.638-25.5-6.768c-3.76-2.544-7.115-5.812-9.587-9.631c-2.508-3.789-4.16-8.022-4.982-12.216
+		c-0.209-1.046-0.334-2.093-0.492-3.132l-0.059-0.484l-0.011-0.158l-0.021-0.315l-0.038-0.628l-0.081-1.256
+		c-0.019-1.116-0.033-2.324,0.011-3.43c0.103-1.064,0.144-2.115,0.323-3.172c0.632-4.216,2.091-8.397,4.413-11.963
+		c4.663-7.2,11.963-11.65,19.244-13.244c7.281-1.634,15.014-0.808,21.335,3.055c6.405,4.098,9.827,10.413,10.723,16.755
+		c0.415,3.183,0.166,6.396-0.862,9.358c-0.498,1.48-1.197,2.894-2.088,4.164l-0.336,0.47l-0.455,0.61l-0.591,0.646l-0.313,0.338
+		l-0.448,0.43l-0.899,0.822c-4.544,3.588-9.821,4.704-14.503,3.958c-2.354-0.37-4.531-1.244-6.356-2.636
+		c-0.624-0.496-1.599-1.296-2.232-2.042c-0.69-0.734-1.248-1.567-1.74-2.39c-0.947-1.686-1.428-3.474-1.561-5.134
+		c-0.11-1.667,0.144-3.194,0.544-4.53c0.822-2.673,2.258-4.608,3.712-5.794c1.461-1.212,3.013-1.527,3.943-1.355
+		c0.94,0.165,1.304,0.515,1.314,0.481c0,0.033-0.448-0.228-1.329-0.195c-0.878,0.019-2.107,0.588-3.176,1.844
+		c-1.065,1.248-1.99,3.176-2.247,5.496c-0.265,2.303,0.213,4.998,1.924,7.135c0.448,0.518,0.918,1.031,1.498,1.473
+		c0.584,0.484,1.039,0.745,1.918,1.252c1.195,0.628,2.72,0.998,4.31,0.973c1.592-0.015,3.271-0.349,4.879-0.977
+		c1.6-0.653,3.1-1.648,4.26-2.875c2.225-2.387,2.956-6.106,1.903-9.877c-0.503-1.861-1.426-3.668-2.648-5.266l-0.419-0.478
+		c-0.132-0.153-0.242-0.301-0.521-0.58l-0.716-0.734l-0.088-0.092c-0.158-0.172,0.11,0.129,0.059,0.081l-0.14-0.11l-0.273-0.22
+		c-0.705-0.613-1.552-1.083-2.418-1.521c-3.536-1.656-8.335-1.865-12.731-0.356c-4.419,1.418-8.318,4.458-10.338,8.357
+		c-1.018,1.953-1.608,4.12-1.8,6.459c-0.067,0.576-0.021,1.193-0.055,1.784l0.088,1.571l0.165,1.245l0.081,0.624l0.041,0.315
+		l0.021,0.154c-0.059-0.54-0.002-0.084-0.007-0.173c0.15,0.613,0.257,1.241,0.424,1.844c1.356,4.795,4.162,8.746,8.483,11.269
+		c4.259,2.53,9.811,3.72,15.41,3.217c5.607-0.463,11.206-2.493,15.936-5.779c0.643-0.415,1.095-0.801,1.588-1.176
+		c0.402-0.261,1.258-1.061,1.911-1.622c0.356-0.283,0.882-0.903,1.326-1.326c0.462-0.47,0.856-1.021,1.295-1.517
+		c1.652-2.111,3-4.563,3.996-7.211c1.988-5.298,2.463-11.375,1.383-17.081c-1.018-5.735-3.605-11.089-7.442-15.344
+		c-1.924-2.126-4.112-4.039-6.572-5.644c-2.472-1.593-5.18-2.9-8.038-3.958l-2.181-0.731c-0.72-0.231-1.381-0.363-2.071-0.562
+		c-1.026-0.378-3.668-0.742-4.77-1.017c-1.638-0.195-3.268-0.389-4.896-0.584l-2.441-0.305c-0.806-0.044-1.606-0.041-2.41-0.063
+		c-1.604-0.037-3.206-0.073-4.801-0.11c-1.564,0.125-3.123,0.253-4.678,0.382c-1.581,0.037-3.054,0.422-4.559,0.679
+		c-1.498,0.286-3.033,0.47-4.425,1.002c-5.853,1.476-11.024,4.325-15.552,7.81c-4.492,3.532-8.366,7.836-11.189,12.764
+		c-0.834,1.148-1.366,2.478-2.023,3.73c-0.626,1.263-1.318,2.493-1.755,3.84c-0.503,1.318-1.003,2.629-1.498,3.929
+		c-0.382,1.352-0.758,2.691-1.133,4.021c-0.182,0.668-0.398,1.336-0.555,1.993l-0.367,1.95c-0.251,1.307-0.503,2.6-0.75,3.885
+		c-0.144,1.457-0.283,2.9-0.424,4.328c-0.071,0.717-0.143,1.429-0.215,2.134l-0.025,0.265c-0.008,0.099,0.003-0.346-0.004-0.104
+		l-0.004,0.118l-0.013,0.47l-0.031,0.937c-0.132,2.496,0.096,4.945,0.378,7.347c0.393,2.383,0.877,4.719,1.571,6.962
+		c1.351,4.498,3.293,8.654,5.528,12.37c4.54,7.413,9.798,13.277,14.454,17.738c4.7,4.442,8.713,7.678,11.552,9.741
+		C89.921,232.577,91.518,233.586,91.518,233.586z"/>
+</g>
+</svg>`
+};
+
+/* ---------- 渲染：仙子近況 ---------- */
+function renderNews(rows){
+  const section = document.getElementById('newsSection');
+  const list = document.getElementById('newsList');
+  list.innerHTML = '';
+  /* rows === null 代表 Sheet 尚未設定或讀取失敗 → 用示範資料預覽
+     rows 是陣列（即使是空陣列）代表 Sheet 已連上，照真實資料走，沒有資料就自動隱藏 */
+  const source = (rows === null) ? DEFAULT_NEWS : rows;
+  const items = (source||[]).filter(r => (r.category||'').toString().trim() === '仙子近況');
+  if(items.length === 0){ section.classList.add('hidden'); return; }
+  section.classList.remove('hidden');
+  items.forEach(it=>{
+    const a = document.createElement('a');
+    a.className = 'news-banner';
+    a.href = it.url || '#';
+    a.target = '_blank'; a.rel = 'noopener';
+    a.innerHTML = `
+      <span class="nb-body">
+        <span class="nb-tag">仙子近況</span>
+        <span class="nb-text">${it.title||''}</span>
+      </span>
+      <span class="nb-pill">查看</span>
+    `;
+    list.appendChild(a);
+  });
+}
+
+/* ---------- 渲染：尋光指引（寶石） ---------- */
+function renderGems(rows){
+  const data = (rows && rows.length) ? rows : DEFAULT_QUIZ;
+  const gemRow = document.getElementById('gemRow');
+  const panel = document.getElementById('gemPanel');
+  const panelInner = document.getElementById('gemPanelInner');
+  gemRow.innerHTML = '';
+
+  data.forEach((g, idx)=>{
+    const symbolKey = (g.symbol||'star').toString().trim().toLowerCase();
+    const icon = ICONS[symbolKey] || ICONS.star;
+    const item = document.createElement('div');
+    item.className = 'gem-item';
+    item.innerHTML = `
+      <div class="gem-circle">
+        <div class="gem-icon">${icon}</div>
+      </div>
+    `;
+    item.addEventListener('click', ()=>{
+      const wasActive = item.classList.contains('active');
+      gemRow.querySelectorAll('.gem-item').forEach(el=>el.classList.remove('active'));
+      if(wasActive){
+        panel.classList.remove('show');
+        return;
+      }
+      item.classList.add('active');
+      panelInner.innerHTML = `
+        <div class="gem-name-tag">${g.name||''}</div>
+        <div class="gem-quote">${g.quote||''}</div>
+        <p class="gem-guidance">${g.guidance_text||''}</p>
+        <a class="gem-btn" href="${g.button_url||IG_DM_URL}" target="_blank" rel="noopener">${g.button_text||'立即預約'}</a>
+      `;
+      panel.classList.add('show');
+    });
+    gemRow.appendChild(item);
+  });
+}
+
+/* ---------- 渲染：魔法聊天室（方案） ---------- */
+function renderServices(rows){
+  const data = (rows && rows.length) ? rows : DEFAULT_SERVICES;
+  const tabsWrap = document.getElementById('tabsRow');
+  const panelsWrap = document.getElementById('panelsWrap');
+  tabsWrap.innerHTML = ''; panelsWrap.innerHTML = '';
+
+  const tabDefs = [
+    { key:'線上諮詢', label:'線上諮詢' },
+    { key:'實體面談', label:'實體面談' }
+  ];
+
+  tabDefs.forEach((t, idx)=>{
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn' + (idx===0 ? ' active' : '');
+    btn.textContent = t.label;
+    btn.dataset.tab = t.key;
+    btn.addEventListener('click', ()=> switchTab(t.key));
+    tabsWrap.appendChild(btn);
+
+    const panel = document.createElement('div');
+    panel.className = 'service-panel' + (idx===0 ? ' active' : '');
+    panel.dataset.panel = t.key;
+
+    const items = data.filter(r => (r.tab||'').toString().trim() === t.key);
+    if(items.length === 0){
+      panel.innerHTML = `<p class="loading-text">此類型方案尚未開放，敬請期待</p>`;
+    }else{
+      items.forEach(sv=>{
+        const card = document.createElement('div');
+        card.className = 'service-card';
+        card.innerHTML = `
+          <div class="service-img-wrap">${sv.image_url ? `<img class="service-img" src="${sv.image_url}" alt="">` : ''}</div>
+          <div class="service-body">
+            <span class="service-badge">${sv.badge||''}</span>
+            <h3 class="service-name">${sv.name||''}</h3>
+            <p class="service-desc">${sv.description||''}</p>
+            ${sv.note ? `<p class="service-note">${sv.note}</p>` : ''}
+            <a class="service-btn" href="${sv.button_url||IG_DM_URL}" target="_blank" rel="noopener">${sv.button_text||'私訊預約仙子'}</a>
+          </div>
+        `;
+        panel.appendChild(card);
+      });
+    }
+    panelsWrap.appendChild(panel);
+  });
+}
+
+function switchTab(key){
+  document.querySelectorAll('.tab-btn').forEach(b=> b.classList.toggle('active', b.dataset.tab === key));
+  document.querySelectorAll('.service-panel').forEach(p=> p.classList.toggle('active', p.dataset.panel === key));
+}
+
+/* ---------- 初始化 ---------- */
+async function init(){
+  const [profileRows, quizRows, serviceRows] = await Promise.all([
+    fetchSheet('profile'),
+    fetchSheet('quiz'),
+    fetchSheet('services')
+  ]);
+  renderNews(profileRows);
+  renderGems(quizRows);
+  renderServices(serviceRows);
+}
+init();
+</script>
+</body>
+</html>
