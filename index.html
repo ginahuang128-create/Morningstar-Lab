@@ -29,9 +29,9 @@ body{
   min-height:100vh;
   font-family: var(--serif-tc);
   background:
-    radial-gradient(ellipse at 15% -10%, rgba(203,164,99,0.12) 0%, transparent 45%),
-    radial-gradient(ellipse at 100% 15%, rgba(203,164,99,0.07) 0%, transparent 42%),
-    radial-gradient(ellipse at 50% 100%, rgba(203,164,99,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 15% -10%, rgba(203,164,99,0.06) 0%, transparent 45%),
+    radial-gradient(ellipse at 100% 15%, rgba(203,164,99,0.035) 0%, transparent 42%),
+    radial-gradient(ellipse at 50% 100%, rgba(203,164,99,0.03) 0%, transparent 50%),
     var(--void);
   background-attachment:fixed;
   position:relative;
@@ -42,9 +42,9 @@ body{
 
 /* ---------- 模糊光暈 ---------- */
 .glow-orb{ position:fixed; border-radius:50%; pointer-events:none; z-index:0; filter:blur(80px); }
-.glow-orb.g1{ width:280px; height:280px; top:-70px; left:-90px; background:rgba(203,164,99,0.16); }
-.glow-orb.g2{ width:240px; height:240px; top:38%; right:-100px; background:rgba(203,164,99,0.10); }
-.glow-orb.g3{ width:260px; height:260px; bottom:-70px; left:15%; background:rgba(234,211,160,0.10); }
+.glow-orb.g1{ width:280px; height:280px; top:-70px; left:-90px; background:rgba(203,164,99,0.08); }
+.glow-orb.g2{ width:240px; height:240px; top:38%; right:-100px; background:rgba(203,164,99,0.05); }
+.glow-orb.g3{ width:260px; height:260px; bottom:-70px; left:15%; background:rgba(234,211,160,0.05); }
 
 /* ---------- 全域顆粒質感 ---------- */
 .grain-overlay{
@@ -98,7 +98,7 @@ body{
   font-family:var(--serif); font-weight:700; font-style:italic;
   font-size:25px; color:var(--gold-1); text-align:center;
   margin:0 0 12px; letter-spacing:.4px;
-  text-shadow: 0 0 22px rgba(203,164,99,.35);
+  text-shadow: 0 0 8px rgba(203,164,99,.2);
 }
 .section-sub{
   font-size:13.5px; line-height:1.9; color:var(--parchment-soft);
@@ -143,7 +143,7 @@ body{
 .brand-title{
   font-family:var(--serif); font-weight:600; font-style:italic;
   font-size:35px; letter-spacing:1px; color:var(--gold-1); margin:0;
-  text-shadow: 0 0 20px rgba(203,164,99,.4);
+  text-shadow: 0 0 10px rgba(203,164,99,.3);
 }
 .brand-sub{
   font-size:12.5px; letter-spacing:4px; color:var(--gold-3);
@@ -432,8 +432,8 @@ body{
    ▍工作表欄位規劃：
 
    1) profile 工作表（僅用來放「仙子近況」橫幅，品牌文字已寫死於 HTML）
-      category   | title        | url
-      仙子近況    | 活動標題      | 連結
+      category   | title        | url          | date
+      仙子近況    | 活動標題      | 連結         | 日期（自行填寫，例如 2026/7/31，會顯示在標題上方）
       （無資料則此卡片自動隱藏）
 
    2) quiz 工作表（可覆蓋預設的「尋光指引」三張符文，欄位如下；留空則使用內建預設文案）
@@ -532,7 +532,7 @@ async function fetchSheet(sheetName){
    一旦 SPREADSHEET_ID 設定正確且 profile 工作表有資料，會自動改用真實資料；
    若 Sheet 已連上但單純沒有「仙子近況」的資料列，仍會照規則自動隱藏此卡片。 */
 const DEFAULT_NEWS = [
-  { category:'仙子近況', title:'（示範預覽）七月限定占星工作坊開放報名中', url:'#' }
+  { category:'仙子近況', title:'（示範預覽）七月限定占星工作坊開放報名中', url:'#', date:'2026/7/31' }
 ];
 
 const DEFAULT_QUIZ = [
@@ -895,7 +895,7 @@ function renderNews(rows){
     a.target = '_blank'; a.rel = 'noopener';
     a.innerHTML = `
       <span class="nb-body">
-        <span class="nb-tag">仙子近況</span>
+        <span class="nb-tag">${it.date || '仙子近況'}</span>
         <span class="nb-text">${it.title||''}</span>
       </span>
       <span class="nb-pill">查看</span>
