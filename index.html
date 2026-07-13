@@ -286,11 +286,32 @@ body{
 .gem-item:hover .gem-icon{ opacity:.75; color:var(--gold-2); }
 .gem-item.active .gem-icon{ opacity:1; transform:scale(1); color:var(--gold-1); }
 .gem-icon svg{ width:100%; height:100%; display:block; }
-.gem-icon.gem-icon-img{
-  width:68%; height:68%; object-fit:contain; border-radius:0;
-  filter: grayscale(.35) sepia(.25) brightness(.85);
+
+/* ---- 有上傳圖片時：不套圓框，直接露出圖片原本形狀，周圍加微弱光暈 ---- */
+.gem-circle.has-img{
+  width:auto; height:76px;
+  background:none; border:none; box-shadow:none;
+  animation:none;
 }
-.gem-item.active .gem-icon.gem-icon-img{ filter: grayscale(0) sepia(.12) brightness(1.02); }
+.gem-item:hover .gem-circle.has-img{ border-color:transparent; box-shadow:none; }
+.gem-item.active .gem-circle.has-img{ box-shadow:none; }
+.gem-icon.gem-icon-img{
+  width:auto; height:100%; max-width:64px; object-fit:contain; border-radius:0;
+  opacity:.75; transform:scale(.94);
+  filter:
+    grayscale(.25) sepia(.15) brightness(.92)
+    drop-shadow(0 0 6px rgba(203,164,99,.4))
+    drop-shadow(0 0 14px rgba(203,164,99,.22));
+  transition: opacity .35s ease, transform .35s ease, filter .35s ease;
+}
+.gem-item:hover .gem-icon.gem-icon-img{ opacity:.9; }
+.gem-item.active .gem-icon.gem-icon-img{
+  opacity:1; transform:scale(1.04);
+  filter:
+    grayscale(0) sepia(0) brightness(1.03)
+    drop-shadow(0 0 8px rgba(234,211,160,.65))
+    drop-shadow(0 0 20px rgba(203,164,99,.4));
+}
 
 .gem-panel{ max-height:0; overflow:hidden; opacity:0; transition: max-height .5s ease, opacity .4s ease, margin .4s ease; }
 .gem-panel.show{ max-height:520px; opacity:1; margin-bottom:6px; }
@@ -407,6 +428,8 @@ body{
   .brand-title{ font-size:30px; }
   .gem-row{ gap:18px; }
   .gem-circle{ width:66px; height:66px; }
+  .gem-circle.has-img{ width:auto; height:66px; }
+  .gem-icon.gem-icon-img{ max-width:56px; }
   .section{ padding:8px 20px 48px; }
 }
 </style>
@@ -971,7 +994,7 @@ function renderGems(rows){
     const item = document.createElement('div');
     item.className = 'gem-item';
     item.innerHTML = `
-      <div class="gem-circle">
+      <div class="gem-circle${imgUrl ? ' has-img' : ''}">
         ${imgUrl
           ? `<img class="gem-icon gem-icon-img" src="${imgUrl}" alt="${g.name||''}">`
           : `<div class="gem-icon">${icon}</div>`}
