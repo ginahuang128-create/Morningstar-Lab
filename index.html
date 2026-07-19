@@ -280,8 +280,9 @@ body{
     transform: scale(1.12);
   }
 }
+.tl-card-shadow{ flex:1 1 auto; min-width:0; }
 .tl-card{
-  flex:1 1 auto; min-width:0; text-decoration:none; display:block;
+  width:100%; text-decoration:none; display:block;
   padding:16px 20px 18px; position:relative; overflow:hidden;
   transition: transform .4s cubic-bezier(.2,.8,.2,1), box-shadow .4s ease, border-color .4s ease;
 }
@@ -290,9 +291,12 @@ body{
   border-color: rgba(255,255,255,.8);
   box-shadow:
     inset 0 1.5px 1px rgba(255,255,255,1),
-    inset 0 -28px 36px -20px rgba(80,30,70,.2),
-    0 26px 52px rgba(40,10,40,.36),
-    0 0 24px rgba(216,121,192,.22);
+    inset 0 -28px 36px -20px rgba(80,30,70,.2);
+}
+/* 外層光暈：包裝容器沒有 clip-path，滑過卡片（子元素）時這裡的 hover 也會一起觸發，
+   陰影才能完整暈開、不被 squircle 的裁切邊界切成硬邊 */
+.tl-card-shadow:hover{
+  filter: drop-shadow(0 10px 20px rgba(40,10,40,.3)) drop-shadow(0 0 10px rgba(216,121,192,.18));
 }
 .tl-date{
   font-size:10.5px; letter-spacing:1.8px; color:var(--gold-2);
@@ -328,14 +332,34 @@ body{
     inset 1px 0 1px rgba(255,255,255,.35),
     inset 0 0 0 1px rgba(255,255,255,.05),
     inset 0 -1px 1px rgba(0,0,0,.12);
-  /* outer glow moved to drop-shadow so it survives the clip-path squircle (clip-path clips box-shadow away, but filter is applied post-clip) */
-  filter: drop-shadow(0 20px 44px rgba(0,0,0,.32)) drop-shadow(0 4px 12px rgba(0,0,0,.2));
+  /* 注意：外層投影不能放在這個元素自己身上 —— 實測 Chromium 只要同一個元素同時有
+     clip-path 跟 filter，drop-shadow 也會被 clip-path 一起裁掉（只剩裁切形狀內部看得到），
+     跟 box-shadow 一樣會出現「四角陰影被硬生生切平」的不自然效果。
+     真正能讓陰影跟著 squircle 外形自然暈開的做法，是把 filter 放到「沒有 clip-path 的外層包裝」上，
+     詳見 .glass-shadow-wrap（外層容器）。 */
 }
 .liquid-glass::after{
   content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
   background: linear-gradient(122deg, rgba(255,255,255,.5) 0%, transparent 22%, transparent 78%, rgba(255,255,255,.16) 100%);
   mix-blend-mode:overlay; opacity:.8;
 }
+
+/* 陰影外層包裝：本身不套 clip-path，只負責投影。drop-shadow 會依內部子元素（已被裁成
+   squircle 的卡片）的實際輪廓來投影，所以陰影會自然跟著圓角外形暈開，不會被硬邊切掉 */
+.glass-shadow-wrap{
+  position:relative;
+  /* 陰影範圍要收斂：卡片間距只有 22px，之前的擴散半徑（44px/64px）太大，
+     上一張卡的陰影會一路暈到下一張卡裡面，兩張卡的陰影疊在一起，中間那條縫
+     看起來就變成一整條很明顯的黑色。這裡縮小到跟間距差不多的範圍，讓陰影
+     停留在自己卡片附近，不會侵犯到隔壁 */
+  filter: drop-shadow(0 6px 12px rgba(0,0,0,.22)) drop-shadow(0 2px 4px rgba(0,0,0,.14));
+  transition: filter .35s ease;
+}
+/* 註：這裡原本疊了一層額外的 backdrop-filter 遮罩，想解決「星星剛好卡在卡片邊界」的
+   極少數情況。但這層疊加在 Safari/WebKit 上會跟卡片本身的 backdrop-filter + clip-path
+   互相干擾，導致畫面出現不該有的細長陰影／接縫，影響範圍比它原本要修的問題還明顯，
+   得不償失，所以拿掉了，改成單純無害的空層，不做任何視覺處理 */
+.card-backdrop-mask{ display:none; }
 
 /* ============================================================
    共用：想讓人點下去的按鈕 — 預設白色框線透明，滑過／按下才變實心白底
@@ -363,7 +387,17 @@ body{
   transform: translateY(-1px);
   box-shadow: 0 5px 12px rgba(40,10,40,.3);
 }
-.gem-btn{ font-size:12.5px; padding:13px 26px; border-radius:999px; }
+.gem-btn{
+  font-size:12.5px; padding:14px 28px; border-radius:20px;
+  max-width:280px; white-space:normal; line-height:1.5; text-align:center;
+}
+.gem-btn-title{
+  display:block; font-size:13px; font-weight:700; letter-spacing:1px;
+}
+.gem-btn-sub{
+  display:block; margin-top:5px; font-size:11px; font-weight:500;
+  letter-spacing:.3px; text-transform:none; opacity:.85;
+}
 .service-btn{ display:inline-block; text-align:center; padding:12px 30px; margin-top:10px; font-size:12.5px; border-radius:999px; }
 .service-body{ display:flex; flex-direction:column; align-items:center; }
 
@@ -449,6 +483,7 @@ body{
     drop-shadow(0 0 32px rgba(160,190,244,.25));
 }
 
+/* overflow 預設 hidden 是為了收合動畫；展開完成後會由 JS 切成 visible，讓面板的陰影能自然露出，不被裁掉 */
 .gem-panel{ max-height:0; overflow:hidden; opacity:0; transition: max-height .5s ease, opacity .4s ease, margin .4s ease; }
 .gem-panel.show{ max-height:560px; opacity:1; margin-bottom:6px; }
 .gem-panel-inner{
@@ -469,14 +504,6 @@ body{
   transition: transform .5s cubic-bezier(.22,1,.36,1), opacity .45s ease .05s;
 }
 .gem-panel.show .gem-panel-inner{ transform: scale(1) translateY(0); opacity:1; }
-
-/* 面板背後的巨大符文浮水印，呼應被點開的那顆寶石，弱化但有存在感 */
-.gem-watermark{
-  position:absolute; top:50%; left:50%; width:230px; height:230px;
-  transform: translate(-50%,-50%) rotate(-8deg);
-  color:rgba(255,255,255,.05); pointer-events:none; z-index:0;
-}
-.gem-watermark svg{ width:100%; height:100%; display:block; }
 
 .gem-panel-inner > *{ position:relative; z-index:1; }
 
@@ -547,7 +574,7 @@ body{
 }
 .tab-btn.active{ color:#FFFFFF; font-weight:700; }
 
-.panels-viewport{ overflow:hidden; position:relative; }
+.panels-viewport{ overflow: hidden visible; position:relative; }
 .panels-track{
   display:flex; align-items:flex-start;
   transition: transform .5s cubic-bezier(.2,.8,.2,1);
@@ -568,9 +595,10 @@ body{
   border-color: rgba(255,255,255,.85);
   box-shadow:
     inset 0 1.5px 1px rgba(255,255,255,1),
-    inset 0 -28px 36px -20px rgba(80,30,70,.2),
-    0 34px 64px rgba(40,10,40,.4),
-    0 6px 16px rgba(40,10,40,.24);
+    inset 0 -28px 36px -20px rgba(80,30,70,.2);
+}
+.service-card-shadow:hover{
+  filter: drop-shadow(0 12px 22px rgba(40,10,40,.32)) drop-shadow(0 3px 8px rgba(40,10,40,.2));
 }
 .service-img-wrap{ width:108px; height:108px; margin: -30px auto 6px; position:relative; }
 .service-img-wrap:empty{ display:none; margin:0; }
@@ -682,7 +710,10 @@ body{
     <p class="section-sub">心裡總覺得卡卡的？選一顆命定符文，偷偷看宇宙送你的突破指引</p>
     <div class="gem-row" id="gemRow"></div>
     <div class="gem-panel" id="gemPanel">
-      <div class="gem-panel-inner liquid-glass" id="gemPanelInner"></div>
+      <div class="glass-shadow-wrap">
+        <div class="card-backdrop-mask"></div>
+        <div class="gem-panel-inner liquid-glass" id="gemPanelInner"></div>
+      </div>
     </div>
   </div>
 
@@ -1203,17 +1234,33 @@ function renderNews(rows){
     row.className = 'tl-item';
     row.innerHTML = `
       <div class="tl-node"><span class="tl-dot"></span></div>
-      <a class="tl-card liquid-glass" href="${it.url || '#'}" target="_blank" rel="noopener">
-        <span class="tl-date">${it.date || '仙子近況'}</span>
-        <span class="tl-title">${it.title||''}</span>
-        <span class="tl-arrow">查看詳情 →</span>
-      </a>
+      <div class="glass-shadow-wrap tl-card-shadow">
+        <div class="card-backdrop-mask"></div>
+        <a class="tl-card liquid-glass" href="${it.url || '#'}" target="_blank" rel="noopener">
+          <span class="tl-date">${it.date || '仙子近況'}</span>
+          <span class="tl-title">${it.title||''}</span>
+          <span class="tl-arrow">查看詳情 →</span>
+        </a>
+      </div>
     `;
     list.appendChild(row);
   });
 }
 
 /* ---------- 渲染：尋光指引（寶石） ---------- */
+/* 指引卡的按鈕文字常常是「方案名稱｜說明」的長句，直接塞進膠囊按鈕會被硬擠成
+   好幾行、撐成一個奇怪的橢圓形。這裡把它拆成標題＋說明兩行，讓按鈕維持漂亮的圓角矩形 */
+function formatGemBtnText(text){
+  const str = (text||'').toString().trim();
+  const parts = str.split(/｜|\|/);
+  if(parts.length >= 2){
+    const title = parts[0].trim();
+    const sub = parts.slice(1).join('｜').trim();
+    return `<span class="gem-btn-title">${title}</span><span class="gem-btn-sub">${sub}</span>`;
+  }
+  return str;
+}
+
 function renderGems(rows){
   const data = (rows && rows.length) ? rows : DEFAULT_QUIZ;
   const gemRow = document.getElementById('gemRow');
@@ -1240,11 +1287,13 @@ function renderGems(rows){
       const wasActive = item.classList.contains('active');
       gemRow.querySelectorAll('.gem-item').forEach(el=>el.classList.remove('active'));
       if(wasActive){
+        panel.style.overflow = 'hidden';
         panel.classList.remove('show');
         panel.style.maxHeight = '0px';
         return;
       }
       gemBusy = true;
+      panel.style.overflow = 'hidden';
       item.classList.add('active');
       const circle = item.querySelector('.gem-circle');
       circle.classList.add('brewing');
@@ -1265,18 +1314,19 @@ function renderGems(rows){
         panelInner.style.opacity = '0';
         setTimeout(()=>{
           panelInner.innerHTML = `
-            <div class="gem-watermark">${icon}</div>
             <div class="gem-name-tag">${g.name||''}</div>
             <div class="gem-divider"></div>
             <div class="gem-quote">${g.quote||''}</div>
             <p class="gem-guidance">${g.guidance_text||''}</p>
-            <a class="gem-btn" href="${g.button_url||IG_DM_URL}" target="_blank" rel="noopener">${g.button_text||'立即預約'}</a>
+            <a class="gem-btn" href="${g.button_url||IG_DM_URL}" target="_blank" rel="noopener">${formatGemBtnText(g.button_text||'立即預約')}</a>
           `;
           panelInner.style.opacity = '1';
           /* 換成正式指引內容後高度通常會變化（常常變長），重新量測一次，
              不然套用醞釀階段量到的舊高度會把下半部裁掉 */
           panel.style.maxHeight = panelInner.scrollHeight + 'px';
           gemBusy = false;
+          /* 等展開動畫跑完再把 overflow 打開，陰影才能完整露出、不被裁切成硬邊 */
+          setTimeout(()=>{ panel.style.overflow = 'visible'; }, 520);
         }, 220);
       }, 750);
     });
@@ -1315,6 +1365,10 @@ function renderServices(rows){
       panel.innerHTML = `<p class="loading-text">此類型方案尚未開放，敬請期待</p>`;
     }else{
       items.forEach(sv=>{
+        const cardWrap = document.createElement('div');
+        cardWrap.className = 'glass-shadow-wrap service-card-shadow';
+        const mask = document.createElement('div');
+        mask.className = 'card-backdrop-mask';
         const card = document.createElement('div');
         card.className = 'service-card liquid-glass';
         card.innerHTML = `
@@ -1327,7 +1381,9 @@ function renderServices(rows){
             <a class="service-btn" href="${sv.button_url||IG_DM_URL}" target="_blank" rel="noopener">${sv.button_text||'私訊預約仙子'}</a>
           </div>
         `;
-        panel.appendChild(card);
+        cardWrap.appendChild(mask);
+        cardWrap.appendChild(card);
+        panel.appendChild(cardWrap);
       });
     }
     panelsWrap.appendChild(panel);
@@ -1451,7 +1507,7 @@ function watchSquircle(el){
 }
 
 function scanSquircles(root = document){
-  root.querySelectorAll('.liquid-glass').forEach(watchSquircle);
+  root.querySelectorAll('.liquid-glass, .card-backdrop-mask').forEach(watchSquircle);
 }
 
 scanSquircles();
