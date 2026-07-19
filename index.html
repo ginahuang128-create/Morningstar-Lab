@@ -325,8 +325,11 @@ body{
   /* 原本這裡疊加了 SVG 扭曲濾鏡（url(#liquid-distortion)），
      它會跟 JS 算出來的 squircle clip-path 邊緣互相打架，
      在轉場／不同尺寸內容時邊角會出現鋸齒破碎的假影，故移除，只保留純淨模糊玻璃感 */
-  /* 降低模糊、拉高飽和度與對比，讓背景透過玻璃時更像「放大模糊」，而不是整片霧白 */
-  backdrop-filter: blur(7px) saturate(220%) contrast(1.08) brightness(1.02);
+  /* 降低模糊、拉高飽和度與對比，讓背景透過玻璃時更像「放大模糊」，而不是整片霧白；
+     並疊加下方 SVG 折射濾鏡（feDisplacementMap），讓背景圖案透過玻璃時有輕微液態扭曲感。
+     squircle 的 clip-path 只在尺寸改變（ResizeObserver）時才重新計算，不是連續動畫，
+     所以跟 filter 同時存在時，邊角鋸齒的風險只會出現在極少數的 resize 當下，可接受。 */
+  backdrop-filter: blur(7px) saturate(220%) contrast(1.08) brightness(1.02) url(#liquid-distortion);
   -webkit-backdrop-filter: blur(7px) saturate(220%) contrast(1.08) brightness(1.02);
   box-shadow:
     inset 0 1px 1px rgba(255,255,255,.85),
@@ -663,9 +666,9 @@ body{
 
 <svg width="0" height="0" style="position:absolute;overflow:hidden">
   <filter id="liquid-distortion" x="-20%" y="-20%" width="140%" height="140%">
-    <feTurbulence type="fractalNoise" baseFrequency="0.010 0.014" numOctaves="2" seed="9" result="noise"/>
-    <feGaussianBlur in="noise" stdDeviation="2.5" result="softNoise"/>
-    <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="26" xChannelSelector="R" yChannelSelector="G"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.008 0.011" numOctaves="2" seed="9" result="noise"/>
+    <feGaussianBlur in="noise" stdDeviation="4" result="softNoise"/>
+    <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="14" xChannelSelector="R" yChannelSelector="G"/>
   </filter>
 </svg>
 
