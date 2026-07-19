@@ -340,9 +340,43 @@ body{
 }
 .liquid-glass::after{
   content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
-  background: linear-gradient(122deg, rgba(255,255,255,.5) 0%, transparent 22%, transparent 78%, rgba(255,255,255,.16) 100%);
-  mix-blend-mode:overlay; opacity:.8;
+  /* 真的用 SVG 折射濾鏡（feDisplacementMap）在不同瀏覽器上不穩定，容易整片變白或裁切邊爆開，
+     這裡改用「假折射」：在最容易被玻璃邊角彎折光線的地方（左上角最亮，右下角次亮，模擬光源
+     由左上照入）疊加聚光斑塊，加上原本的斜向掃光，讓四個角看起來有光線咬進去的立體感，
+     但不用真的去扭曲背景像素，所以不會有裁切邊緣破碎的風險 */
+  background:
+    radial-gradient(130px 100px at 6% 4%, rgba(255,255,255,.75), transparent 58%),
+    radial-gradient(110px 85px at 96% 98%, rgba(255,255,255,.32), transparent 62%),
+    radial-gradient(70px 55px at 97% 3%, rgba(255,255,255,.22), transparent 60%),
+    radial-gradient(70px 55px at 3% 97%, rgba(255,255,255,.16), transparent 60%),
+    linear-gradient(122deg, rgba(255,255,255,.4) 0%, transparent 24%, transparent 76%, rgba(255,255,255,.16) 100%);
+  mix-blend-mode:overlay; opacity:.9;
 }
+
+/* ============================================================
+   Liquid Glass 折射層：真的「透過玻璃看到背景」+ 放大模糊感
+   ------------------------------------------------------------
+   做法：不是靠 backdrop-filter 疊 SVG 濾鏡去扭曲背景（實測在 Safari/WebKit
+   上跟 clip-path 一起用很不穩定，容易整片變白或裁切邊爆開，見上面 ::after 的
+   註解），而是「假裝」在卡片裡放一份跟頁面背景一模一樣的照片，用 JS 算出卡片
+   在畫面上的位置，把這份照片以卡片中心為軸心放大（transform-origin + scale），
+   看起來就像玻璃把後面的畫面「吸」進來放大、模糊一樣，且不會被裁切邊切壞，
+   任何瀏覽器都吃這招（純 CSS transform + filter，沒有奇怪的 SVG 組合）。
+   父層 .liquid-glass 本身已經用 JS clip-path 裁成 squircle，這裡的圖層是它的
+   子元素，會自動被同一個 clip-path 裁掉多餘的部分，不用再裁一次。
+   ============================================================ */
+.glass-refraction-img{
+  position:fixed; top:0; left:0; width:100vw; height:100vh;
+  background-size:cover; background-position:center top; background-repeat:no-repeat;
+  filter: blur(5px) saturate(160%) brightness(1.08);
+  opacity:.94; /* 留一點縫隙，讓卡片本身的白色玻璃色調跟高光疊在最上面 */
+  pointer-events:none;
+  z-index:0;
+  will-change: transform;
+}
+/* 保險：如果 JS 還沒算出位置（例如剛插入畫面那一瞬間），先用不放大的版本墊著，
+   總比完全看不到背景好 */
+.glass-refraction-img:not([data-ready]){ transform:none !important; }
 
 /* 陰影外層包裝：本身不套 clip-path，只負責投影。drop-shadow 會依內部子元素（已被裁成
    squircle 的卡片）的實際輪廓來投影，所以陰影會自然跟著圓角外形暈開，不會被硬邊切掉 */
@@ -1495,6 +1529,47 @@ function applySquircle(el){
   el.style.clipPath = squircleClipPath(w, h, SQUIRCLE_RADIUS);
 }
 
+/* ============================================================
+   Liquid Glass 折射層：建立 + 即時定位/放大
+   （原理說明見上面 CSS .glass-refraction-img 的註解）
+   ============================================================ */
+const REFRACTION_MAG = 1.55; // 放大倍率，數字越大「玻璃吸入感」越明顯
+const refractionImgs = new Set();
+
+function ensureRefraction(el){
+  if(el.querySelector(':scope > .glass-refraction-img')) return;
+  const scene = document.getElementById('bgPhoto');
+  const img = document.createElement('div');
+  img.className = 'glass-refraction-img';
+  if(scene){
+    // 直接複製頁面背景照片的實際渲染值，跟主背景永遠同步，不用重複貼一次那串 base64
+    img.style.backgroundImage = getComputedStyle(scene).backgroundImage;
+  }
+  el.insertBefore(img, el.firstChild);
+  refractionImgs.add(img);
+}
+
+function updateRefractionTransforms(){
+  refractionImgs.forEach(img => {
+    const card = img.parentElement;
+    if(!card || !card.isConnected){ refractionImgs.delete(img); return; }
+    const rect = card.getBoundingClientRect();
+    if(!rect.width || !rect.height) return;
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    img.style.transformOrigin = cx + 'px ' + cy + 'px';
+    img.style.transform = 'scale(' + REFRACTION_MAG + ')';
+    if(!img.hasAttribute('data-ready')) img.setAttribute('data-ready', '1');
+  });
+}
+
+// 用 rAF 常駐迴圈更新，才能跟著卷動／橫向滑動（tabs-scroll、panels-viewport）／
+// 進場動畫（reveal）即時同步，不必去監聽一堆零散的 scroll 來源
+(function refractionLoop(){
+  updateRefractionTransforms();
+  requestAnimationFrame(refractionLoop);
+})();
+
 const squircleResizeObserver = new ResizeObserver(entries => {
   entries.forEach(entry => applySquircle(entry.target));
 });
@@ -1503,6 +1578,7 @@ function watchSquircle(el){
   if(el.dataset.squircleBound) return;
   el.dataset.squircleBound = '1';
   applySquircle(el);
+  if(el.classList.contains('liquid-glass')) ensureRefraction(el);
   squircleResizeObserver.observe(el);
 }
 
