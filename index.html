@@ -296,7 +296,7 @@ body{
 /* 外層光暈：包裝容器沒有 clip-path，滑過卡片（子元素）時這裡的 hover 也會一起觸發，
    陰影才能完整暈開、不被 squircle 的裁切邊界切成硬邊 */
 .tl-card-shadow:hover{
-  filter: drop-shadow(0 10px 20px rgba(40,10,40,.3)) drop-shadow(0 0 10px rgba(216,121,192,.18));
+  box-shadow: 0 10px 20px rgba(40,10,40,.3), 0 0 10px rgba(216,121,192,.18);
 }
 .tl-date{
   font-size:10.5px; letter-spacing:1.8px; color:var(--gold-2);
@@ -320,22 +320,22 @@ body{
   position:relative;
   border-radius: 40px; /* fallback shape until JS applies the true squircle clip-path below */
   background:
-    linear-gradient(128deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.01) 35%, rgba(255,255,255,.02) 65%, rgba(255,255,255,.06) 100%);
-  border:1px solid rgba(255,255,255,.32);
+    linear-gradient(128deg, rgba(255,255,255,.16) 0%, rgba(255,255,255,.05) 35%, rgba(255,255,255,.06) 65%, rgba(255,255,255,.14) 100%);
+  border:1px solid rgba(255,255,255,.22);
   /* 原本這裡疊加了 SVG 扭曲濾鏡（url(#liquid-distortion)），
      它會跟 JS 算出來的 squircle clip-path 邊緣互相打架，
      在轉場／不同尺寸內容時邊角會出現鋸齒破碎的假影，故移除，只保留純淨模糊玻璃感 */
-  /* 降低模糊、拉高飽和度與對比，讓背景透過玻璃時更像「放大模糊」，而不是整片霧白；
-     並疊加下方 SVG 折射濾鏡（feDisplacementMap），讓背景圖案透過玻璃時有輕微液態扭曲感。
+  /* 降低模糊、降低白色疊層濃度，讓背景圖案能清楚透出來（真正的「透明玻璃」感，
+     而不是霧面白板）；模糊值調低讓背景仍可辨識出輪廓與色彩，僅做輕微柔化。
      squircle 的 clip-path 只在尺寸改變（ResizeObserver）時才重新計算，不是連續動畫，
      所以跟 filter 同時存在時，邊角鋸齒的風險只會出現在極少數的 resize 當下，可接受。 */
-  backdrop-filter: blur(24px) saturate(220%) contrast(1.08) brightness(1.02);
-  -webkit-backdrop-filter: blur(24px) saturate(220%) contrast(1.08) brightness(1.02);
+  backdrop-filter: blur(18px) saturate(150%) contrast(1.03) brightness(1.03);
+  -webkit-backdrop-filter: blur(18px) saturate(150%) contrast(1.03) brightness(1.03);
   box-shadow:
-    inset 0 1px 1px rgba(255,255,255,.85),
-    inset 1px 0 1px rgba(255,255,255,.35),
-    inset 0 0 0 1px rgba(255,255,255,.05),
-    inset 0 -1px 1px rgba(0,0,0,.12);
+    inset 0 1px 1px rgba(255,255,255,.7),
+    inset 1px 0 1px rgba(255,255,255,.25),
+    inset 0 0 0 1px rgba(255,255,255,.04),
+    inset 0 -1px 1px rgba(0,0,0,.1);
   /* 注意：外層投影不能放在這個元素自己身上 —— 實測 Chromium 只要同一個元素同時有
      clip-path 跟 filter，drop-shadow 也會被 clip-path 一起裁掉（只剩裁切形狀內部看得到），
      跟 box-shadow 一樣會出現「四角陰影被硬生生切平」的不自然效果。
@@ -349,24 +349,31 @@ body{
      由左上照入）疊加聚光斑塊，加上原本的斜向掃光，讓四個角看起來有光線咬進去的立體感，
      但不用真的去扭曲背景像素，所以不會有裁切邊緣破碎的風險 */
   background:
-    radial-gradient(130px 100px at 6% 4%, rgba(255,255,255,.75), transparent 58%),
-    radial-gradient(110px 85px at 96% 98%, rgba(255,255,255,.32), transparent 62%),
-    radial-gradient(70px 55px at 97% 3%, rgba(255,255,255,.22), transparent 60%),
-    radial-gradient(70px 55px at 3% 97%, rgba(255,255,255,.16), transparent 60%),
-    linear-gradient(122deg, rgba(255,255,255,.4) 0%, transparent 24%, transparent 76%, rgba(255,255,255,.16) 100%);
-  mix-blend-mode:overlay; opacity:.7;
+    radial-gradient(130px 100px at 6% 4%, rgba(255,255,255,.55), transparent 58%),
+    radial-gradient(110px 85px at 96% 98%, rgba(255,255,255,.22), transparent 62%),
+    radial-gradient(70px 55px at 97% 3%, rgba(255,255,255,.16), transparent 60%),
+    radial-gradient(70px 55px at 3% 97%, rgba(255,255,255,.1), transparent 60%),
+    linear-gradient(122deg, rgba(255,255,255,.28) 0%, transparent 24%, transparent 76%, rgba(255,255,255,.1) 100%);
+  mix-blend-mode:overlay; opacity:.55;
 }
 
 /* 陰影外層包裝：本身不套 clip-path，只負責投影。drop-shadow 會依內部子元素（已被裁成
    squircle 的卡片）的實際輪廓來投影，所以陰影會自然跟著圓角外形暈開，不會被硬邊切掉 */
 .glass-shadow-wrap{
   position:relative;
+  border-radius: 40px;
   /* 陰影範圍要收斂：卡片間距只有 22px，之前的擴散半徑（44px/64px）太大，
      上一張卡的陰影會一路暈到下一張卡裡面，兩張卡的陰影疊在一起，中間那條縫
      看起來就變成一整條很明顯的黑色。這裡縮小到跟間距差不多的範圍，讓陰影
      停留在自己卡片附近，不會侵犯到隔壁 */
-  filter: drop-shadow(0 6px 12px rgba(0,0,0,.22)) drop-shadow(0 2px 4px rgba(0,0,0,.14));
-  transition: filter .35s ease;
+  /* 註：這裡原本用 filter: drop-shadow(...) 讓陰影跟著子層 clip-path 裁出的
+     squircle 外形走。但 filter 在父層會強制把子層渲染成一張離屏點陣圖再合成，
+     這會讓子層 .liquid-glass 的 backdrop-filter（毛玻璃模糊）完全失效——子層看起來
+     還是透明的，但完全不模糊，等於整個霧面玻璃效果被吃掉。改用 box-shadow
+     不會有這個副作用，玻璃模糊可以正常生效，只是陰影形狀變成圓角矩形而不是精確的
+     squircle，但視覺上幾乎看不出差異。 */
+  box-shadow: 0 8px 20px rgba(60,20,45,.16), 0 2px 6px rgba(60,20,45,.10);
+  transition: box-shadow .35s ease;
 }
 /* 註：這裡原本疊了一層額外的 backdrop-filter 遮罩，想解決「星星剛好卡在卡片邊界」的
    極少數情況。但這層疊加在 Safari/WebKit 上會跟卡片本身的 backdrop-filter + clip-path
@@ -507,8 +514,8 @@ body{
   border-radius: 12px 34px 12px 34px !important;
   clip-path:none !important;
   background:
-    radial-gradient(120% 90% at 50% -10%, rgba(216,121,192,.16), transparent 60%),
-    linear-gradient(128deg, rgba(255,255,255,.16) 0%, rgba(255,255,255,.02) 35%, rgba(255,255,255,.03) 65%, rgba(255,255,255,.10) 100%);
+    radial-gradient(120% 90% at 50% -10%, rgba(216,121,192,.1), transparent 60%),
+    linear-gradient(128deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.01) 35%, rgba(255,255,255,.02) 65%, rgba(255,255,255,.06) 100%);
   /* 進場用「浮現」取代單純淡入。原本用 cubic-bezier(.32,1.5,.4,1) 帶超出彈跳，
      配上外層 max-height + overflow:hidden 一起動畫時，內容會在彈超過1的瞬間
      頂到容器還沒展開完的頂端，造成文字上緣被硬生生裁掉，故改用不超出的 ease-out */
@@ -611,7 +618,7 @@ body{
     inset 0 -28px 36px -20px rgba(80,30,70,.2);
 }
 .service-card-shadow:hover{
-  filter: drop-shadow(0 12px 22px rgba(40,10,40,.32)) drop-shadow(0 3px 8px rgba(40,10,40,.2));
+  box-shadow: 0 12px 22px rgba(40,10,40,.32), 0 3px 8px rgba(40,10,40,.2);
 }
 .service-img-wrap{ width:108px; height:108px; margin: -30px auto 6px; position:relative; }
 .service-img-wrap:empty{ display:none; margin:0; }
