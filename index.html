@@ -329,8 +329,8 @@ body{
      並疊加下方 SVG 折射濾鏡（feDisplacementMap），讓背景圖案透過玻璃時有輕微液態扭曲感。
      squircle 的 clip-path 只在尺寸改變（ResizeObserver）時才重新計算，不是連續動畫，
      所以跟 filter 同時存在時，邊角鋸齒的風險只會出現在極少數的 resize 當下，可接受。 */
-  backdrop-filter: blur(7px) saturate(220%) contrast(1.08) brightness(1.02) url(#liquid-distortion);
-  -webkit-backdrop-filter: blur(7px) saturate(220%) contrast(1.08) brightness(1.02);
+  backdrop-filter: blur(24px) saturate(220%) contrast(1.08) brightness(1.02) url(#liquid-distortion);
+  -webkit-backdrop-filter: blur(24px) saturate(220%) contrast(1.08) brightness(1.02);
   box-shadow:
     inset 0 1px 1px rgba(255,255,255,.85),
     inset 1px 0 1px rgba(255,255,255,.35),
