@@ -289,15 +289,9 @@ body{
 .tl-card:hover{
   transform: translateX(4px);
   border-color: rgba(255,255,255,.8);
-  box-shadow:
-    inset 0 1.5px 1px rgba(255,255,255,1),
-    inset 0 -28px 36px -20px rgba(80,30,70,.2);
 }
-/* 外層光暈：包裝容器沒有 clip-path，滑過卡片（子元素）時這裡的 hover 也會一起觸發，
-   陰影才能完整暈開、不被 squircle 的裁切邊界切成硬邊 */
-.tl-card-shadow:hover{
-  box-shadow: 0 10px 20px rgba(40,10,40,.3), 0 0 10px rgba(216,121,192,.18);
-}
+/* 陰影已改由貼合 squircle 形狀的 .card-backdrop-mask 負責（見該樣式的 hover 規則），
+   不再對這個矩形容器直接套 box-shadow，避免跟裁切出來的圓角形狀不合而出現硬邊直線 */
 .tl-date{
   font-size:10.5px; letter-spacing:1.8px; color:var(--gold-2);
   display:block; margin-bottom:6px; font-weight:600; opacity:.9; text-transform:uppercase;
@@ -318,10 +312,9 @@ body{
    ============================================================ */
 .liquid-glass{
   position:relative;
-  border-radius: 40px; /* fallback shape until JS applies the true squircle clip-path below */
+  border-radius: 46px; /* fallback shape until JS applies the true squircle clip-path below */
   background:
     linear-gradient(128deg, rgba(255,255,255,.16) 0%, rgba(255,255,255,.05) 35%, rgba(255,255,255,.06) 65%, rgba(255,255,255,.14) 100%);
-  border:1px solid rgba(255,255,255,.22);
   /* 原本這裡疊加了 SVG 扭曲濾鏡（url(#liquid-distortion)），
      它會跟 JS 算出來的 squircle clip-path 邊緣互相打架，
      在轉場／不同尺寸內容時邊角會出現鋸齒破碎的假影，故移除，只保留純淨模糊玻璃感 */
@@ -331,11 +324,9 @@ body{
      所以跟 filter 同時存在時，邊角鋸齒的風險只會出現在極少數的 resize 當下，可接受。 */
   backdrop-filter: blur(18px) saturate(150%) contrast(1.03) brightness(1.03);
   -webkit-backdrop-filter: blur(18px) saturate(150%) contrast(1.03) brightness(1.03);
-  box-shadow:
-    inset 0 1px 1px rgba(255,255,255,.7),
-    inset 1px 0 1px rgba(255,255,255,.25),
-    inset 0 0 0 1px rgba(255,255,255,.04),
-    inset 0 -1px 1px rgba(0,0,0,.1);
+  border: 0.75px solid rgba(255,255,255,.4);
+  /* 陰影已完全取消：不再用 inset box-shadow 模擬邊框亮線，改用真正的細邊框（0.75px），
+     跟著 JS 算出的 squircle clip-path 走，線條會更細緻、不會出現硬邊直線 */
   /* 注意：外層投影不能放在這個元素自己身上 —— 實測 Chromium 只要同一個元素同時有
      clip-path 跟 filter，drop-shadow 也會被 clip-path 一起裁掉（只剩裁切形狀內部看得到），
      跟 box-shadow 一樣會出現「四角陰影被硬生生切平」的不自然效果。
@@ -361,7 +352,7 @@ body{
    squircle 的卡片）的實際輪廓來投影，所以陰影會自然跟著圓角外形暈開，不會被硬邊切掉 */
 .glass-shadow-wrap{
   position:relative;
-  border-radius: 40px;
+  border-radius: 46px;
   /* 陰影範圍要收斂：卡片間距只有 22px，之前的擴散半徑（44px/64px）太大，
      上一張卡的陰影會一路暈到下一張卡裡面，兩張卡的陰影疊在一起，中間那條縫
      看起來就變成一整條很明顯的黑色。這裡縮小到跟間距差不多的範圍，讓陰影
@@ -372,14 +363,22 @@ body{
      還是透明的，但完全不模糊，等於整個霧面玻璃效果被吃掉。改用 box-shadow
      不會有這個副作用，玻璃模糊可以正常生效，只是陰影形狀變成圓角矩形而不是精確的
      squircle，但視覺上幾乎看不出差異。 */
-  box-shadow: 0 8px 20px rgba(60,20,45,.16), 0 2px 6px rgba(60,20,45,.10);
-  transition: box-shadow .35s ease;
+  transition: filter .35s ease;
+}
+.glass-shadow-wrap:hover .card-backdrop-mask{
+  opacity:0;
 }
 /* 註：這裡原本疊了一層額外的 backdrop-filter 遮罩，想解決「星星剛好卡在卡片邊界」的
    極少數情況。但這層疊加在 Safari/WebKit 上會跟卡片本身的 backdrop-filter + clip-path
    互相干擾，導致畫面出現不該有的細長陰影／接縫，影響範圍比它原本要修的問題還明顯，
    得不償失，所以拿掉了，改成單純無害的空層，不做任何視覺處理 */
-.card-backdrop-mask{ display:none; }
+.card-backdrop-mask{
+  position:absolute; inset:0; z-index:0; pointer-events:none;
+  border-radius: 46px; /* fallback until JS applies the same squircle clip-path as the card above it */
+  background: transparent;
+  opacity:0;
+  transition: opacity .35s ease, transform .35s ease, background-color .35s ease;
+}
 
 /* ============================================================
    共用：想讓人點下去的按鈕 — 預設白色框線透明，滑過／按下才變實心白底
@@ -613,13 +612,8 @@ body{
 .service-card:hover{
   transform: translateY(-3px) scale(1.012);
   border-color: rgba(255,255,255,.85);
-  box-shadow:
-    inset 0 1.5px 1px rgba(255,255,255,1),
-    inset 0 -28px 36px -20px rgba(80,30,70,.2);
 }
-.service-card-shadow:hover{
-  box-shadow: 0 12px 22px rgba(40,10,40,.32), 0 3px 8px rgba(40,10,40,.2);
-}
+/* 陰影已改由貼合 squircle 形狀的 .card-backdrop-mask 負責，理由同上 */
 .service-img-wrap{ width:108px; height:108px; margin: -30px auto 6px; position:relative; }
 .service-img-wrap:empty{ display:none; margin:0; }
 .service-img{
@@ -1471,7 +1465,7 @@ if(AUTO_REFRESH_SECONDS > 0){
    Liquid Glass 面板：JS 真 squircle（所有瀏覽器一致，不依賴 corner-shape 支援度）
    用 superellipse 公式算出每個角的曲線點，轉成 clip-path polygon。
    ============================================================ */
-const SQUIRCLE_RADIUS = 40;   // 對應原本 border-radius: 40px
+const SQUIRCLE_RADIUS = 46;   // 對應原本 border-radius: 40px，調大讓弧形更圓潤、更接近參考圖
 const SQUIRCLE_EXPONENT = 4;  // squircle 的 superellipse 次方（等同 corner-shape: squircle）
 const SQUIRCLE_STEPS = 14;    // 每個角取樣點數，越高越平滑
 
