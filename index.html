@@ -460,7 +460,27 @@ body{
       0 0 16px rgba(216,121,192,.25);
   }
 }
-.gem-item:hover .gem-circle{ transform: translateY(-4px); border-color: rgba(244,182,224,.65); animation-play-state: paused; }
+.gem-item:hover .gem-circle{
+  transform: translateY(-4px);
+  border-color: rgba(244,182,224,.65);
+  animation: gemHoverGlow 1.7s ease-in-out infinite;
+}
+@keyframes gemHoverGlow{
+  0%,100%{
+    box-shadow:
+      inset 0 2px 3px rgba(255,255,255,.08),
+      inset 0 -8px 14px rgba(0,0,0,.5),
+      0 8px 22px rgba(0,0,0,.5),
+      0 0 16px rgba(244,182,224,.3);
+  }
+  50%{
+    box-shadow:
+      inset 0 2px 3px rgba(255,255,255,.1),
+      inset 0 -8px 14px rgba(0,0,0,.45),
+      0 8px 24px rgba(0,0,0,.5),
+      0 0 32px rgba(244,182,224,.6);
+  }
+}
 .gem-item.active .gem-circle{
   transform: scale(1.12);
   border-color: var(--gold-1);
@@ -534,12 +554,14 @@ body{
 
 /* ---------- 抽卡儀式感：點下寶石先醞釀，像真的在感應，而不是瞬間攤牌 ---------- */
 .gem-circle.brewing{
-  animation: gemBrew .9s ease-in-out;
+  animation: gemBrew 1.4s ease-in-out;
 }
 @keyframes gemBrew{
-  0%,100%{ box-shadow:0 0 0 3px rgba(216,121,192,.3), 0 0 20px rgba(216,121,192,.25); }
-  35%{ transform:scale(1.09) rotate(6deg); box-shadow:0 0 0 4px rgba(244,182,224,.65), 0 0 34px rgba(244,182,224,.6); }
-  70%{ transform:scale(.95) rotate(-5deg); box-shadow:0 0 0 3px rgba(159,203,245,.5), 0 0 26px rgba(159,203,245,.4); }
+  0%{ transform:translateY(0) scale(1) rotate(0deg); box-shadow:0 0 0 3px rgba(216,121,192,.3), 0 0 20px rgba(216,121,192,.25); }
+  28%{ transform:translateY(-9px) scale(1.1) rotate(7deg); box-shadow:0 0 0 4px rgba(244,182,224,.7), 0 0 38px rgba(244,182,224,.65); }
+  55%{ transform:translateY(-13px) scale(.96) rotate(-6deg); box-shadow:0 0 0 3px rgba(159,203,245,.55), 0 0 30px rgba(159,203,245,.45); }
+  80%{ transform:translateY(-4px) scale(1.04) rotate(3deg); box-shadow:0 0 0 3px rgba(244,182,224,.5), 0 0 24px rgba(244,182,224,.4); }
+  100%{ transform:translateY(0) scale(1) rotate(0deg); box-shadow:0 0 0 0 rgba(216,121,192,0); }
 }
 .gem-loading{ text-align:center; padding:14px 0 6px; }
 .gem-loading-rune{
@@ -562,7 +584,123 @@ body{
   font-family:var(--serif); font-style:italic; font-weight:600;
   font-size:18px; color:var(--gold-1); line-height:1.6; margin:0 0 12px;
 }
-.gem-guidance{ font-size:14px; line-height:1.9; color:var(--parchment-soft); margin:0 0 18px; }
+.gem-guidance{ font-size:14px; line-height:1.9; color:var(--parchment-soft); margin:0 0 16px; }
+
+/* ---------- 今日肯定句（Affirmation） ---------- */
+.gem-affirmation{
+  margin:0 auto 20px; padding:14px 18px; max-width:270px;
+  border:1px solid rgba(244,182,224,.35); border-radius:14px;
+  background: linear-gradient(135deg, rgba(244,182,224,.09), rgba(159,203,245,.05));
+}
+.gem-affirmation-label{
+  display:block; font-size:10px; letter-spacing:2.5px; text-transform:uppercase;
+  color:var(--gold-3); margin-bottom:7px; font-weight:600;
+}
+.gem-affirmation-text{
+  font-family:var(--serif); font-style:italic; font-weight:600;
+  font-size:14.5px; color:#FFFFFF; line-height:1.75; margin:0;
+}
+
+/* ---------- 指引卡下方動作列：預約按鈕＋下載今日光芒 ---------- */
+.gem-action-row{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+.gem-download-btn{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:10px 24px; border-radius:999px;
+  background:transparent; border:1px solid rgba(255,255,255,.4);
+  color:var(--parchment-soft); font-size:11.5px; letter-spacing:1.5px; cursor:pointer;
+  font-family:var(--serif-tc);
+  transition: border-color .3s ease, color .3s ease, transform .3s ease, background .3s ease;
+}
+.gem-download-btn:hover{ border-color:#fff; color:#fff; background:rgba(255,255,255,.07); transform:translateY(-2px); }
+.gem-download-btn:active{ transform:translateY(0); }
+
+/* ============================================================
+   魔法聊天室 — 偽聊天介面（先降低聯繫的心理門檻）
+   ============================================================ */
+.chat-widget{ margin: 4px 0 28px; }
+.chat-window-shadow{ position:relative; }
+.chat-window{
+  padding: 0;
+  display:flex; flex-direction:column;
+  min-height:220px;
+}
+.chat-header{
+  display:flex; align-items:center; gap:10px;
+  padding:16px 20px; position:relative; z-index:1;
+  border-bottom:1px solid rgba(255,255,255,.14);
+}
+.chat-avatar{
+  width:36px; height:36px; border-radius:50%; flex:0 0 auto;
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; background:rgba(216,121,192,.18);
+  border:1px solid rgba(244,182,224,.4);
+}
+.chat-header-info{ display:flex; flex-direction:column; gap:2px; }
+.chat-header-name{ font-family:var(--serif); font-weight:700; font-size:14.5px; color:#fff; }
+.chat-header-status{
+  display:flex; align-items:center; gap:5px;
+  font-size:11px; color:var(--parchment-soft); letter-spacing:.5px;
+}
+.chat-status-dot{
+  width:6px; height:6px; border-radius:50%; background:#8CE1D2;
+  box-shadow:0 0 6px rgba(140,225,210,.8);
+  animation: chatStatusPulse 1.8s ease-in-out infinite;
+}
+@keyframes chatStatusPulse{ 0%,100%{ opacity:.5; } 50%{ opacity:1; } }
+
+.chat-messages{
+  position:relative; z-index:1;
+  padding:18px 18px 6px; min-height:120px;
+  display:flex; flex-direction:column; gap:10px;
+  max-height:340px; overflow-y:auto;
+}
+.chat-bubble{
+  max-width:78%; padding:10px 15px; border-radius:18px;
+  font-size:13px; line-height:1.65; letter-spacing:.2px;
+  opacity:0; transform:translateY(8px);
+  animation: chatBubbleIn .45s ease forwards;
+}
+@keyframes chatBubbleIn{ to{ opacity:1; transform:translateY(0); } }
+.chat-bubble-fairy{
+  align-self:flex-start;
+  background: rgba(255,255,255,.09);
+  border:1px solid rgba(255,255,255,.16);
+  color:var(--parchment-soft);
+  border-bottom-left-radius:6px;
+}
+.chat-bubble-visitor{
+  align-self:flex-end;
+  background: linear-gradient(135deg, rgba(216,121,192,.5), rgba(159,203,245,.35));
+  border:1px solid rgba(244,182,224,.5);
+  color:#fff;
+  border-bottom-right-radius:6px;
+}
+.chat-typing{ display:flex; align-items:center; gap:4px; padding:12px 16px; }
+.chat-typing span{
+  width:6px; height:6px; border-radius:50%; background:var(--parchment-soft);
+  animation: chatTypingDot 1.1s ease-in-out infinite;
+}
+.chat-typing span:nth-child(2){ animation-delay:.15s; }
+.chat-typing span:nth-child(3){ animation-delay:.3s; }
+@keyframes chatTypingDot{ 0%,60%,100%{ opacity:.3; transform:translateY(0); } 30%{ opacity:1; transform:translateY(-3px); } }
+
+.chat-quick-replies{
+  position:relative; z-index:1;
+  display:flex; flex-wrap:wrap; gap:8px;
+  padding:14px 18px 20px;
+  opacity:0; max-height:0; overflow:hidden;
+  transition: opacity .5s ease, max-height .5s ease, padding .5s ease;
+}
+.chat-quick-replies.show{ opacity:1; max-height:220px; }
+.chat-reply-btn{
+  font-family:var(--serif-tc);
+  font-size:12px; padding:9px 16px; border-radius:999px; cursor:pointer;
+  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.35);
+  color:#fff; letter-spacing:.3px;
+  transition: border-color .3s ease, background .3s ease, transform .3s ease, opacity .3s ease;
+}
+.chat-reply-btn:hover{ border-color:rgba(244,182,224,.75); background:rgba(216,121,192,.16); transform:translateY(-2px); }
+.chat-reply-btn:disabled{ opacity:.4; cursor:default; transform:none; }
 
 /* ============================================================
    魔法聊天室 — tabs ＋ 方案（不對稱玻璃卡，蠟封角標）
@@ -661,9 +799,95 @@ body{
   .gem-icon.gem-icon-img{ max-width:56px; }
   .section{ padding:8px 20px 48px; }
 }
+
+/* ============================================================
+   進場儀式（Splash Screen）— 強制安靜感的開場停留點
+   ============================================================ */
+html{ overflow-x:hidden; }
+body.splash-active{ overflow:hidden; height:100vh; }
+
+.splash-screen{
+  position:fixed; inset:0; z-index:10000;
+  display:flex; align-items:center; justify-content:center; flex-direction:column;
+  background:
+    radial-gradient(ellipse at 50% 38%, rgba(70,32,66,.9), transparent 62%),
+    var(--void);
+  transition: opacity 1.15s ease, visibility 1.15s ease;
+}
+.splash-screen.splash-out{ opacity:0; visibility:hidden; pointer-events:none; }
+.splash-inner{ text-align:center; padding:0 40px; position:relative; }
+
+.splash-symbol{
+  width:52px; height:52px; margin:0 auto 34px; color:#fff;
+  opacity:0; transform:scale(.55);
+  animation: splashSymbolIn 1.6s cubic-bezier(.2,.8,.2,1) forwards, splashSymbolGlow 2.8s ease-in-out .9s infinite;
+}
+.splash-symbol svg{ width:100%; height:100%; display:block; }
+.splash-symbol path{
+  fill:currentColor;
+  filter: drop-shadow(0 0 10px rgba(244,182,224,.9)) drop-shadow(0 0 24px rgba(159,203,245,.55));
+}
+@keyframes splashSymbolIn{ to{ opacity:1; transform:scale(1); } }
+@keyframes splashSymbolGlow{ 0%,100%{ filter:brightness(1); } 50%{ filter:brightness(1.45); } }
+
+.splash-line{
+  font-family:var(--serif); font-style:italic; color:var(--parchment-soft);
+  font-size:15.5px; letter-spacing:1px; line-height:1.9; margin:0;
+  opacity:0; transform:translateY(10px);
+  transition: opacity 1.5s ease, transform 1.5s ease;
+}
+.splash-line-1{ transition-delay:.1s; }
+.splash-line-1b{ transition-delay:.4s; margin-bottom:0; }
+.splash-line.show{ opacity:1; transform:translateY(0); }
+
+.splash-line-2{
+  font-size:32px; font-weight:700; color:#fff; margin-top:10px;
+  text-shadow: 0 0 10px rgba(255,255,255,.6), 0 0 26px rgba(244,182,224,.7), 0 0 46px rgba(216,121,192,.5);
+  transform: translateY(14px) scale(.94);
+  transition: opacity 1.3s ease, transform 1.3s ease;
+}
+.splash-line-2.show{ opacity:1; transform:translateY(0) scale(1); }
+
+.splash-skip{
+  position:absolute; bottom:36px; left:50%; transform:translateX(-50%);
+  background:none; border:1px solid rgba(255,255,255,.3); color:var(--parchment-soft);
+  font-size:11px; letter-spacing:2px; padding:8px 18px; border-radius:999px; cursor:pointer;
+  opacity:.55; transition: opacity .3s ease;
+}
+.splash-skip:hover{ opacity:1; }
+
+/* ---------- 開場結束後，內容才緩慢、具備層次感地滑入 ---------- */
+.page{
+  transition: opacity 1.1s cubic-bezier(.16,.8,.24,1), transform 1.1s cubic-bezier(.16,.8,.24,1);
+}
+body.splash-active .page{ opacity:0; transform:translateY(26px); pointer-events:none; }
+
+.section-hero .avatar-wrap,
+.section-hero .brand-row,
+.section-hero .tagline{
+  transition: opacity .95s cubic-bezier(.16,.8,.24,1), transform .95s cubic-bezier(.16,.8,.24,1);
+}
+body.splash-active .section-hero .avatar-wrap,
+body.splash-active .section-hero .brand-row,
+body.splash-active .section-hero .tagline{ opacity:0; transform:translateY(20px); }
+.section-hero .brand-row{ transition-delay:.16s; }
+.section-hero .tagline{ transition-delay:.32s; }
 </style>
 </head>
-<body>
+<body class="splash-active">
+
+<!-- ============ 進場儀式（Splash Screen） ============ -->
+<div class="splash-screen" id="splashScreen">
+  <div class="splash-inner">
+    <div class="splash-symbol">
+      <svg viewBox="0 0 100 100"><path d="M50 0 C53 33 67 47 100 50 C67 53 53 67 50 100 C47 67 33 53 0 50 C33 47 47 33 50 0 Z"/></svg>
+    </div>
+    <p class="splash-line splash-line-1">請閉上眼睛，深呼吸，</p>
+    <p class="splash-line splash-line-1b">願你記得．．．</p>
+    <p class="splash-line splash-line-2">你就是光</p>
+  </div>
+  <button class="splash-skip" id="splashSkip" type="button">輕觸以跳過</button>
+</div>
 
 <svg width="0" height="0" style="position:absolute;overflow:hidden">
   <filter id="liquid-distortion" x="-20%" y="-20%" width="140%" height="140%">
@@ -736,6 +960,24 @@ body{
     <span class="section-eyebrow">Sanctuary</span>
     <h2 class="section-title">魔法聊天室</h2>
     <p class="section-sub">按下傳送鍵，把你的心事打包交給見習仙子吧</p>
+
+    <div class="chat-widget">
+      <div class="glass-shadow-wrap chat-window-shadow">
+        <div class="card-backdrop-mask"></div>
+        <div class="chat-window liquid-glass">
+          <div class="chat-header">
+            <span class="chat-avatar">🧚</span>
+            <span class="chat-header-info">
+              <span class="chat-header-name">見習仙子</span>
+              <span class="chat-header-status"><span class="chat-status-dot"></span>在線中</span>
+            </span>
+          </div>
+          <div class="chat-messages" id="chatMessages"></div>
+          <div class="chat-quick-replies" id="chatQuickReplies"></div>
+        </div>
+      </div>
+    </div>
+
     <div class="tabs-scroll" id="tabsScroll"><div class="tabs" id="tabsRow"></div></div>
     <div class="panels-viewport"><div class="panels-track" id="panelsWrap"></div></div>
     <div class="footer">© Morningstar．願你記得，你就是光</div>
@@ -895,6 +1137,7 @@ const DEFAULT_QUIZ = [
     symbol:'star', name:'星星',
     quote:'「你其實早就知道答案，只是不敢相信自己。」',
     guidance_text:'最近卡住，是因為你太想用理智去拼湊完美，反而困在焦慮裡。星星在提醒你：試著放鬆，允許自己盲測一步。你的直覺，從來沒錯。',
+    affirmation:'我值得相信自己的直覺，答案早已在我心中。',
     button_text:'能量梳理（方案 B）｜ 陪你撥開迷霧，找回你的幸運與方向。',
     button_url:IG_DM_URL
   },
@@ -902,6 +1145,7 @@ const DEFAULT_QUIZ = [
     symbol:'scythe', name:'鐮刀',
     quote:'「不剪掉枯萎的枝葉，新芽就沒有空間長出來。」',
     guidance_text:'最近的沉重，是因為你正試圖抓住某些不再適合的人事物。結束，正是最強大的新生。勇敢放手吧，停止消耗。',
+    affirmation:'我允許自己放手，為新的可能騰出空間。',
     button_text:'深度療癒（方案 C）｜ 陪你果斷斷捨離，找回內在的自由與力量。',
     button_url:IG_DM_URL
   },
@@ -909,6 +1153,7 @@ const DEFAULT_QUIZ = [
     symbol:'waves', name:'波浪',
     quote:'「允許情緒如浪潮般流動，不要與它對抗。」',
     guidance_text:'最近卡住，是因為你正試圖控製你無法控製的局面。順應流動吧，允許自己哭、允許自己困惑。臣服當下，答案就會自然浮現。',
+    affirmation:'我允許自己感受一切，情緒會自然流過我。',
     button_text:'直覺快問（方案 A）｜ 針對單一煩惱，精準切入核心快速決策。',
     button_url:IG_DM_URL
   }
@@ -1332,7 +1577,15 @@ function renderGems(rows){
             <div class="gem-divider"></div>
             <div class="gem-quote">${g.quote||''}</div>
             <p class="gem-guidance">${g.guidance_text||''}</p>
-            <a class="gem-btn" href="${g.button_url||IG_DM_URL}" target="_blank" rel="noopener">${formatGemBtnText(g.button_text||'立即預約')}</a>
+            ${g.affirmation ? `
+            <div class="gem-affirmation">
+              <span class="gem-affirmation-label">今日肯定句</span>
+              <p class="gem-affirmation-text">「${g.affirmation}」</p>
+            </div>` : ''}
+            <div class="gem-action-row">
+              <a class="gem-btn" href="${g.button_url||IG_DM_URL}" target="_blank" rel="noopener">${formatGemBtnText(g.button_text||'立即預約')}</a>
+              <button class="gem-download-btn" type="button">✦ 下載今日光芒</button>
+            </div>
           `;
           panelInner.style.opacity = '1';
           /* 換成正式指引內容後高度通常會變化（常常變長），重新量測一次，
@@ -1341,11 +1594,113 @@ function renderGems(rows){
           gemBusy = false;
           /* 等展開動畫跑完再把 overflow 打開，陰影才能完整露出、不被裁切成硬邊 */
           setTimeout(()=>{ panel.style.overflow = 'visible'; }, 520);
-        }, 220);
-      }, 750);
+
+          const downloadBtn = panelInner.querySelector('.gem-download-btn');
+          if(downloadBtn){
+            downloadBtn.addEventListener('click', ()=> downloadGuidanceImage(g));
+          }
+        }, 260);
+      }, 1250);
     });
     gemRow.appendChild(item);
   });
+}
+
+/* ---------- 「下載今日光芒」：用 canvas 產生一張含符文指引的分享圖 ---------- */
+function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight){
+  const str = (text||'').toString();
+  let line = '';
+  const lines = [];
+  for(const ch of str){
+    const test = line + ch;
+    if(ctx.measureText(test).width > maxWidth && line){
+      lines.push(line);
+      line = ch;
+    }else{
+      line = test;
+    }
+  }
+  if(line) lines.push(line);
+  lines.forEach((l, i)=> ctx.fillText(l, x, y + i * lineHeight));
+  return lines.length * lineHeight;
+}
+
+function drawCanvasSparkle(ctx, size){
+  ctx.beginPath();
+  ctx.moveTo(0, -size);
+  ctx.bezierCurveTo(size*0.06, -size*0.34, size*0.34, -size*0.06, size, 0);
+  ctx.bezierCurveTo(size*0.34, size*0.06, size*0.06, size*0.34, 0, size);
+  ctx.bezierCurveTo(-size*0.06, size*0.34, -size*0.34, size*0.06, -size, 0);
+  ctx.bezierCurveTo(-size*0.34, -size*0.06, -size*0.06, -size*0.34, 0, -size);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function downloadGuidanceImage(g){
+  const W = 800, H = 1000;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, '#1a1420');
+  bg.addColorStop(1, '#0A0A0A');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  const glow = ctx.createRadialGradient(W/2, 250, 10, W/2, 250, 440);
+  glow.addColorStop(0, 'rgba(216,121,192,0.32)');
+  glow.addColorStop(1, 'rgba(216,121,192,0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.strokeStyle = 'rgba(244,182,224,0.45)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(28, 28, W - 56, H - 56);
+
+  ctx.save();
+  ctx.translate(W/2, 210);
+  ctx.fillStyle = '#fff';
+  ctx.shadowColor = 'rgba(244,182,224,0.9)';
+  ctx.shadowBlur = 44;
+  drawCanvasSparkle(ctx, 56);
+  ctx.restore();
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(255,255,255,0.65)';
+  ctx.font = '400 20px Georgia, serif';
+  ctx.fillText('MORNINGSTAR ｜ 今日光芒', W/2, 330);
+
+  ctx.fillStyle = '#F4B6E0';
+  ctx.font = 'italic 700 32px Georgia, serif';
+  ctx.fillText(g.name || '', W/2, 390);
+
+  let y = 460;
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'italic 600 27px Georgia, serif';
+  y += wrapCanvasText(ctx, g.quote || '', W/2, y, 620, 42);
+
+  if(g.affirmation){
+    y += 46;
+    ctx.strokeStyle = 'rgba(244,182,224,0.35)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(W/2 - 300, y - 34, 600, 118);
+    ctx.fillStyle = 'rgba(255,214,235,0.85)';
+    ctx.font = '600 13px "Noto Serif TC", serif';
+    ctx.fillText('今日肯定句', W/2, y);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'italic 600 19px "Noto Serif TC", serif';
+    wrapCanvasText(ctx, `「${g.affirmation}」`, W/2, y + 34, 540, 28);
+  }
+
+  ctx.fillStyle = 'rgba(255,255,255,0.4)';
+  ctx.font = '13px "Noto Serif TC", serif';
+  ctx.fillText('願你記得，你就是光 · Morningstar', W/2, H - 58);
+
+  const link = document.createElement('a');
+  link.download = `morningstar-${(g.name || 'guidance')}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
 }
 
 /* ---------- 渲染：魔法聊天室（方案） ---------- */
@@ -1574,7 +1929,7 @@ function spawnSparkleBurst(x, y){
 }
 
 document.addEventListener('click', (e) => {
-  const btn = e.target.closest('.gem-btn, .service-btn, .gem-item, .tab-btn, .tl-card');
+  const btn = e.target.closest('.gem-btn, .service-btn, .gem-item, .tab-btn, .tl-card, .gem-download-btn, .chat-reply-btn');
   if(!btn) return;
   spawnSparkleBurst(e.clientX, e.clientY);
 });
@@ -1585,11 +1940,160 @@ const revealObserver = new IntersectionObserver((entries) => {
     if(entry.isIntersecting){
       entry.target.classList.add('in-view');
       revealObserver.unobserve(entry.target);
+      if(entry.target.id === 'serviceSection'){ startChatSequence(); }
     }
   });
 }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
 
 document.querySelectorAll('.section.reveal').forEach(el => revealObserver.observe(el));
+
+/* ---------- 魔法聊天室：偽聊天引導，降低訪客開口的心理門檻 ---------- */
+const FAIRY_OPENING_MESSAGES = [
+  '歡迎來到 Morningstar Lab 💜',
+  '心裡總是有一些卡卡的心事嗎？',
+  '或者，你也想和我聊聊符文或魔法儀式？'
+];
+const CHAT_QUICK_REPLIES = [
+  { label:'我有些心事想分享...', action:'talk' },
+  { label:'我想預約符文服務', action:'book' },
+  { label:'我也喜歡水晶！', action:'crystal' }
+];
+let chatSequenceStarted = false;
+
+function appendChatBubble(container, text, who){
+  const bubble = document.createElement('div');
+  bubble.className = `chat-bubble chat-bubble-${who}`;
+  bubble.textContent = text;
+  container.appendChild(bubble);
+  container.scrollTop = container.scrollHeight;
+  return bubble;
+}
+
+function appendChatTyping(container){
+  const typing = document.createElement('div');
+  typing.className = 'chat-bubble chat-bubble-fairy chat-typing';
+  typing.innerHTML = '<span></span><span></span><span></span>';
+  container.appendChild(typing);
+  container.scrollTop = container.scrollHeight;
+  return typing;
+}
+
+function sendFairyMessage(container, text, delay){
+  return new Promise(resolve=>{
+    setTimeout(()=>{
+      const typing = appendChatTyping(container);
+      setTimeout(()=>{
+        typing.remove();
+        appendChatBubble(container, text, 'fairy');
+        resolve();
+      }, 850);
+    }, delay);
+  });
+}
+
+function startChatSequence(){
+  if(chatSequenceStarted) return;
+  chatSequenceStarted = true;
+  const msgBox = document.getElementById('chatMessages');
+  const replyBox = document.getElementById('chatQuickReplies');
+  if(!msgBox || !replyBox) return;
+
+  (async ()=>{
+    for(let i = 0; i < FAIRY_OPENING_MESSAGES.length; i++){
+      await sendFairyMessage(msgBox, FAIRY_OPENING_MESSAGES[i], i === 0 ? 500 : 900);
+    }
+    renderChatQuickReplies(replyBox, msgBox);
+  })();
+}
+
+function renderChatQuickReplies(replyBox, msgBox){
+  replyBox.innerHTML = '';
+  CHAT_QUICK_REPLIES.forEach(opt=>{
+    const btn = document.createElement('button');
+    btn.className = 'chat-reply-btn';
+    btn.type = 'button';
+    btn.textContent = opt.label;
+    btn.addEventListener('click', ()=> handleChatQuickReply(opt, replyBox, msgBox));
+    replyBox.appendChild(btn);
+  });
+  requestAnimationFrame(()=> replyBox.classList.add('show'));
+}
+
+function handleChatQuickReply(opt, replyBox, msgBox){
+  replyBox.querySelectorAll('.chat-reply-btn').forEach(b=> b.disabled = true);
+  appendChatBubble(msgBox, opt.label, 'visitor');
+  replyBox.classList.remove('show');
+
+  let replyText = '';
+  let followAction = null;
+
+  if(opt.action === 'talk'){
+    replyText = '好的，我在這裡陪你．想先私訊仙子聊聊嗎？我幫你開好聊天室囉 💌';
+    followAction = ()=> window.open(IG_DM_URL, '_blank', 'noopener');
+  }else if(opt.action === 'book'){
+    replyText = '好選擇！幫你切到「線上諮詢」方案，挑一個最貼近妳現在心情的吧 ✨';
+    followAction = ()=>{
+      switchTab('線上諮詢');
+      const scrollWrap = document.getElementById('tabsScroll');
+      scrollWrap && scrollWrap.scrollIntoView({ behavior:'smooth', block:'center' });
+    };
+  }else if(opt.action === 'crystal'){
+    replyText = '哇，我們是同好！帶妳先去看看今天的符文指引，說不定有妳的命定水晶訊息 🔮';
+    followAction = ()=>{
+      const guide = document.getElementById('guideSection');
+      guide && guide.scrollIntoView({ behavior:'smooth', block:'start' });
+    };
+  }
+
+  sendFairyMessage(msgBox, replyText, 600).then(()=>{
+    if(followAction) setTimeout(followAction, 850);
+  });
+}
+
+/* ---------- 進場儀式（Splash Screen） ---------- */
+(function(){
+  const splash = document.getElementById('splashScreen');
+  const skipBtn = document.getElementById('splashSkip');
+  const line1 = document.querySelector('.splash-line-1');
+  const line1b = document.querySelector('.splash-line-1b');
+  const line2 = document.querySelector('.splash-line-2');
+  if(!splash) return;
+
+  /* 同一個瀏覽階段（分頁未關閉前）只播放一次，避免每次切換分頁都被迫重看開場 */
+  const alreadySeen = sessionStorage.getItem('ms_splash_seen') === '1';
+
+  function revealPage(){ document.body.classList.remove('splash-active'); }
+
+  let timers = [];
+  function clearTimers(){ timers.forEach(t=> clearTimeout(t)); timers = []; }
+
+  function endSplash(){
+    clearTimers();
+    splash.classList.add('splash-out');
+    revealPage();
+    setTimeout(()=>{ splash.style.display = 'none'; }, 1250);
+  }
+
+  if(alreadySeen){
+    splash.style.display = 'none';
+    revealPage();
+    return;
+  }
+
+  sessionStorage.setItem('ms_splash_seen', '1');
+
+  timers.push(setTimeout(()=> line1 && line1.classList.add('show'), 500));
+  timers.push(setTimeout(()=> line1b && line1b.classList.add('show'), 900));
+  timers.push(setTimeout(()=>{
+    line1 && line1.classList.remove('show');
+    line1b && line1b.classList.remove('show');
+    line2 && line2.classList.add('show');
+  }, 3200));
+  timers.push(setTimeout(endSplash, 5400));
+
+  skipBtn && skipBtn.addEventListener('click', endSplash);
+  splash.addEventListener('click', (e)=>{ if(e.target === splash) endSplash(); });
+})();
 
 </script>
 </body>
