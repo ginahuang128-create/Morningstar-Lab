@@ -623,8 +623,8 @@ body{
    目的：不用點開「與仙子連線」彈窗，光滑到這一區塊就能一眼看出
    跟「能量場閱讀」是不同的東西——
    能量場閱讀＝圓潤水晶球＋粉金色（柔軟、日常感）
-   符文指引　＝六角刻石＋藍銀色（銳利、解謎感），且卡面收合改成方正稜角，
-   跟能量場閱讀那個手繪不對稱圓角面板刻意做出對比。
+   符文指引　＝六角刻石＋藍銀色（銳利、解謎感），卡面改回跟其他面板一致的
+   圓角磨砂玻璃質感（方便閱讀），並疊加符文水印與微光點綴強化神秘感。
    底下全部用 #runeSection 當作命名空間去覆蓋共用的 .gem-* class，
    所以不用動到 HTML 結構或 JS 邏輯。
    ============================================================ */
@@ -705,16 +705,46 @@ body{
   100%{ transform:translateY(0) scale(1) rotate(45deg); box-shadow:0 0 0 0 rgba(159,203,245,0); }
 }
 
-/* 展開後的指引卡本身：方正稜角，對照能量場閱讀那片手繪不對稱圓角，質感明顯不同 */
+/* 展開後的指引卡：圓角磨砂玻璃質感與其他面板一致，並加入符文水印與微光點綴，強化神秘魔法感 */
 #runeSection .gem-panel-inner{
-  border-radius:6px !important;
+  border-radius: 30px !important;
   background:
-    radial-gradient(120% 90% at 50% -10%, rgba(159,203,245,.14), transparent 60%),
-    linear-gradient(128deg, rgba(255,255,255,.06) 0%, rgba(255,255,255,.01) 35%, rgba(255,255,255,.015) 65%, rgba(159,203,245,.05) 100%);
-  border:1px solid rgba(159,203,245,.22);
+    radial-gradient(120% 90% at 50% -10%, rgba(159,203,245,.16), transparent 60%),
+    linear-gradient(128deg, rgba(255,255,255,.16) 0%, rgba(255,255,255,.05) 35%, rgba(255,255,255,.06) 65%, rgba(255,255,255,.14) 100%);
+  border:1px solid rgba(159,203,245,.25);
+  isolation: isolate;
 }
-#runeSection .gem-divider{ background:linear-gradient(90deg, transparent, #9FCBF5, transparent); }
-#runeSection .gem-name-tag{ color:#9FCBF5; }
+#runeSection .gem-panel-inner::before{
+  content:'ᛝ';
+  position:absolute; top:-14px; right:2px;
+  font-family: var(--serif-tc), serif;
+  font-size:150px; line-height:1; font-weight:700;
+  color:rgba(159,203,245,.07);
+  pointer-events:none; z-index:0;
+  animation: runeWatermarkDrift 12s ease-in-out infinite;
+}
+@keyframes runeWatermarkDrift{
+  0%,100%{ transform: rotate(0deg) scale(1); opacity:.85; }
+  50%{ transform: rotate(6deg) scale(1.06); opacity:1; }
+}
+#runeSection .gem-divider{
+  background:linear-gradient(90deg, transparent, #9FCBF5, transparent);
+  position:relative; overflow:hidden;
+}
+#runeSection .gem-divider::after{
+  content:''; position:absolute; inset:0; width:40%;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.9), transparent);
+  animation: runeDividerShimmer 3.2s ease-in-out infinite;
+}
+@keyframes runeDividerShimmer{
+  0%{ transform:translateX(-120%); }
+  60%,100%{ transform:translateX(260%); }
+}
+#runeSection .gem-name-tag{
+  color:#9FCBF5;
+  letter-spacing:3px;
+  text-shadow: 0 0 12px rgba(159,203,245,.55);
+}
 #runeSection .gem-quote{ color:#CFE3FB; }
 #runeSection .gem-affirmation{
   border-color: rgba(159,203,245,.35);
@@ -748,17 +778,19 @@ body{
   text-align: left;
   transform: none;
   padding: 10px 16px 10px 10px;
-  border-radius: 10px;
-  border: 1px solid rgba(159,203,245,.25);
-  background: linear-gradient(135deg, rgba(159,203,245,.14), rgba(255,255,255,.07));
-  backdrop-filter: blur(10px) saturate(160%) contrast(1.05) brightness(1.05);
-  -webkit-backdrop-filter: blur(10px) saturate(160%) contrast(1.05) brightness(1.05);
-  transition: border-color .3s ease, background .3s ease;
+  border-radius: 20px;
+  border: 1px solid rgba(159,203,245,.22);
+  background: linear-gradient(128deg, rgba(255,255,255,.13) 0%, rgba(159,203,245,.05) 45%, rgba(255,255,255,.03) 100%);
+  backdrop-filter: blur(10px) saturate(150%) contrast(1.03) brightness(1.03);
+  -webkit-backdrop-filter: blur(10px) saturate(150%) contrast(1.03) brightness(1.03);
+  transition: border-color .3s ease, background .3s ease, transform .3s ease, box-shadow .3s ease;
 }
 #runeSection .gem-item:hover,
 #runeSection .gem-item.active{
-  border-color: rgba(159,203,245,.6);
-  background: linear-gradient(135deg, rgba(159,203,245,.22), rgba(255,255,255,.1));
+  border-color: rgba(199,224,250,.55);
+  background: linear-gradient(128deg, rgba(255,255,255,.18) 0%, rgba(159,203,245,.12) 45%, rgba(255,255,255,.04) 100%);
+  transform: translateX(2px);
+  box-shadow: 0 6px 20px rgba(20,30,50,.35), 0 0 18px rgba(159,203,245,.18);
 }
 #runeSection .gem-circle{
   flex: 0 0 auto;
@@ -769,10 +801,11 @@ body{
 .rune-tile-text{ display:flex; flex-direction:column; gap:2px; min-width:0; }
 .rune-tile-name{
   font-family: var(--serif-tc); font-weight: 700; font-size: 14.5px;
-  color: #DCEBFC; letter-spacing:.3px;
+  color: #DCEBFC; letter-spacing:.6px;
+  text-shadow: 0 0 10px rgba(159,203,245,.25);
 }
 .rune-tile-teaser{
-  font-family: var(--sans); font-size: 11.5px; color: #A8C4E8;
+  font-family: var(--sans); font-size: 11.5px; color: #7E9CC7;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 #runeSection .gem-item:hover .rune-tile-teaser,
