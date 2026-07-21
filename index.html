@@ -619,6 +619,125 @@ body{
 .gem-download-btn:active{ transform:translateY(0); }
 
 /* ============================================================
+   儀式互動加強：長按注入能量（Hold to Charge）＋ 3D 翻牌卡 ＋ 今日限定鎖定
+   ============================================================ */
+.gem-circle{ touch-action:none; } /* 讓長按手勢在手機上不會被捲動打斷 */
+
+/* ---- 長按進度環：疊在水晶／符文石正上方的 SVG 圓環，充能時逐漸畫滿 ---- */
+.charge-ring{
+  position:absolute; inset:-6px; width:calc(100% + 12px); height:calc(100% + 12px);
+  pointer-events:none; transform:rotate(-90deg); opacity:0; transition:opacity .25s ease;
+}
+.gem-item.charging .charge-ring{ opacity:1; }
+.charge-ring circle{ fill:none; stroke-width:2.5; stroke-linecap:round; }
+.charge-ring-track{ stroke:rgba(255,255,255,.14); }
+.charge-ring-fill{
+  stroke:var(--gold-1); stroke-dasharray:226; stroke-dashoffset:226;
+  filter:drop-shadow(0 0 6px rgba(244,182,224,.85));
+}
+
+/* ---- 充能中：水晶本體微震＋更亮光暈，讓長按有「正在注入能量」的實感 ---- */
+.gem-item.charging .gem-circle{
+  animation: chargeShiver .12s ease-in-out infinite !important;
+  border-color: var(--gold-1) !important;
+  box-shadow:
+    inset 0 2px 3px rgba(255,255,255,.12),
+    inset 0 -8px 14px rgba(0,0,0,.45),
+    0 0 26px rgba(244,182,224,.55) !important;
+}
+@keyframes chargeShiver{
+  0%,100%{ transform:translate(0,0) scale(1.04); }
+  50%{ transform:translate(.6px,-.6px) scale(1.05); }
+}
+#runeSection .gem-item.charging .gem-circle{ animation-name: chargeShiverRune !important; }
+@keyframes chargeShiverRune{
+  0%,100%{ transform:rotate(45deg) translate(0,0) scale(1.04); }
+  50%{ transform:rotate(45deg) translate(.6px,-.6px) scale(1.05); }
+}
+
+/* ---- 微光粒子：充能時從外圍向中心聚攏 ---- */
+.charge-particles{ position:absolute; inset:0; pointer-events:none; overflow:visible; }
+.charge-particle{
+  position:absolute; top:50%; left:50%; width:4px; height:4px; border-radius:50%;
+  background:#fff; opacity:0; box-shadow:0 0 6px 1px rgba(244,182,224,.9);
+}
+.gem-item.charging .charge-particle{ animation: particleConverge 1.1s ease-in infinite; }
+.charge-particle:nth-child(1){ --a:0deg; animation-delay:0s; }
+.charge-particle:nth-child(2){ --a:60deg; animation-delay:.12s; }
+.charge-particle:nth-child(3){ --a:120deg; animation-delay:.24s; }
+.charge-particle:nth-child(4){ --a:180deg; animation-delay:.36s; }
+.charge-particle:nth-child(5){ --a:240deg; animation-delay:.48s; }
+.charge-particle:nth-child(6){ --a:300deg; animation-delay:.6s; }
+@keyframes particleConverge{
+  0%{ transform: translate(-50%,-50%) rotate(var(--a)) translateX(46px) scale(.4); opacity:0; }
+  15%{ opacity:1; }
+  90%{ opacity:.9; }
+  100%{ transform: translate(-50%,-50%) rotate(var(--a)) translateX(0) scale(.2); opacity:0; }
+}
+
+/* ---- 充能提示文字 ---- */
+.charge-hint{
+  position:absolute; left:50%; bottom:-22px; transform:translateX(-50%);
+  font-size:10px; letter-spacing:1.5px; color:var(--parchment-soft);
+  white-space:nowrap; opacity:0; transition:opacity .3s ease; pointer-events:none;
+}
+.gem-item:hover .charge-hint{ opacity:.7; }
+.gem-item.charging .charge-hint, .gem-item.active .charge-hint{ opacity:0; }
+.gem-row.locked-mode .charge-hint{ display:none; }
+.gem-item.locked-inactive{ opacity:.32; filter:grayscale(.5); pointer-events:none; }
+
+/* ---------- 3D 翻牌卡片：取代原本純文字的醞釀畫面 ---------- */
+.flip-stage{ perspective:900px; width:150px; height:210px; margin:0 auto 18px; }
+.flip-card{ position:relative; width:100%; height:100%; transform-style:preserve-3d; transition: transform .9s cubic-bezier(.34,1.56,.44,1); }
+.flip-card.flipped{ transform:rotateY(180deg); }
+.flip-face{
+  position:absolute; inset:0; backface-visibility:hidden; border-radius:14px;
+  display:flex; align-items:center; justify-content:center;
+  border:1px solid rgba(216,121,192,.4); box-shadow:0 10px 30px rgba(0,0,0,.5);
+}
+.flip-face-back{
+  background:
+    radial-gradient(circle at 50% 50%, rgba(244,182,224,.16), transparent 65%),
+    linear-gradient(155deg, #1c1420, #0e0b12 70%);
+}
+.flip-face-back svg{ width:56%; height:56%; opacity:.85; filter:drop-shadow(0 0 10px rgba(244,182,224,.55)); }
+.flip-face-front{
+  transform:rotateY(180deg);
+  background:
+    radial-gradient(120% 90% at 50% -10%, rgba(216,121,192,.14), transparent 60%),
+    linear-gradient(128deg, rgba(255,255,255,.09), rgba(255,255,255,.02));
+  flex-direction:column; gap:10px; padding:14px; text-align:center;
+}
+.flip-face-front .flip-front-icon{ width:36px; height:36px; color:var(--gold-1); opacity:.95; }
+.flip-face-front .flip-front-icon svg{ width:100%; height:100%; display:block; }
+.flip-face-front .flip-front-name{ font-size:13px; letter-spacing:1.5px; font-weight:700; color:var(--gold-1); }
+.flip-card.flipped .flip-face-front{ animation: flipGlow 1s ease-out; }
+@keyframes flipGlow{
+  0%{ box-shadow:0 0 0 rgba(244,182,224,0); }
+  35%{ box-shadow:0 0 40px rgba(244,182,224,.55); }
+  100%{ box-shadow:0 10px 30px rgba(0,0,0,.5); }
+}
+.flip-loading-text{
+  font-size:12px; letter-spacing:2.5px; color:var(--parchment-soft); text-align:center;
+  animation: loadingPulse 1.4s ease-in-out infinite; margin-top:2px;
+}
+
+/* 翻牌後底下的解讀內容：逐段 fade-in-up，取代整塊一次淡入 */
+.gem-panel-inner .reveal-fade{ opacity:0; transform:translateY(10px); animation: revealFadeIn .6s ease forwards; }
+@keyframes revealFadeIn{ to{ opacity:1; transform:translateY(0); } }
+
+/* ---------- 今日限定運勢：鎖定狀態提示卡 ---------- */
+.daily-lock-banner{
+  max-width:420px; margin:0 auto 18px; padding:12px 18px; border-radius:14px;
+  border:1px solid rgba(244,182,224,.35);
+  background:linear-gradient(135deg, rgba(244,182,224,.1), rgba(159,203,245,.06));
+  font-family:var(--sans); font-size:12.5px; line-height:1.8; color:var(--parchment-soft);
+  text-align:center;
+}
+.daily-lock-meta{ display:flex; justify-content:center; gap:18px; margin-top:8px; flex-wrap:wrap; }
+.daily-lock-meta span{ font-size:11px; letter-spacing:1px; color:var(--gold-2); }
+
+/* ============================================================
    符文指引（#runeSection）：獨立造型與配色
    目的：不用點開「與仙子連線」彈窗，光滑到這一區塊就能一眼看出
    跟「能量場閱讀」是不同的東西——
@@ -1915,16 +2034,121 @@ function formatGemBtnText(text){
   return str;
 }
 
-/* renderGemDeck：能量場閱讀（gem*）與符文指引（rune*）共用同一套翻牌互動邏輯，
-   只是資料來源、預設內容、掛載的元素 id 不同，所以抽成一個通用函式，
-   避免兩份幾乎一樣的程式碼各自維護、以後改邏輯要改兩次還容易漏改。 */
+/* ---------- 今日限定運勢：LocalStorage 鎖定 ---------- */
+/* Key 格式：ms_daily_<storageKey>，值為 { date:'YYYY-MM-DD', name, percentage, element }
+   date 用「本機今天」的年月日字串比對，隔天字串自然不同、視同過期，不需要另外排程清除。 */
+const LUCKY_ELEMENTS = ['星辰之光','月光水','粉晶','薰衣草','海鹽','極光','篝火餘燼','琥珀'];
+function todayStr(){
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function getDailyResult(storageKey){
+  if(!storageKey) return null;
+  try{
+    const raw = localStorage.getItem(`ms_daily_${storageKey}`);
+    if(!raw) return null;
+    const parsed = JSON.parse(raw);
+    return (parsed && parsed.date === todayStr()) ? parsed : null;
+  }catch(e){ return null; }
+}
+function saveDailyResult(storageKey, payload){
+  if(!storageKey) return;
+  try{ localStorage.setItem(`ms_daily_${storageKey}`, JSON.stringify({ ...payload, date: todayStr() })); }
+  catch(e){ /* 私密瀏覽模式等情境下 localStorage 可能不可用，靜默失敗即可，不影響抽卡本身 */ }
+}
+
+/* renderGemDeck：能量場閱讀（gem*）與符文指引（rune*）共用同一套「長按充能→3D翻牌→今日鎖定」互動邏輯，
+   只是資料來源、預設內容、掛載的元素 id、LocalStorage 的 storageKey 不同，抽成通用函式維護。 */
 function renderGemDeck(rows, defaultData, ids){
   const data = (rows && rows.length) ? rows : defaultData;
   const gemRow = document.getElementById(ids.row);
   const panel = document.getElementById(ids.panel);
   const panelInner = document.getElementById(ids.panelInner);
   gemRow.innerHTML = '';
-  let gemBusy = false; // 醞釀期間鎖住，避免連續點擊互相打斷
+  let gemBusy = false; // 翻牌動畫期間鎖住，避免連續觸發互相打斷
+
+  const CHARGE_MS = 1500;  // 長按注入能量所需時間
+  const RING_CIRC = 226;   // 需與 CSS 的 .charge-ring-fill stroke-dasharray 對應
+
+  const locked = getDailyResult(ids.storageKey); // 今天是否已經抽過
+  if(locked){ gemRow.classList.add('locked-mode'); }
+
+  /* 翻牌＋淡入解讀內容，charged 為 true 時代表這次是「剛長按充能觸發」的新抽卡，
+     會順便產生今日運勢並寫入 LocalStorage 鎖定；重播今日已鎖定結果時傳 false。 */
+  function playReveal(item, g, icon, charged){
+    gemBusy = true;
+    gemRow.querySelectorAll('.gem-item').forEach(el=>el.classList.remove('active'));
+    panel.style.overflow = 'hidden';
+    item.classList.add('active');
+
+    panelInner.innerHTML = `
+      <div class="flip-stage">
+        <div class="flip-card">
+          <div class="flip-face flip-face-back">
+            <svg viewBox="0 0 100 100"><path d="M50 0 C53 33 67 47 100 50 C67 53 53 67 50 100 C47 67 33 53 0 50 C33 47 47 33 50 0 Z" fill="#F4B6E0"/></svg>
+          </div>
+          <div class="flip-face flip-face-front">
+            <div class="flip-front-icon">${icon}</div>
+            <div class="flip-front-name">${g.name||''}</div>
+          </div>
+        </div>
+      </div>
+      <div class="flip-loading-text">正在感應宇宙訊息．．．</div>
+    `;
+    panelInner.style.opacity = '1';
+    panel.classList.add('show');
+    panel.style.maxHeight = panelInner.scrollHeight + 'px';
+
+    const flipCard = panelInner.querySelector('.flip-card');
+    setTimeout(()=>{ flipCard && flipCard.classList.add('flipped'); }, 450);
+
+    setTimeout(()=>{
+      let dailyPayload = charged ? null : locked;
+      if(charged && ids.storageKey){
+        dailyPayload = {
+          name: g.name || '',
+          percentage: 60 + Math.floor(Math.random()*40),
+          element: LUCKY_ELEMENTS[Math.floor(Math.random()*LUCKY_ELEMENTS.length)]
+        };
+        saveDailyResult(ids.storageKey, dailyPayload);
+        /* 剛剛抽出的這張卡，從現在起就是今天鎖定的那一張，其餘卡片淡出、不可再選 */
+        gemRow.classList.add('locked-mode');
+        gemRow.querySelectorAll('.gem-item').forEach(el=>{ if(el !== item) el.classList.add('locked-inactive'); });
+      }
+
+      panelInner.innerHTML = `
+        ${dailyPayload ? `
+        <div class="daily-lock-banner reveal-fade" style="animation-delay:.05s">
+          今日魔法能量已注入，這是宇宙今天給妳的專屬指引
+          <div class="daily-lock-meta">
+            <span>今日魔法能量 ${dailyPayload.percentage}%</span>
+            <span>幸運元素・${dailyPayload.element}</span>
+          </div>
+        </div>` : ''}
+        <div class="gem-name-tag reveal-fade" style="animation-delay:.1s">${g.name||''}</div>
+        <div class="gem-divider reveal-fade" style="animation-delay:.18s"></div>
+        <div class="gem-quote reveal-fade" style="animation-delay:.26s">${g.quote||''}</div>
+        <p class="gem-guidance reveal-fade" style="animation-delay:.34s">${g.guidance_text||''}</p>
+        ${g.affirmation ? `
+        <div class="gem-affirmation reveal-fade" style="animation-delay:.42s">
+          <span class="gem-affirmation-label">今日肯定句</span>
+          <p class="gem-affirmation-text">「${g.affirmation}」</p>
+        </div>` : ''}
+        <div class="gem-action-row reveal-fade" style="animation-delay:.5s">
+          <a class="gem-btn" href="${g.button_url||IG_DM_URL}" target="_blank" rel="noopener">${formatGemBtnText(g.button_text||'立即預約')}</a>
+          <button class="gem-download-btn" type="button">✦ 下載今日光芒</button>
+        </div>
+      `;
+      panel.style.maxHeight = panelInner.scrollHeight + 'px';
+      gemBusy = false;
+      setTimeout(()=>{ panel.style.overflow = 'visible'; }, 520);
+
+      const downloadBtn = panelInner.querySelector('.gem-download-btn');
+      if(downloadBtn){ downloadBtn.addEventListener('click', ()=> downloadGuidanceImage(g)); }
+    }, 1650);
+  }
+
+  let autoOpenItem = null, autoOpenData = null, autoOpenIcon = null;
 
   data.forEach((g, idx)=>{
     const symbolKey = (g.symbol||'star').toString().trim().toLowerCase();
@@ -1937,7 +2161,16 @@ function renderGemDeck(rows, defaultData, ids){
         ${imgUrl
           ? `<img class="gem-icon gem-icon-img" src="${imgUrl}" alt="${g.name||''}" loading="lazy" decoding="async">`
           : `<div class="gem-icon">${icon}</div>`}
+        <svg class="charge-ring" viewBox="0 0 76 76">
+          <circle class="charge-ring-track" cx="38" cy="38" r="36"></circle>
+          <circle class="charge-ring-fill" cx="38" cy="38" r="36"></circle>
+        </svg>
+        <div class="charge-particles">
+          <span class="charge-particle"></span><span class="charge-particle"></span><span class="charge-particle"></span>
+          <span class="charge-particle"></span><span class="charge-particle"></span><span class="charge-particle"></span>
+        </div>
       </div>
+      <span class="charge-hint">按住水晶，注入能量</span>
     `;
     /* withPreview：符文指引專用。能量場閱讀維持「只有一顆圓珠、要點下去才揭曉內容」
        的抽卡懸念感；符文指引則反過來，把卡名跟一句話預覽直接排版在列表上，
@@ -1955,77 +2188,95 @@ function renderGemDeck(rows, defaultData, ids){
     }else{
       item.innerHTML = circleHtml;
     }
+
+    const isTodaysCard = locked && locked.name === (g.name||'');
+    if(locked && !isTodaysCard){
+      item.classList.add('locked-inactive'); // 今日已鎖定：非命定卡的其他卡片淡出、不可再選
+    }
+    if(isTodaysCard){
+      autoOpenItem = item; autoOpenData = g; autoOpenIcon = icon;
+    }
+
+    /* ---- Hold to Charge：長按水晶／符文石 1.5 秒才觸發翻牌，鬆手中斷則重置 ---- */
+    const circleEl = item.querySelector('.gem-circle');
+    const ringFill = item.querySelector('.charge-ring-fill');
+    let holding = false, holdStart = 0, holdRaf = null, justCharged = false;
+
+    function setRing(offsetRatio, animated){
+      if(!ringFill) return;
+      ringFill.style.transition = animated ? 'stroke-dashoffset .35s ease' : 'none';
+      ringFill.style.strokeDashoffset = String(RING_CIRC * offsetRatio);
+    }
+    function tickCharge(){
+      if(!holding) return;
+      const elapsed = performance.now() - holdStart;
+      const pct = Math.min(1, elapsed / CHARGE_MS);
+      setRing(1 - pct, false);
+      if(pct >= 1){
+        holding = false;
+        item.classList.remove('charging');
+        justCharged = true;
+        setRing(1, false);
+        playReveal(item, g, icon, true);
+        return;
+      }
+      holdRaf = requestAnimationFrame(tickCharge);
+    }
+    function startHold(e){
+      if(e && e.cancelable) e.preventDefault();
+      if(gemBusy || locked || item.classList.contains('active')) return;
+      holding = true;
+      holdStart = performance.now();
+      item.classList.add('charging');
+      setRing(1, false);
+      holdRaf = requestAnimationFrame(tickCharge);
+    }
+    function cancelHold(){
+      if(!holding) return;
+      holding = false;
+      cancelAnimationFrame(holdRaf);
+      item.classList.remove('charging');
+      setRing(1, true); // 中途鬆開：進度平滑退回歸零，而非瞬間消失
+    }
+
+    circleEl.addEventListener('pointerdown', startHold);
+    circleEl.addEventListener('pointerup', cancelHold);
+    circleEl.addEventListener('pointerleave', cancelHold);
+    circleEl.addEventListener('pointercancel', cancelHold);
+
+    /* 短點擊：只用來收合「已展開」的卡片；長按充能完成後緊接著的 click 事件要忽略，
+       不然剛翻完牌馬上又被判定成『點擊已展開卡片』而收合。 */
     item.addEventListener('click', ()=>{
+      if(justCharged){ justCharged = false; return; }
       if(gemBusy) return;
-      const wasActive = item.classList.contains('active');
-      gemRow.querySelectorAll('.gem-item').forEach(el=>el.classList.remove('active'));
-      if(wasActive){
+      if(item.classList.contains('active')){
         panel.style.overflow = 'hidden';
         panel.classList.remove('show');
         panel.style.maxHeight = '0px';
+        item.classList.remove('active');
         return;
       }
-      gemBusy = true;
-      panel.style.overflow = 'hidden';
-      item.classList.add('active');
-      const circle = item.querySelector('.gem-circle');
-      circle.classList.add('brewing');
-
-      /* 先進入「醞釀」狀態，像真的在感應訊息，而不是立刻攤牌 */
-      panelInner.innerHTML = `
-        <div class="gem-loading">
-          <div class="gem-loading-rune">${icon}</div>
-          <div class="gem-loading-text">正在感應宇宙訊息．．．</div>
-        </div>
-      `;
-      panelInner.style.opacity = '1';
-      panel.classList.add('show');
-      panel.style.maxHeight = panelInner.scrollHeight + 'px';
-
-      setTimeout(()=>{
-        circle.classList.remove('brewing');
-        panelInner.style.opacity = '0';
-        setTimeout(()=>{
-          panelInner.innerHTML = `
-            <div class="gem-name-tag">${g.name||''}</div>
-            <div class="gem-divider"></div>
-            <div class="gem-quote">${g.quote||''}</div>
-            <p class="gem-guidance">${g.guidance_text||''}</p>
-            ${g.affirmation ? `
-            <div class="gem-affirmation">
-              <span class="gem-affirmation-label">今日肯定句</span>
-              <p class="gem-affirmation-text">「${g.affirmation}」</p>
-            </div>` : ''}
-            <div class="gem-action-row">
-              <a class="gem-btn" href="${g.button_url||IG_DM_URL}" target="_blank" rel="noopener">${formatGemBtnText(g.button_text||'立即預約')}</a>
-              <button class="gem-download-btn" type="button">✦ 下載今日光芒</button>
-            </div>
-          `;
-          panelInner.style.opacity = '1';
-          /* 換成正式指引內容後高度通常會變化（常常變長），重新量測一次，
-             不然套用醞釀階段量到的舊高度會把下半部裁掉 */
-          panel.style.maxHeight = panelInner.scrollHeight + 'px';
-          gemBusy = false;
-          /* 等展開動畫跑完再把 overflow 打開，陰影才能完整露出、不被裁切成硬邊 */
-          setTimeout(()=>{ panel.style.overflow = 'visible'; }, 520);
-
-          const downloadBtn = panelInner.querySelector('.gem-download-btn');
-          if(downloadBtn){
-            downloadBtn.addEventListener('click', ()=> downloadGuidanceImage(g));
-          }
-        }, 260);
-      }, 1250);
+      /* 今日已鎖定時，命定卡本身仍可點擊重新展開當天結果 */
+      if(locked && isTodaysCard){
+        playReveal(item, g, icon, false);
+      }
     });
+
     gemRow.appendChild(item);
   });
+
+  /* 今日已抽過：進頁面時直接把當天命定卡攤開，不用使用者再操作一次 */
+  if(autoOpenItem){
+    setTimeout(()=> playReveal(autoOpenItem, autoOpenData, autoOpenIcon, false), 300);
+  }
 }
 
 function renderGems(rows){
-  renderGemDeck(rows, DEFAULT_QUIZ, { row:'gemRow', panel:'gemPanel', panelInner:'gemPanelInner' });
+  renderGemDeck(rows, DEFAULT_QUIZ, { row:'gemRow', panel:'gemPanel', panelInner:'gemPanelInner', storageKey:'gem' });
 }
 
 function renderRunes(rows){
-  renderGemDeck(rows, DEFAULT_RUNES, { row:'runeRow', panel:'runePanel', panelInner:'runePanelInner', withPreview:true });
+  renderGemDeck(rows, DEFAULT_RUNES, { row:'runeRow', panel:'runePanel', panelInner:'runePanelInner', withPreview:true, storageKey:'rune' });
 }
 
 /* ---------- 「下載今日光芒」：用 canvas 產生一張含符文指引的分享圖 ---------- */
