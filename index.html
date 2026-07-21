@@ -33,9 +33,11 @@
   --neon-blue-soft:rgba(159,203,245,0.45);
   --serif: 'Cormorant Garamond','Noto Serif TC',serif;
   --serif-tc:'Noto Serif TC',serif;
+  --sans: -apple-system, BlinkMacSystemFont, 'PingFang TC', 'Noto Sans TC', 'Microsoft JhengHei', system-ui, sans-serif;
 }
 
 *{ box-sizing:border-box; }
+html{ scroll-behavior:smooth; }
 html,body{ margin:0; padding:0; }
 
 body{
@@ -169,6 +171,7 @@ body{
     0 0 26px rgba(216,121,192,.45);
 }
 .section-sub{
+  font-family:var(--sans);
   font-size:13.5px; line-height:1.9; color:var(--parchment-soft);
   text-align:center; margin: 0 auto 22px; max-width:300px; letter-spacing:.2px;
 }
@@ -324,7 +327,7 @@ body{
      所以跟 filter 同時存在時，邊角鋸齒的風險只會出現在極少數的 resize 當下，可接受。 */
   backdrop-filter: blur(18px) saturate(150%) contrast(1.03) brightness(1.03);
   -webkit-backdrop-filter: blur(18px) saturate(150%) contrast(1.03) brightness(1.03);
-  border: 0.75px solid rgba(255,255,255,.4);
+  border: 1px solid rgba(216,121,192,0.25);
   /* 陰影已完全取消：不再用 inset box-shadow 模擬邊框亮線，改用真正的細邊框（0.75px），
      跟著 JS 算出的 squircle clip-path 走，線條會更細緻、不會出現硬邊直線 */
   /* 注意：外層投影不能放在這個元素自己身上 —— 實測 Chromium 只要同一個元素同時有
@@ -584,7 +587,7 @@ body{
   font-family:var(--serif); font-style:italic; font-weight:600;
   font-size:18px; color:var(--gold-1); line-height:1.6; margin:0 0 12px;
 }
-.gem-guidance{ font-size:14px; line-height:1.9; color:var(--parchment-soft); margin:0 0 16px; }
+.gem-guidance{ font-family:var(--sans); font-size:14px; line-height:1.9; color:var(--parchment-soft); margin:0 0 16px; }
 
 /* ---------- 今日肯定句（Affirmation） ---------- */
 .gem-affirmation{
@@ -655,6 +658,7 @@ body{
   max-height:340px; overflow-y:auto;
 }
 .chat-bubble{
+  font-family:var(--sans);
   max-width:78%; padding:10px 15px; border-radius:18px;
   font-size:13px; line-height:1.65; letter-spacing:.2px;
   opacity:0; transform:translateY(8px);
@@ -773,8 +777,8 @@ body{
   font-family:var(--serif); font-size:20px; font-weight:700; color:#FFFFFF;
   margin:0 0 10px; letter-spacing:.3px;
 }
-.service-desc{ font-size:13.5px; line-height:1.85; color:var(--parchment-soft); margin:0 0 8px; }
-.service-note{ font-size:11.5px; color:rgba(255,255,255,.55); line-height:1.75; margin:0 0 4px; }
+.service-desc{ font-family:var(--sans); font-size:13.5px; line-height:1.85; color:var(--parchment-soft); margin:0 0 8px; }
+.service-note{ font-family:var(--sans); font-size:11.5px; color:rgba(255,255,255,.55); line-height:1.75; margin:0 0 4px; }
 
 /* ============================================================
    底部
@@ -872,6 +876,89 @@ body.splash-active .section-hero .brand-row,
 body.splash-active .section-hero .tagline{ opacity:0; transform:translateY(20px); }
 .section-hero .brand-row{ transition-delay:.16s; }
 .section-hero .tagline{ transition-delay:.32s; }
+
+/* ============================================================
+   全站單一 CTA 系統：桌面浮動按鈕 + 手機底部固定列 + 服務選擇彈窗
+   目的：整併原本散落在各卡片以外的重複預約按鈕，統一入口、減少選擇焦慮
+   ============================================================ */
+body{ padding-bottom: 96px; } /* 預留手機底部固定列高度，避免遮住頁尾 */
+
+.primary-cta{
+  position:fixed; right:22px; bottom:26px; z-index:60;
+  display:inline-flex; align-items:center; gap:8px;
+  padding:14px 24px; border-radius:999px;
+  font-family:var(--serif-tc); font-weight:700; font-size:13.5px; letter-spacing:.5px;
+  color:#241226; background:#FFFFFF; border:1px solid rgba(216,121,192,.4);
+  box-shadow: 0 10px 28px rgba(40,10,40,.4), 0 0 0 1px rgba(216,121,192,.25);
+  cursor:pointer; transition: transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s ease;
+}
+.primary-cta:hover{ transform: translateY(-3px); box-shadow: 0 16px 34px rgba(40,10,40,.45), 0 0 0 1px rgba(216,121,192,.4); }
+.primary-cta:active{ transform: translateY(-1px); }
+
+.sticky-cta-bar{
+  display:none; /* 預設隱藏，手機寬度才顯示，與桌面浮動按鈕互斥 */
+  position:fixed; left:0; right:0; bottom:0; z-index:60;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg, rgba(10,10,10,0) 0%, rgba(10,10,10,.75) 35%, rgba(10,10,10,.92) 100%);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+.sticky-cta-btn{
+  width:100%; display:flex; align-items:center; justify-content:center; gap:8px;
+  padding:14px 20px; border-radius:999px;
+  font-family:var(--serif-tc); font-weight:700; font-size:14px; letter-spacing:.5px;
+  color:#fff; cursor:pointer;
+  background: rgba(24,24,24,.55);
+  border: 1.5px solid rgba(216,121,192,.55);
+  box-shadow: 0 0 18px rgba(216,121,192,.25), 0 10px 26px rgba(0,0,0,.4);
+  backdrop-filter: blur(16px) saturate(160%); -webkit-backdrop-filter: blur(16px) saturate(160%);
+  transition: transform .25s ease, box-shadow .25s ease, background .25s ease;
+}
+.sticky-cta-btn:active{ transform: scale(.97); background: rgba(24,24,24,.75); }
+
+@media (max-width: 640px){
+  .primary-cta{ display:none; }
+  .sticky-cta-bar{ display:block; }
+}
+
+/* ---------- 服務選擇彈窗（點擊主按鈕觸發） ---------- */
+.cta-modal-overlay{
+  display:none; position:fixed; inset:0; z-index:70;
+  align-items:flex-end; justify-content:center;
+  background: rgba(6,6,10,.6); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  padding:16px;
+}
+.cta-modal-overlay.open{ display:flex; animation: ctaOverlayIn .25s ease; }
+@keyframes ctaOverlayIn{ from{ opacity:0; } to{ opacity:1; } }
+.cta-modal-shadow{ width:100%; max-width:400px; border-radius:32px; }
+.cta-modal{
+  position:relative; width:100%; padding:30px 24px 26px;
+  border-radius:32px; text-align:center;
+  animation: ctaModalIn .32s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes ctaModalIn{ from{ opacity:0; transform:translateY(24px); } to{ opacity:1; transform:translateY(0); } }
+.cta-modal-close{
+  position:absolute; top:14px; right:16px; width:30px; height:30px; border-radius:50%;
+  background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.2); color:#fff;
+  font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+}
+.cta-modal-title{
+  font-family:var(--serif); font-style:italic; font-weight:700; font-size:20px; color:#fff;
+  margin:6px 0 20px;
+}
+.cta-modal-options{ display:flex; flex-direction:column; gap:12px; }
+.cta-modal-option{
+  display:flex; align-items:center; gap:14px; text-align:left;
+  padding:14px 16px; border-radius:20px; cursor:pointer;
+  background: rgba(255,255,255,.05); border:1px solid rgba(216,121,192,.25);
+  transition: background .25s ease, transform .25s ease, border-color .25s ease;
+}
+.cta-modal-option:hover, .cta-modal-option:active{
+  background: rgba(216,121,192,.14); border-color: rgba(216,121,192,.55); transform: translateY(-2px);
+}
+.cta-modal-option-icon{ font-size:22px; flex:0 0 auto; }
+.cta-modal-option-text{ display:flex; flex-direction:column; gap:3px; }
+.cta-modal-option-title{ font-family:var(--serif-tc); font-weight:700; font-size:14.5px; color:#fff; }
+.cta-modal-option-sub{ font-family:var(--sans); font-size:11.5px; color:var(--parchment-soft); }
 </style>
 </head>
 <body class="splash-active">
@@ -983,6 +1070,46 @@ body.splash-active .section-hero .tagline{ opacity:0; transform:translateY(20px)
     <div class="footer">© Morningstar．願你記得，你就是光</div>
   </div>
 
+</div>
+
+<!-- ============ 主要 CTA：全站單一入口按鈕 + 手機固定列 ============ -->
+<button class="primary-cta" id="primaryCtaBtn" type="button">🔮 預約專屬指引</button>
+
+<div class="sticky-cta-bar" id="stickyCtaBar">
+  <button class="sticky-cta-btn" id="stickyCtaBtn" type="button">✨ 與仙子連線</button>
+</div>
+
+<div class="cta-modal-overlay" id="ctaModalOverlay">
+  <div class="glass-shadow-wrap cta-modal-shadow">
+    <div class="cta-modal liquid-glass" id="ctaModal">
+      <button class="cta-modal-close" id="ctaModalClose" type="button" aria-label="關閉">✕</button>
+      <span class="section-eyebrow">Choose Your Path</span>
+      <h3 class="cta-modal-title">想先從哪裡開始呢？</h3>
+      <div class="cta-modal-options">
+        <button class="cta-modal-option" type="button" data-target="guideSection">
+          <span class="cta-modal-option-icon">🔮</span>
+          <span class="cta-modal-option-text">
+            <span class="cta-modal-option-title">能量場閱讀</span>
+            <span class="cta-modal-option-sub">抽一顆命定符文，看今日指引</span>
+          </span>
+        </button>
+        <button class="cta-modal-option" type="button" data-target="guideSection">
+          <span class="cta-modal-option-icon">✦</span>
+          <span class="cta-modal-option-text">
+            <span class="cta-modal-option-title">符文指引</span>
+            <span class="cta-modal-option-sub">尋光指引卡，梳理當下困惑</span>
+          </span>
+        </button>
+        <button class="cta-modal-option" type="button" data-target="serviceSection">
+          <span class="cta-modal-option-icon">🧚</span>
+          <span class="cta-modal-option-text">
+            <span class="cta-modal-option-title">新手諮詢</span>
+            <span class="cta-modal-option-sub">開啟聊天室，跟見習仙子++聊聊</span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -1163,7 +1290,7 @@ const DEFAULT_SERVICES = [
   { tab:'線上諮詢', badge:'方案 A', name:'直覺快問', description:'專注於妳當下面臨的單一煩惱。用符文的精準焦點，為妳的關鍵決策提供一記溫柔的破局線索。', note:'', image_url:'', button_text:'敲小盒子，迅速解惑', button_url:IG_DM_URL },
   { tab:'線上諮詢', badge:'方案 B', name:'能量梳理', description:'結合女巫符文與神諭卡，全方位拆解事件的深層走向，溫柔梳理妳卡住的思緒與能量。', note:'', image_url:'', button_text:'私訊仙子，預約梳理', button_url:IG_DM_URL },
   { tab:'線上諮詢', badge:'方案 C', name:'深度療癒', description:'一場一對一的靈魂深處對話。適合正處於巨大迷惘、需要釋放情感並找回內在力量的妳。', note:'', image_url:'', button_text:'開啟聊天室，深度對話', button_url:IG_DM_URL },
-  { tab:'實體面談', badge:'方案 D', name:'實體深度面談', description:'面對面感受最強大的能量連結，結合符文與直覺感應。由 Gina 陪妳在城市的優雅咖啡廳裡，靜心尋找屬於妳的光。', note:'地點以雙北捷運沿線咖啡廳為主。費用不含店內低消，需預先支付全額或訂金以完成預約。', image_url:'', button_text:'私訊仙子，預約面談', button_url:IG_DM_URL }
+  { tab:'實體面談', badge:'方案 D', name:'實體深度面談', description:'面對面感受最強大的能量連結，結合符文與直覺感應。由 見習仙子++ 陪妳在城市的優雅咖啡廳裡，靜心尋找屬於妳的光。', note:'地點以雙北捷運沿線咖啡廳為主。費用不含店內低消，需預先支付全額或訂金以完成預約。', image_url:'', button_text:'私訊仙子，預約面談', button_url:IG_DM_URL }
 ];
 
 /* ---------- 符文圖騰 SVG ---------- */
@@ -1934,6 +2061,39 @@ document.addEventListener('click', (e) => {
   spawnSparkleBurst(e.clientX, e.clientY);
 });
 
+/* ---------- 滑鼠跟隨星光：僅桌面（有精準指標裝置）啟用，節流避免過度耗能 ---------- */
+if (window.matchMedia('(pointer: fine)').matches) {
+  const trailLayer = document.getElementById('sparkleLayer');
+  let lastTrailTime = 0;
+  document.addEventListener('mousemove', (e) => {
+    const now = performance.now();
+    if (now - lastTrailTime < 90) return; /* 節流：約每 90ms 產生一顆星光 */
+    lastTrailTime = now;
+    if (!trailLayer) return;
+    const size = 4 + Math.random() * 5;
+    const color = SPARK_COLORS[Math.floor(Math.random() * SPARK_COLORS.length)];
+    const dur = 0.9 + Math.random() * 0.4;
+    const drift = (Math.random() * 20 - 10);
+    const el = document.createElement('div');
+    el.className = 'burst-particle';
+    el.style.setProperty('--sx', e.clientX + 'px');
+    el.style.setProperty('--sy', e.clientY + 'px');
+    el.style.setProperty('--mx', '0px');
+    el.style.setProperty('--my', '0px');
+    el.style.setProperty('--ex', drift + 'px');
+    el.style.setProperty('--ey', (18 + Math.random() * 14) + 'px');
+    el.style.setProperty('--dur', dur + 's');
+    el.style.setProperty('--rot', '30deg');
+    el.style.setProperty('--pcolor', color);
+    el.style.width = size + 'px';
+    el.style.height = size + 'px';
+    el.style.opacity = '.85';
+    el.innerHTML = `<svg viewBox="0 0 100 100"><path d="${SPARK_PATH}"/></svg>`;
+    trailLayer.appendChild(el);
+    setTimeout(() => el.remove(), dur * 1000 + 100);
+  }, { passive: true });
+}
+
 /* ---------- 篇章滾動進場：進到視窗內才淡入滑入，避免整頁一次攤開 ---------- */
 const revealObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
@@ -2049,6 +2209,32 @@ function handleChatQuickReply(opt, replyBox, msgBox){
     if(followAction) setTimeout(followAction, 850);
   });
 }
+
+/* ---------- 主要 CTA：開啟／關閉服務選擇彈窗，並平滑捲動到對應區塊 ---------- */
+(function(){
+  const overlay = document.getElementById('ctaModalOverlay');
+  const openBtns = [document.getElementById('primaryCtaBtn'), document.getElementById('stickyCtaBtn')];
+  const closeBtn = document.getElementById('ctaModalClose');
+  if(!overlay) return;
+
+  function openModal(){ overlay.classList.add('open'); }
+  function closeModal(){ overlay.classList.remove('open'); }
+
+  openBtns.forEach(btn => btn && btn.addEventListener('click', openModal));
+  closeBtn && closeBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e)=>{ if(e.target === overlay) closeModal(); });
+
+  overlay.querySelectorAll('.cta-modal-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      const targetId = opt.getAttribute('data-target');
+      const target = targetId && document.getElementById(targetId);
+      closeModal();
+      if(target){
+        setTimeout(()=> target.scrollIntoView({ behavior:'smooth', block:'start' }), 150);
+      }
+    });
+  });
+})();
 
 /* ---------- 進場儀式（Splash Screen） ---------- */
 (function(){
