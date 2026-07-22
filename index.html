@@ -523,8 +523,19 @@ body{
 }
 
 /* overflow 預設 hidden 是為了收合動畫；展開完成後會由 JS 切成 visible，讓面板的陰影能自然露出，不被裁掉 */
-.gem-panel{ max-height:0; overflow:hidden; opacity:0; transition: max-height .5s ease, opacity .4s ease, margin .4s ease; }
-.gem-panel.show{ max-height:560px; opacity:1; margin-bottom:6px; }
+.gem-panel{
+  display:grid; grid-template-rows:0fr;
+  overflow:hidden; opacity:0;
+  contain: layout style; /* 這個區塊內部的版面變化不會波及頁面其他部分，瀏覽器不用整頁重排 */
+  transition: grid-template-rows .5s ease, opacity .4s ease, margin .4s ease;
+}
+.gem-panel.show{ grid-template-rows:1fr; opacity:1; margin-bottom:6px; }
+/* grid-template-rows 的 0fr→1fr 技巧不需要 JS 量測 scrollHeight 再手動寫入 max-height，
+   完全交給瀏覽器自己算，少一次「改DOM內容→立刻讀高度」造成的強制同步重排（layout thrashing），
+   展開/收合動畫因此會順很多，尤其是內容較長或裝置效能較弱時。
+   唯一要注意的是直接子層要設 min-height:0（見下面 .gem-panel > .glass-shadow-wrap），
+   grid item 預設的 min-height:auto 會撐開內容、蓋掉 0fr 想要的「真正收合到 0」效果 */
+.gem-panel > .glass-shadow-wrap{ min-height:0; overflow:hidden; }
 .gem-panel-inner{
   position:relative;
   padding: 34px 26px 30px; text-align:center;
@@ -1827,7 +1838,6 @@ function renderGemDeck(rows, defaultData, ids){
     `;
     panelInner.style.opacity = '1';
     panel.classList.add('show');
-    panel.style.maxHeight = panelInner.scrollHeight + 'px';
 
     const flipCard = panelInner.querySelector('.flip-card');
     setTimeout(()=>{ flipCard && flipCard.classList.add('flipped'); }, 450);
@@ -1874,7 +1884,6 @@ function renderGemDeck(rows, defaultData, ids){
           <button class="gem-download-btn" type="button">✦ 下載今日光芒</button>
         </div>
       `;
-      panel.style.maxHeight = panelInner.scrollHeight + 'px';
       gemBusy = false;
       setTimeout(()=>{ panel.style.overflow = 'visible'; }, 520);
 
@@ -1929,7 +1938,6 @@ function renderGemDeck(rows, defaultData, ids){
       if(item.classList.contains('active')){
         panel.style.overflow = 'hidden';
         panel.classList.remove('show');
-        panel.style.maxHeight = '0px';
         item.classList.remove('active');
         return;
       }
@@ -2134,11 +2142,8 @@ function renderServices(rows){
 window.addEventListener('resize', ()=>{
   const active = document.querySelector('.tab-btn.active');
   if(active) switchTab(active.dataset.tab);
-  const gemPanelEl = document.getElementById('gemPanel');
-  const gemPanelInnerEl = document.getElementById('gemPanelInner');
-  if(gemPanelEl && gemPanelInnerEl && gemPanelEl.classList.contains('show')){
-    gemPanelEl.style.maxHeight = gemPanelInnerEl.scrollHeight + 'px';
-  }
+  /* 注意：gemPanel 展開高度改用 CSS grid-template-rows(0fr/1fr) 技巧，
+     瀏覽器會自己隨內容／視窗寬度重新計算高度，這裡不需要再手動量測、寫入 inline 高度 */
 });
 
 function switchTab(key){
