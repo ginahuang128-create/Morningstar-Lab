@@ -1981,7 +1981,17 @@ function renderGemDeck(rows, defaultData, ids){
       setTimeout(()=>{ panel.style.overflow = 'visible'; }, 520);
 
       const downloadBtn = panelInner.querySelector('.gem-download-btn');
-      if(downloadBtn){ downloadBtn.addEventListener('click', ()=> downloadGuidanceImage(g)); }
+      if(downloadBtn){
+        downloadBtn.addEventListener('click', ()=>{
+          /* iOS Safari 只認「點擊當下」同步呼叫的 window.open，canvas.toBlob
+             產生圖片是非同步的，等圖片做好才 open 會被判定成非使用者觸發的
+             彈出視窗、被靜默擋掉（畫面上只會看到提示訊息，但新分頁其實是空的）。
+             這裡在點擊當下先同步開一個空白分頁佔位，圖片做好後再導向過去，
+             藉此保留住「使用者手勢」，避免被攔截。 */
+          const preOpenedWindow = window.open('', '_blank');
+          downloadGuidanceImage(g, preOpenedWindow);
+        });
+      }
     }
 
     panelInner.innerHTML = `
@@ -2096,7 +2106,7 @@ function drawCanvasSparkle(ctx, size){
   ctx.fill();
 }
 
-function downloadGuidanceImage(g){
+function downloadGuidanceImage(g, preOpenedWindow){
   const W = 800, H = 1000;
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
@@ -2174,6 +2184,7 @@ function downloadGuidanceImage(g){
      也避免超長字串在部分瀏覽器上被截斷或拒絕開啟。 */
   canvas.toBlob((blob)=>{
     if(!blob){
+      if(preOpenedWindow && !preOpenedWindow.closed) preOpenedWindow.close();
       alert('圖片產生失敗，請稍後再試一次。');
       return;
     }
@@ -2181,7 +2192,14 @@ function downloadGuidanceImage(g){
 
     try{
       if(useFallback){
-        window.open(blobUrl, '_blank');
+        if(preOpenedWindow && !preOpenedWindow.closed){
+          /* 用點擊當下就先開好的分頁，直接導向到圖片網址，
+             避免此時才呼叫 window.open 而被 Safari 判定為非使用者觸發、靜默擋掉 */
+          preOpenedWindow.location.href = blobUrl;
+        }else{
+          /* 萬一當初開分頁被擋（例如非同步呼叫此函式的情境），退而求其次再試一次 */
+          window.open(blobUrl, '_blank');
+        }
         alert('圖片已在新分頁開啟，請長按圖片選擇「儲存圖片」即可下載（目前瀏覽器不支援直接下載）。');
         return;
       }
@@ -2194,8 +2212,11 @@ function downloadGuidanceImage(g){
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      /* 桌機／Android 走的是直接下載，用不到點擊當下先開好的空白分頁，關掉避免留下一個空分頁 */
+      if(preOpenedWindow && !preOpenedWindow.closed) preOpenedWindow.close();
     }catch(err){
       console.error('圖片下載失敗：', err);
+      if(preOpenedWindow && !preOpenedWindow.closed) preOpenedWindow.close();
       alert('圖片產生失敗，請稍後再試一次。');
     }finally{
       /* 延遲釋放，確保新分頁／下載已經真正讀到 blob 內容再回收記憶體 */
