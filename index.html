@@ -410,8 +410,8 @@ body{
   /* 原本這裡疊加了 SVG 扭曲濾鏡（url(#liquid-distortion)），
      它會跟 JS 算出來的 squircle clip-path 邊緣互相打架，
      在轉場／不同尺寸內容時邊角會出現鋸齒破碎的假影，故移除，只保留純淨模糊玻璃感 */
-  backdrop-filter: blur(16px) saturate(150%) contrast(1.03) brightness(1.03);
-  -webkit-backdrop-filter: blur(16px) saturate(150%) contrast(1.03) brightness(1.03);
+  backdrop-filter: blur(10px) saturate(150%) contrast(1.03) brightness(1.03);
+  -webkit-backdrop-filter: blur(10px) saturate(150%) contrast(1.03) brightness(1.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
   /* 陰影已完全取消：不再用 inset box-shadow 模擬邊框亮線，改用真正的細邊框（0.75px），
      跟著 JS 算出的 squircle clip-path 走，線條會更細緻、不會出現硬邊直線 */
@@ -956,21 +956,26 @@ body{
 .service-panel{
   /* flex:0 0 100% 是給外層 .panels-track 用的：讓「線上諮詢／實體面談」這兩個分頁
      各自佔滿一整個畫面寬度，點分頁按鈕時才能用 translateX(-100%) 切頁。
-     內部改成橫向可滑動的卡片輪播，兩層水平互動不會互相干擾：外層靠按鈕點擊切換，
-     內層靠原生 overflow-x 滑動，觸控手勢不會衝突 */
+     內部的卡片輪播改成 .service-track 用 transform 控制，兩層水平互動不會互相干擾：
+     外層靠按鈕點擊切換，內層靠 JS 拖曳，觸控手勢不會衝突 */
   flex:0 0 100%; min-width:0;
-  display:flex; flex-direction:row; align-items:stretch;
-  overflow-x:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
-  scrollbar-width:none; touch-action:pan-y;
-  /* 一次只完整顯示一張卡片，不再露出下一張的半截文字（避免跑版的尷尬感）；
-     要不要滑到下一張，改由卡片下方的箭頭／圓點來提示，畫面更乾淨 */
+  display:flex; flex-direction:row; flex-wrap:wrap; align-items:flex-start;
+  overflow:hidden; position:relative;
   margin:0; padding:6px 2px 4px;
 }
-.service-panel::-webkit-scrollbar{ display:none; }
-.service-panel > .service-card-shadow{
-  flex:0 0 100%; scroll-snap-align:center; display:flex; justify-content:center;
-}
 .service-panel > .loading-text{ flex:1 0 100%; }
+/* 一次只完整顯示一張卡片，不再露出下一張的半截文字（避免跑版的尷尬感）；
+   卡片改由 .service-track 用 transform 位移，滑動時跟著手指即時跑，
+   放開後才用 transition 平滑貼齊，手感更像真正的輪播圖 */
+.service-track{
+  display:flex; flex-wrap:nowrap; width:100%;
+  touch-action:pan-y; will-change:transform;
+  transition: transform .38s cubic-bezier(.2,.8,.2,1);
+}
+.service-track.dragging{ transition:none; }
+.service-track > .service-card-shadow{
+  flex:0 0 100%; min-width:0; display:flex; justify-content:center;
+}
 
 /* ---------- 卡片下方的導覽列：箭頭（滑鼠用）＋ 圓點（顯示位置） ---------- */
 .service-nav-row{
@@ -1064,25 +1069,9 @@ body{
 }
 .service-more-btn:hover, .service-more-btn:active{ color:#FFFFFF; }
 
-/* ---------- 服務方案：B 案熱門推薦視覺強化（外框微光＋緞帶標籤） ---------- */
+/* ---------- 服務方案：B 案視覺強化（外框微光，不再用緞帶標籤） ---------- */
 .service-highlight-wrap{ filter: drop-shadow(0 0 22px rgba(124,148,230,.35)); }
 .service-highlight{ border-color: rgba(159,203,245,.55) !important; }
-.service-ribbon{
-  position:absolute; top:14px; right:-8px; z-index:2;
-  font-family:var(--sans); font-size:10.5px; font-weight:700; letter-spacing:1px;
-  color:#0A0A0A; background: linear-gradient(135deg,#EAF1FF,#9FCBF5);
-  padding:5px 14px 5px 12px; border-radius:6px 2px 2px 6px;
-  box-shadow: 0 4px 10px rgba(0,0,0,.3);
-}
-
-/* ---------- B vs C 選擇提示：卡片輪播上方的一行溫柔提示，不做成表格 ---------- */
-.service-tip{
-  flex:0 0 100%; text-align:center; margin:0 0 14px;
-  font-family:var(--sans); font-size:12.5px; line-height:1.8;
-  color: var(--parchment-soft);
-  background: rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12);
-  border-radius:14px; padding:10px 18px;
-}
 
 /* ---------- 服務方案：完整說明彈窗內文樣式 ---------- */
 .service-detail-body{ text-align:center; }
@@ -1538,41 +1527,8 @@ body{ padding-bottom: 96px; } /* 預留手機底部固定列高度，避免遮�
         <button class="legal-tab-btn" type="button" data-doc="terms">服務條款</button>
       </div>
       <div class="legal-modal-body">
-        <div class="legal-doc" id="legalDocDisclaimer">
-          <h4>免責聲明</h4>
-          <p>歡迎來到 Morningstar Lab（以下簡稱「本網站」）。在您使用本網站所提供之任何內容、女巫符文指引、魔法聊天室、水晶與魔法儀式諮詢或相關服務前，請仔細閱讀以下聲明：</p>
-          <p>1. 服務性質定位：本網站所提供之所有占卜、符文指引、水晶與魔法儀式等服務，均定位為身心靈自我探索、心靈陪伴與靈感啟發，並非亦不可替代任何專業醫療、心理診斷、法律諮詢或財務投資建議。</p>
-          <p>2. 非醫療與心理治療行為：本網站服務不具備醫療或心理治療功效。若您目前正處於嚴重的情緒困擾、身心疾病或有自傷/傷人傾向，請務必尋求具備執照之專業醫師、心理師或相關機構協助。（衛福部安心專線：1925）</p>
-          <p>3. 個人責任與自主選擇：任何指引與建議僅供參考，現實生活中的選擇與決定權始終掌握在您手中，本網站與服務提供者（見習仙子）不對您依據諮詢內容所做出的任何個人決定或現實結果承擔法律責任。</p>
-        </div>
-        <div class="legal-doc" id="legalDocTerms">
-          <h4>線上服務與諮詢條款</h4>
-          <p>為保障雙方權益，當您預約或使用 Morningstar Lab 之線上諮詢服務時，即視為您已閱讀、理解並同意遵守以下條款：</p>
-          <h4>一、預約與服務變更</h4>
-          <ul>
-            <li>時間確認：完成付款並收到確認訊息後，預約方為成立。</li>
-            <li>改期規範：如需變更諮詢時間，請至少於原定時間 24 小時前私訊或來信通知，每筆預約免費提供 1 次改期機會；若未於規定時間內通知，將視同放棄該次服務且不予退費。</li>
-            <li>遲到說明：諮詢開始後，若因個案個人因素遲到，服務時間將不予順延。</li>
-          </ul>
-          <h4>二、退費與取消政策</h4>
-          <ul>
-            <li>消保法例外：本服務屬於「一對一客製化線上諮詢服務」，依據《消費者保護法》規定，於服務開始提供後即不適用 7 天鑑賞期無條件退費。</li>
-            <li>退費標準：
-              <ul>
-                <li>於預約時間 48 小時前申請取消，扣除轉帳手續費後退還全額。</li>
-                <li>於預約時間 24 至 48 小時內申請取消，退還 50% 費用。</li>
-                <li>於預約時間 24 小時內申請取消或當天無故未到（NS），恕不接受退費。</li>
-              </ul>
-            </li>
-          </ul>
-          <h4>三、個人資料保護與隱私承諾</h4>
-          <ul>
-            <li>隱私保密：您於諮詢過程中提供的個人資料、心事與對話內容，本網站將嚴格恪守保密原則，絕不向任何第三方透露或作為行銷公開使用（若經您口頭或書面同意授權之去識別化心得分享不在此限）。</li>
-            <li>紀錄保存：「魔法聊天室」與預約表單所收集之聯絡資訊，僅用於聯繫與服務提供，並依《個人資料保護法》妥善安全儲存。</li>
-          </ul>
-          <h4>四、智慧財產權</h4>
-          <p>本網站上所有文字、視覺設計、符文測驗內容及標誌（含「Morningstar Lab」、「見習仙子」等），均為本網站所有，未經授權請勿任意轉載、重製或作為商業用途。</p>
-        </div>
+        <div class="legal-doc" id="legalDocDisclaimer"></div>
+        <div class="legal-doc" id="legalDocTerms"></div>
       </div>
     </div>
   </div>
@@ -1774,13 +1730,10 @@ const DEFAULT_QUIZ = [
 
 const DEFAULT_SERVICES = [
   { tab:'線上諮詢', badge:'方案 A', name:'直覺快問', label:'快速指引', audience:'有具體單一問題、需要快速決策者', price:'NT$333 / 題（線上諮詢 5–8 min）', description:'專注於妳當下面臨的單一煩惱。用符文的精準焦點，為妳的關鍵決策提供一記溫柔的破局線索。', note:'', image_url:'', button_text:'敲小盒子，迅速解惑', button_url:IG_DM_URL },
-  { tab:'線上諮詢', badge:'方案 B', name:'能量梳理', label:'熱門推薦‧全方位拆解', audience:'面臨抉擇卡關、想梳理事件走向者', price:'NT$888 / 次（20 min）', description:'結合女巫符文與神諭卡，全方位拆解事件的深層走向，溫柔梳理妳卡住的思緒與能量。', note:'', image_url:'', button_text:'私訊仙子，預約梳理', button_url:IG_DM_URL, highlight:true },
+  { tab:'線上諮詢', badge:'方案 B', name:'能量梳理', label:'全方位拆解', audience:'面臨抉擇卡關、想梳理事件走向者', price:'NT$888 / 次（20 min）', description:'結合女巫符文與神諭卡，全方位拆解事件的深層走向，溫柔梳理妳卡住的思緒與能量。', note:'', image_url:'', button_text:'私訊仙子，預約梳理', button_url:IG_DM_URL, highlight:true },
   { tab:'線上諮詢', badge:'方案 C', name:'深度療癒', label:'靈魂對話', audience:'處於人生大迷惘、需要釋放情緒者', price:'預約制｜請敲小盒子評估（50 min）', description:'一場一對一的靈魂深處對話。適合正處於巨大迷惘、需要釋放情感並找回內在力量的妳。', note:'', image_url:'', button_text:'開啟聊天室，深度對話', button_url:IG_DM_URL },
   { tab:'實體面談', badge:'方案 D', name:'實體深度面談', label:'面對面沉浸連結', audience:'重視現場真實能量交流者', price:'專屬預約｜私訊仙子為你安排（60 min）', description:'面對面感受最強大的能量連結，結合符文與直覺感應。由 見習仙子++ 陪妳在城市的優雅咖啡廳裡，靜心尋找屬於妳的光。', note:'地點以雙北捷運沿線咖啡廳為主。費用不含店內低消，需預先支付全額或訂金以完成預約。', image_url:'', button_text:'私訊仙子，預約面談', button_url:IG_DM_URL }
 ];
-
-/* B vs C 一時選不出來時的溫柔提示；C vs D 也常見混淆，一併準備 */
-const SERVICE_TIP = '💡 不確定怎麼選？想看清事件走向選 B 能量梳理，想好好釋放心情與壓力選 C 深度療癒。';
 
 /* ---------- 符文圖騰 SVG ---------- */
 const ICONS = {
@@ -2332,14 +2285,8 @@ function renderServices(rows){
     if(items.length === 0){
       panel.innerHTML = `<p class="loading-text">此類型方案尚未開放，敬請期待</p>`;
     }else{
-      /* B/C 常常猶豫不決，這行提示放在該分頁卡片輪播上方，不佔用卡片本身空間 */
-      if(t.key === '線上諮詢'){
-        const tip = document.createElement('p');
-        tip.className = 'service-tip';
-        tip.textContent = SERVICE_TIP;
-        panel.appendChild(tip);
-        panel.style.flexWrap = 'wrap';
-      }
+      const track = document.createElement('div');
+      track.className = 'service-track';
       items.forEach(sv=>{
         const isHighlight = !!sv.highlight || /方案\s*B/.test(sv.badge||'');
         const cardWrap = document.createElement('div');
@@ -2349,7 +2296,6 @@ function renderServices(rows){
         const card = document.createElement('div');
         card.className = 'service-card liquid-glass' + (isHighlight ? ' service-highlight' : '');
         card.innerHTML = `
-          ${isHighlight ? `<span class="service-ribbon">熱門推薦</span>` : ''}
           <div class="service-img-wrap">${sv.image_url ? `<img class="service-img" src="${sv.image_url}" alt="" loading="lazy" decoding="async">` : ''}</div>
           <div class="service-body">
             <span class="service-badge">${sv.badge||''}</span>
@@ -2365,8 +2311,9 @@ function renderServices(rows){
         cardWrap.appendChild(card);
         const moreBtn = card.querySelector('[data-service-detail]');
         moreBtn && moreBtn.addEventListener('click', ()=> openServiceDetail(sv));
-        panel.appendChild(cardWrap);
+        track.appendChild(cardWrap);
       });
+      panel.appendChild(track);
     }
     panelsWrap.appendChild(panel);
   });
@@ -2439,60 +2386,50 @@ const ServiceCarousel = (function(){
   const dotsWrap = document.getElementById('serviceDots');
   let bound = new WeakSet();
 
-  function getStep(panel){
-    const card = panel.querySelector('.service-card-shadow');
-    if(!card) return panel.clientWidth;
-    return card.getBoundingClientRect().width;
+  function getTrack(panel){ return panel && panel.querySelector('.service-track'); }
+  function getIndex(track){ return parseInt(track.dataset.index || '0', 10) || 0; }
+
+  /* 用 transform 把卡片定位到第 i 張；animate=false 用在拖曳過程中即時跟手，
+     animate=true 用在放手貼齊／點箭頭、圓點時的平滑滑動 */
+  function setIndex(panel, i, animate){
+    const track = getTrack(panel);
+    if(!track) return;
+    const count = track.children.length;
+    const clamped = Math.max(0, Math.min(count - 1, i));
+    track.classList.toggle('dragging', !animate);
+    track.style.transform = `translateX(-${clamped * 100}%)`;
+    track.dataset.index = clamped;
+    syncDots(panel, clamped);
   }
 
-  function closestIndex(panel){
-    const cards = Array.from(panel.querySelectorAll('.service-card-shadow'));
-    const panelLeft = panel.getBoundingClientRect().left;
-    let idx = 0, dist = Infinity;
-    cards.forEach((card,i)=>{
-      const d = Math.abs(card.getBoundingClientRect().left - panelLeft);
-      if(d < dist){ dist = d; idx = i; }
-    });
-    return idx;
-  }
-
-  function scrollToIndex(panel, i){
-    const cards = panel.querySelectorAll('.service-card-shadow');
-    const card = cards[i];
-    if(card){ panel.scrollTo({ left: card.offsetLeft - panel.offsetLeft, behavior:'smooth' }); }
-  }
-
-  function syncDots(panel){
+  function syncDots(panel, activeIdx){
     if(!dotsWrap) return;
-    const active = closestIndex(panel);
+    const track = getTrack(panel);
+    const active = activeIdx != null ? activeIdx : (track ? getIndex(track) : 0);
     Array.from(dotsWrap.children).forEach((d,i)=> d.classList.toggle('active', i === active));
   }
 
-  /* 每個分頁的卡片輪播只需要綁定一次滾動監聽，避免重複建立 */
-  function bindScroll(panel){
-    if(bound.has(panel)) return;
-    bound.add(panel);
-    let raf = null;
-    panel.addEventListener('scroll', ()=>{
-      if(raf) return;
-      raf = requestAnimationFrame(()=>{ syncDots(panel); raf = null; });
-    }, { passive:true });
+  /* 手指左右滑動：卡片跟著手指即時位移（更有拖曳手感），放開後依拖曳距離
+     決定要停在原卡片還是往前／後一張，再用 transition 平滑貼齊 */
+  function bindDrag(panel){
+    const track = getTrack(panel);
+    if(!track || bound.has(track)) return;
+    bound.add(track);
+    track.dataset.index = track.dataset.index || '0';
 
-    /* 手指左右滑動：不完全依賴各瀏覽器／內嵌 WebView（IG、LINE 等）對巢狀
-       overflow-x 容器的原生觸控支援，改用 JS 主動判斷水平拖曳並貼齊卡片，
-       放手後的落點行為和點箭頭／圓點時一致 */
-    let startX = 0, startY = 0, startScrollLeft = 0;
-    let dragging = false, horizontal = null;
+    let startX = 0, startY = 0, baseIndex = 0;
+    let dragging = false, horizontal = null, panelWidth = 0;
 
-    panel.addEventListener('touchstart', (e)=>{
+    track.addEventListener('touchstart', (e)=>{
       if(e.touches.length !== 1) return;
       const t = e.touches[0];
       startX = t.clientX; startY = t.clientY;
-      startScrollLeft = panel.scrollLeft;
+      baseIndex = getIndex(track);
+      panelWidth = panel.clientWidth || 1;
       dragging = true; horizontal = null;
     }, { passive:true });
 
-    panel.addEventListener('touchmove', (e)=>{
+    track.addEventListener('touchmove', (e)=>{
       if(!dragging) return;
       const t = e.touches[0];
       const dx = t.clientX - startX;
@@ -2503,25 +2440,45 @@ const ServiceCarousel = (function(){
       }
       if(horizontal){
         e.preventDefault();
-        panel.scrollLeft = startScrollLeft - dx;
+        const count = track.children.length;
+        /* 拖到頭尾兩端時加一點阻尼，提示「已經是第一張／最後一張」 */
+        const atStart = baseIndex === 0 && dx > 0;
+        const atEnd = baseIndex === count - 1 && dx < 0;
+        const eased = (atStart || atEnd) ? dx * 0.35 : dx;
+        track.classList.add('dragging');
+        track.style.transform = `translateX(calc(-${baseIndex * 100}% + ${eased}px))`;
       }
     }, { passive:false });
 
-    function endDrag(){
+    function endDrag(e){
       if(!dragging) return;
       dragging = false;
-      if(horizontal){ scrollToIndex(panel, closestIndex(panel)); }
+      if(horizontal){
+        const dx = (e.changedTouches ? e.changedTouches[0].clientX : startX) - startX;
+        const threshold = panelWidth * 0.16;
+        let next = baseIndex;
+        if(dx <= -threshold) next = baseIndex + 1;
+        else if(dx >= threshold) next = baseIndex - 1;
+        setIndex(panel, next, true);
+      }
       horizontal = null;
     }
-    panel.addEventListener('touchend', endDrag);
-    panel.addEventListener('touchcancel', endDrag);
+    track.addEventListener('touchend', endDrag);
+    track.addEventListener('touchcancel', endDrag);
   }
 
   /* 依目前分頁的方案數量重建圓點；只有 1 個方案時不顯示圓點 */
   function setup(panel){
     if(!panel) return;
-    bindScroll(panel);
-    const count = panel.querySelectorAll('.service-card-shadow').length;
+    const track = getTrack(panel);
+    const navRow = document.getElementById('serviceNavRow');
+    if(!track){
+      if(dotsWrap) dotsWrap.innerHTML = '';
+      if(navRow) navRow.style.display = 'none';
+      return;
+    }
+    bindDrag(panel);
+    const count = track.children.length;
     if(dotsWrap){
       dotsWrap.innerHTML = '';
       if(count > 1){
@@ -2530,29 +2487,26 @@ const ServiceCarousel = (function(){
           dot.type = 'button';
           dot.className = 'service-dot' + (i===0 ? ' active':'');
           dot.setAttribute('aria-label', `第 ${i+1} 個方案`);
-          dot.addEventListener('click', ()=> scrollToIndex(panel, i));
+          dot.addEventListener('click', ()=> setIndex(panel, i, true));
           dotsWrap.appendChild(dot);
         }
       }
     }
-    const navRow = document.getElementById('serviceNavRow');
     if(navRow){ navRow.style.display = count > 1 ? 'flex' : 'none'; }
-  }
-
-  function scrollPanel(panel, dir){
-    if(!panel) return;
-    panel.scrollBy({ left: dir * getStep(panel), behavior:'smooth' });
+    syncDots(panel, getIndex(track));
   }
 
   prevBtn && prevBtn.addEventListener('click', ()=>{
     const activeTab = document.querySelector('.tab-btn.active');
     const panel = activeTab && document.querySelector(`.service-panel[data-panel="${activeTab.dataset.tab}"]`);
-    scrollPanel(panel, -1);
+    const track = panel && getTrack(panel);
+    if(track){ setIndex(panel, getIndex(track) - 1, true); }
   });
   nextBtn && nextBtn.addEventListener('click', ()=>{
     const activeTab = document.querySelector('.tab-btn.active');
     const panel = activeTab && document.querySelector(`.service-panel[data-panel="${activeTab.dataset.tab}"]`);
-    scrollPanel(panel, 1);
+    const track = panel && getTrack(panel);
+    if(track){ setIndex(panel, getIndex(track) + 1, true); }
   });
 
   return { setup };
