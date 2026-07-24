@@ -175,6 +175,9 @@ body{
   font-family:var(--serif); font-weight:700; font-style:italic;
   font-size:25px; color:#FFFFFF; text-align:center;
   margin:0 0 12px; letter-spacing:0.12em;
+  /* 標題發光：貼近品牌的淡藍紫光暈，兩層疊加（近端小範圍亮、遠端大範圍柔），
+     用 text-shadow 而不是 filter，避免影響到其他毛玻璃卡片的模糊效果 */
+  text-shadow: 0 0 12px rgba(176,196,250,.55), 0 0 28px rgba(124,148,230,.35);
 }
 .section-title-icon{
   display:inline-block; margin-right:8px; font-style:normal;
@@ -1069,8 +1072,13 @@ body{
 }
 .service-more-btn:hover, .service-more-btn:active{ color:#FFFFFF; }
 
-/* ---------- 服務方案：B 案視覺強化（外框微光，不再用緞帶標籤） ---------- */
-.service-highlight-wrap{ filter: drop-shadow(0 0 22px rgba(124,148,230,.35)); }
+/* ---------- 服務方案：B 案視覺強化（外框微光，不再用緞帶標籤） ----------
+   註：這裡原本用 filter: drop-shadow() 疊加光暈，但跟上面 .glass-shadow-wrap
+   遇到的問題一模一樣——filter 加在「有 backdrop-filter 子層」的父層上，會強迫
+   子層離屏點陣化重繪，導致子層 .liquid-glass 的毛玻璃模糊完全失效，讓方案 B
+   卡片看起來比其他卡片「更清楚、更不模糊」。改用 box-shadow 就不會有這個副作用，
+   模糊度會跟其他卡片一致，光暈用一圈柔和的外光模擬即可，視覺上差異極小。 */
+.service-highlight-wrap{ box-shadow: 0 0 26px 2px rgba(124,148,230,.4); }
 .service-highlight{ border-color: rgba(159,203,245,.55) !important; }
 
 /* ---------- 服務方案：完整說明彈窗內文樣式 ---------- */
@@ -1568,6 +1576,22 @@ body{ padding-bottom: 96px; } /* 預留手機底部固定列高度，避免遮�
    3) services 工作表（可覆蓋預設方案，欄位如下；留空則使用內建預設方案）
       tab(線上諮詢/實體面談) | badge | name | price | description | note | image_url | button_text | button_url
       （price 為選填：填了會顯示在方案名稱下方的價格文字，留空則不顯示該行）
+
+   4) legal 工作表（【免責聲明】／【服務條款】彈窗內文，可直接在 Google Sheet 編輯更新，
+      不用改程式碼；欄位如下）
+      doc(disclaimer/terms) | order | heading | content
+      - doc：固定填 disclaimer（免責聲明）或 terms（服務條款），決定這一列要放進哪個分頁
+      - order：數字，用來排序（由小到大）；同一個 doc 可以有很多列，
+        每一列會變成一個「小標題＋段落」的區塊，依 order 排列組成完整內文
+      - heading：這一段的小標題（選填，留空則該段不顯示小標題，只顯示 content 內文）
+      - content：這一段的正文文字。若同一段要換行／分項，直接在儲存格內用「換行」
+        （Google Sheet 儲存格內按 Alt+Enter 或 Ctrl+Enter 換行）即可，會自動轉成分段
+      範例（三列）：
+        disclaimer | 1 | 服務性質 | 本網站提供之占卜、能量梳理內容僅供參考...
+        disclaimer | 2 | 非醫療建議 | 內容不能取代專業醫療、心理或法律諮詢...
+        terms      | 1 | 預約與付款 | 完成付款即視為同意本服務條款...
+      （若 legal 工作表整個沒有資料，或找不到 disclaimer／terms 任何一列，會自動顯示
+        內建的預設提示文字，不會出現空白彈窗）
    ============================================================ */
 
 const SPREADSHEET_ID = '1XXX71bkr3bEgAD9lBuLHFgmy68Qp3qh26llyEUV0xxI';
@@ -1733,6 +1757,13 @@ const DEFAULT_SERVICES = [
   { tab:'線上諮詢', badge:'方案 B', name:'能量梳理', label:'全方位拆解', audience:'面臨抉擇卡關、想梳理事件走向者', price:'NT$888 / 次（20 min）', description:'結合女巫符文與神諭卡，全方位拆解事件的深層走向，溫柔梳理妳卡住的思緒與能量。', note:'', image_url:'', button_text:'私訊仙子，預約梳理', button_url:IG_DM_URL, highlight:true },
   { tab:'線上諮詢', badge:'方案 C', name:'深度療癒', label:'靈魂對話', audience:'處於人生大迷惘、需要釋放情緒者', price:'預約制｜請敲小盒子評估（50 min）', description:'一場一對一的靈魂深處對話。適合正處於巨大迷惘、需要釋放情感並找回內在力量的妳。', note:'', image_url:'', button_text:'開啟聊天室，深度對話', button_url:IG_DM_URL },
   { tab:'實體面談', badge:'方案 D', name:'實體深度面談', label:'面對面沉浸連結', audience:'重視現場真實能量交流者', price:'專屬預約｜私訊仙子為你安排（60 min）', description:'面對面感受最強大的能量連結，結合符文與直覺感應。由 見習仙子++ 陪妳在城市的優雅咖啡廳裡，靜心尋找屬於妳的光。', note:'地點以雙北捷運沿線咖啡廳為主。費用不含店內低消，需預先支付全額或訂金以完成預約。', image_url:'', button_text:'私訊仙子，預約面談', button_url:IG_DM_URL }
+];
+
+/* DEFAULT_LEGAL：僅在 legal 工作表尚未設定，或該分頁找不到任何一列資料時顯示，
+   避免彈窗開起來整片空白；正式內容請直接在 Google Sheet 的 legal 分頁填寫。 */
+const DEFAULT_LEGAL = [
+  { doc:'disclaimer', order:1, heading:'服務性質', content:'（示範預覽）本網站提供之占卜、能量梳理內容僅供心靈參考與陪伴，請自行在 Google Sheet 的 legal 工作表填寫正式的免責聲明內文。' },
+  { doc:'terms', order:1, heading:'服務條款', content:'（示範預覽）請自行在 Google Sheet 的 legal 工作表填寫正式的服務條款內文。' }
 ];
 
 /* ---------- 符文圖騰 SVG ---------- */
@@ -2322,6 +2353,43 @@ function renderServices(rows){
   requestAnimationFrame(()=> switchTab(tabDefs[0].key));
 }
 
+/* ---------- 渲染：免責聲明／服務條款（legal 工作表） ----------
+   把 doc 欄位為 disclaimer／terms 的所有列，依 order 由小到大排序後，
+   組成「小標題＋段落」的內文，分別塞進彈窗的兩個分頁裡。 */
+function escapeHtml(str){
+  return (str==null ? '' : String(str))
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function buildLegalHtml(rows, docKey){
+  const items = (rows||[])
+    .filter(r => (r.doc||'').toString().trim() === docKey)
+    .sort((a,b) => (parseFloat(a.order) || 0) - (parseFloat(b.order) || 0));
+  if(items.length === 0) return '';
+  return items.map(it=>{
+    const heading = it.heading ? `<h4>${escapeHtml(it.heading)}</h4>` : '';
+    /* 儲存格內用換行分段，這裡把每個換行轉成獨立一個 <p>，
+       比整段塞進單一 <p> 更好讀，也跟 Google Sheet 裡的排版所見略同 */
+    const paras = escapeHtml(it.content||'')
+      .split(/\r?\n+/).filter(Boolean)
+      .map(p => `<p>${p}</p>`).join('');
+    return heading + paras;
+  }).join('');
+}
+
+function renderLegal(rows){
+  const docDisclaimer = document.getElementById('legalDocDisclaimer');
+  const docTerms = document.getElementById('legalDocTerms');
+  if(!docDisclaimer || !docTerms) return;
+  /* rows === null 代表 Sheet 尚未設定或讀取失敗 → 用示範文字預覽
+     rows 是陣列但找不到對應 doc 的資料列，也一樣落回示範文字，避免彈窗開起來空白一片 */
+  const source = (rows === null) ? DEFAULT_LEGAL : rows;
+  const disclaimerHtml = buildLegalHtml(source, 'disclaimer') || buildLegalHtml(DEFAULT_LEGAL, 'disclaimer');
+  const termsHtml = buildLegalHtml(source, 'terms') || buildLegalHtml(DEFAULT_LEGAL, 'terms');
+  docDisclaimer.innerHTML = disclaimerHtml;
+  docTerms.innerHTML = termsHtml;
+}
+
 /* ---------- 服務方案：完整說明彈窗（首頁卡片只留關鍵四要素，其餘點開才看） ---------- */
 function openServiceDetail(sv){
   const overlay = document.getElementById('serviceDetailOverlay');
@@ -2518,14 +2586,16 @@ const ServiceCarousel = (function(){
 renderGemsIfChanged(null);
 
 async function init(){
-  const [profileRows, quizRows, serviceRows] = await Promise.all([
+  const [profileRows, quizRows, serviceRows, legalRows] = await Promise.all([
     fetchSheet('profile'),
     fetchSheet('quiz'),
-    fetchSheet('services')
+    fetchSheet('services'),
+    fetchSheet('legal')
   ]);
   renderNews(profileRows);
   renderGemsIfChanged(quizRows);
   renderServices(serviceRows);
+  renderLegal(legalRows);
 }
 init();
 
