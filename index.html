@@ -516,7 +516,7 @@ body{
   display:block; margin-top:5px; font-size:11px; font-weight:500;
   letter-spacing:.3px; text-transform:none; opacity:.85;
 }
-.service-btn{ display:inline-block; text-align:center; padding:12px 30px; margin-top:10px; font-size:12.5px; border-radius:999px; }
+.service-btn{ display:inline-flex; align-items:center; justify-content:center; min-height:44px; text-align:center; padding:12px 30px; margin-top:10px; font-size:12.5px; border-radius:999px; }
 .service-body{ display:flex; flex-direction:column; align-items:center; }
 
 
@@ -725,6 +725,20 @@ body{
   backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255,255,255,.18);
 }
+
+/* ---------- 指引卡：複製／分享列（次要動作，比預約按鈕更輕量） ---------- */
+.gem-share-row{ display:flex; align-items:center; justify-content:center; gap:10px; margin:0 0 18px; flex-wrap:wrap; }
+.gem-share-btn{
+  display:inline-flex; align-items:center; gap:6px; min-height:44px;
+  padding:10px 18px; border-radius:999px; cursor:pointer;
+  font-family:var(--sans); font-size:12px; letter-spacing:.5px; color:var(--parchment-soft);
+  background: rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.16);
+  transition: background .25s ease, border-color .25s ease, color .25s ease, transform .2s ease;
+}
+.gem-share-btn:hover, .gem-share-btn:active{ background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.4); color:#FFFFFF; }
+.gem-share-btn:active{ transform: scale(.97); }
+.gem-share-btn.copied{ background: rgba(159,203,245,.22); border-color: rgba(159,203,245,.6); color:#FFFFFF; }
+.gem-share-icon{ font-size:13px; }
 
 /* ---------- 指引卡下方動作列：預約按鈕 ---------- */
 .gem-action-row{ display:flex; flex-direction:column; align-items:center; gap:10px; }
@@ -964,7 +978,7 @@ body{
   margin:12px 0 4px;
 }
 .service-nav-arrow{
-  width:32px; height:32px; border-radius:50%; padding:0; flex:0 0 auto;
+  width:44px; height:44px; border-radius:50%; padding:0; flex:0 0 auto;
   display:flex; align-items:center; justify-content:center;
   font-family:var(--serif); font-size:17px; line-height:1; color:rgba(255,255,255,.8);
   background:transparent; border:1px solid rgba(255,255,255,.38);
@@ -1015,20 +1029,81 @@ body{
 .service-badge{
   display:block; font-size:11.5px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase;
   color:rgba(159,203,245,.85);
-  margin-bottom:12px;
+  margin-bottom:10px;
 }
 .service-name{
   font-family:var(--serif); font-size:20px; font-weight:700; color:#FFFFFF;
-  margin:0 0 12px; letter-spacing:.3px;
+  margin:0 0 8px; letter-spacing:.3px;
+}
+.service-label{
+  display:inline-block; align-self:center;
+  font-family:var(--sans); font-size:11px; font-weight:600; letter-spacing:.5px;
+  color:#FFFFFF; background: rgba(124,148,230,.28);
+  padding:4px 14px; border-radius:999px; margin:0 0 12px;
+}
+.service-audience{
+  font-family:var(--sans); font-size:12.5px; line-height:1.8; color:var(--parchment-soft);
+  margin:0 0 12px;
 }
 .service-price{
   display:block; align-self:center;
   font-family:var(--serif); font-size:15px; font-weight:700; letter-spacing:.3px;
   color:#FFFFFF;
-  margin:0 0 18px;
+  margin:0 0 16px;
 }
 .service-desc{ font-family:var(--sans); font-size:13.5px; line-height:2.3; color:var(--parchment-soft); margin:0 0 10px; }
 .service-note{ font-family:var(--sans); font-size:11.5px; color:rgba(255,255,255,.7); line-height:2.1; margin:0 0 8px; }
+
+/* ---------- 服務方案：了解完整內容（次要文字連結，點開才看到全文） ---------- */
+.service-more-btn{
+  display:inline-flex; align-items:center; justify-content:center; min-height:44px;
+  background:none; border:none; cursor:pointer;
+  font-family:var(--sans); font-size:12px; letter-spacing:.5px;
+  color: rgba(159,203,245,.9); text-decoration: underline; text-underline-offset:3px;
+  margin:0 0 12px; padding:6px 4px;
+}
+.service-more-btn:hover, .service-more-btn:active{ color:#FFFFFF; }
+
+/* ---------- 服務方案：B 案熱門推薦視覺強化（外框微光＋緞帶標籤） ---------- */
+.service-highlight-wrap{ filter: drop-shadow(0 0 22px rgba(124,148,230,.35)); }
+.service-highlight{ border-color: rgba(159,203,245,.55) !important; }
+.service-ribbon{
+  position:absolute; top:14px; right:-8px; z-index:2;
+  font-family:var(--sans); font-size:10.5px; font-weight:700; letter-spacing:1px;
+  color:#0A0A0A; background: linear-gradient(135deg,#EAF1FF,#9FCBF5);
+  padding:5px 14px 5px 12px; border-radius:6px 2px 2px 6px;
+  box-shadow: 0 4px 10px rgba(0,0,0,.3);
+}
+
+/* ---------- B vs C 選擇提示：卡片輪播上方的一行溫柔提示，不做成表格 ---------- */
+.service-tip{
+  flex:0 0 100%; text-align:center; margin:0 0 14px;
+  font-family:var(--sans); font-size:12.5px; line-height:1.8;
+  color: var(--parchment-soft);
+  background: rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12);
+  border-radius:14px; padding:10px 18px;
+}
+
+/* ---------- 服務方案：完整說明彈窗內文樣式 ---------- */
+.service-detail-body{ text-align:center; }
+.service-detail-badge{
+  display:block; font-size:11.5px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase;
+  color:rgba(159,203,245,.85); margin-bottom:10px;
+}
+.service-detail-name{
+  font-family:var(--serif); font-size:22px; font-weight:700; color:#FFFFFF;
+  margin:0 0 10px;
+}
+.service-detail-price{
+  font-family:var(--serif); font-size:15px; font-weight:700; color:#FFFFFF; margin:0 0 18px;
+}
+.service-detail-desc{
+  font-family:var(--sans); font-size:14px; line-height:2.1; color:var(--parchment-soft); margin:0 0 14px; text-align:left;
+}
+.service-detail-note{
+  font-family:var(--sans); font-size:12px; line-height:1.9; color:rgba(255,255,255,.7); margin:0 0 20px; text-align:left;
+}
+.service-detail-btn{ display:inline-block; min-height:44px; line-height:20px; }
 
 /* ============================================================
    底部
@@ -1503,6 +1578,16 @@ body{ padding-bottom: 96px; } /* 預留手機底部固定列高度，避免遮�
   </div>
 </div>
 
+<!-- ============ 服務方案：完整說明彈窗（首頁卡片只留關鍵四要素） ============ -->
+<div class="legal-modal-overlay service-detail-overlay" id="serviceDetailOverlay">
+  <div class="glass-shadow-wrap legal-modal-shadow">
+    <div class="legal-modal liquid-glass" id="serviceDetailModal">
+      <button class="legal-modal-close" id="serviceDetailClose" type="button" aria-label="關閉">✕</button>
+      <div class="legal-modal-body service-detail-body" id="serviceDetailBody"></div>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ============================================================
    ▍設定區
@@ -1688,11 +1773,14 @@ const DEFAULT_QUIZ = [
 ];
 
 const DEFAULT_SERVICES = [
-  { tab:'線上諮詢', badge:'方案 A', name:'直覺快問', price:'$333 / 題', description:'專注於妳當下面臨的單一煩惱。用符文的精準焦點，為妳的關鍵決策提供一記溫柔的破局線索。', note:'', image_url:'', button_text:'敲小盒子，迅速解惑', button_url:IG_DM_URL },
-  { tab:'線上諮詢', badge:'方案 B', name:'能量梳理', price:'$888 / 20 分鐘', description:'結合女巫符文與神諭卡，全方位拆解事件的深層走向，溫柔梳理妳卡住的思緒與能量。', note:'', image_url:'', button_text:'私訊仙子，預約梳理', button_url:IG_DM_URL },
-  { tab:'線上諮詢', badge:'方案 C', name:'深度療癒', price:'預約制｜請敲小盒子評估', description:'一場一對一的靈魂深處對話。適合正處於巨大迷惘、需要釋放情感並找回內在力量的妳。', note:'', image_url:'', button_text:'開啟聊天室，深度對話', button_url:IG_DM_URL },
-  { tab:'實體面談', badge:'方案 D', name:'實體深度面談', price:'專屬預約｜私訊仙子為你安排', description:'面對面感受最強大的能量連結，結合符文與直覺感應。由 見習仙子++ 陪妳在城市的優雅咖啡廳裡，靜心尋找屬於妳的光。', note:'地點以雙北捷運沿線咖啡廳為主。費用不含店內低消，需預先支付全額或訂金以完成預約。', image_url:'', button_text:'私訊仙子，預約面談', button_url:IG_DM_URL }
+  { tab:'線上諮詢', badge:'方案 A', name:'直覺快問', label:'快速指引', audience:'有具體單一問題、需要快速決策者', price:'NT$333 / 題（線上諮詢 5–8 min）', description:'專注於妳當下面臨的單一煩惱。用符文的精準焦點，為妳的關鍵決策提供一記溫柔的破局線索。', note:'', image_url:'', button_text:'敲小盒子，迅速解惑', button_url:IG_DM_URL },
+  { tab:'線上諮詢', badge:'方案 B', name:'能量梳理', label:'熱門推薦‧全方位拆解', audience:'面臨抉擇卡關、想梳理事件走向者', price:'NT$888 / 次（20 min）', description:'結合女巫符文與神諭卡，全方位拆解事件的深層走向，溫柔梳理妳卡住的思緒與能量。', note:'', image_url:'', button_text:'私訊仙子，預約梳理', button_url:IG_DM_URL, highlight:true },
+  { tab:'線上諮詢', badge:'方案 C', name:'深度療癒', label:'靈魂對話', audience:'處於人生大迷惘、需要釋放情緒者', price:'預約制｜請敲小盒子評估（50 min）', description:'一場一對一的靈魂深處對話。適合正處於巨大迷惘、需要釋放情感並找回內在力量的妳。', note:'', image_url:'', button_text:'開啟聊天室，深度對話', button_url:IG_DM_URL },
+  { tab:'實體面談', badge:'方案 D', name:'實體深度面談', label:'面對面沉浸連結', audience:'重視現場真實能量交流者', price:'專屬預約｜私訊仙子為你安排（60 min）', description:'面對面感受最強大的能量連結，結合符文與直覺感應。由 見習仙子++ 陪妳在城市的優雅咖啡廳裡，靜心尋找屬於妳的光。', note:'地點以雙北捷運沿線咖啡廳為主。費用不含店內低消，需預先支付全額或訂金以完成預約。', image_url:'', button_text:'私訊仙子，預約面談', button_url:IG_DM_URL }
 ];
+
+/* B vs C 一時選不出來時的溫柔提示；C vs D 也常見混淆，一併準備 */
+const SERVICE_TIP = '💡 不確定怎麼選？想看清事件走向選 B 能量梳理，想好好釋放心情與壓力選 C 深度療癒。';
 
 /* ---------- 符文圖騰 SVG ---------- */
 const ICONS = {
@@ -2115,6 +2203,14 @@ function renderGemDeck(rows, defaultData, ids){
           ${g.crystal ? `<span class="gem-pairing-tag">🔮 建議搭配水晶：${g.crystal}</span>` : ''}
           ${g.scent ? `<span class="gem-pairing-tag">🌿 能量對頻香氛：${g.scent}</span>` : ''}
         </div>` : ''}
+        <div class="gem-share-row reveal-fade" style="animation-delay:.46s">
+          <button type="button" class="gem-share-btn" data-share-copy data-share-name="${(g.name||'').replace(/"/g,'&quot;')}" data-share-quote="${(g.quote||'').replace(/"/g,'&quot;')}" data-share-text="${(g.guidance_text||'').replace(/"/g,'&quot;')}" data-share-affirm="${(g.affirmation||'').replace(/"/g,'&quot;')}">
+            <span class="gem-share-icon">📋</span>複製指引
+          </button>
+          <button type="button" class="gem-share-btn" data-share-ig data-share-name="${(g.name||'').replace(/"/g,'&quot;')}" data-share-quote="${(g.quote||'').replace(/"/g,'&quot;')}" data-share-text="${(g.guidance_text||'').replace(/"/g,'&quot;')}" data-share-affirm="${(g.affirmation||'').replace(/"/g,'&quot;')}">
+            <span class="gem-share-icon">📤</span>分享至 IG
+          </button>
+        </div>
         <div class="gem-action-row reveal-fade" style="animation-delay:.5s">
           <a class="gem-btn" href="${g.button_url||IG_DM_URL}" target="_blank" rel="noopener">${formatGemBtnText(g.button_text||'立即預約')}</a>
         </div>
@@ -2236,26 +2332,39 @@ function renderServices(rows){
     if(items.length === 0){
       panel.innerHTML = `<p class="loading-text">此類型方案尚未開放，敬請期待</p>`;
     }else{
+      /* B/C 常常猶豫不決，這行提示放在該分頁卡片輪播上方，不佔用卡片本身空間 */
+      if(t.key === '線上諮詢'){
+        const tip = document.createElement('p');
+        tip.className = 'service-tip';
+        tip.textContent = SERVICE_TIP;
+        panel.appendChild(tip);
+        panel.style.flexWrap = 'wrap';
+      }
       items.forEach(sv=>{
+        const isHighlight = !!sv.highlight || /方案\s*B/.test(sv.badge||'');
         const cardWrap = document.createElement('div');
-        cardWrap.className = 'glass-shadow-wrap service-card-shadow';
+        cardWrap.className = 'glass-shadow-wrap service-card-shadow' + (isHighlight ? ' service-highlight-wrap' : '');
         const mask = document.createElement('div');
         mask.className = 'card-backdrop-mask';
         const card = document.createElement('div');
-        card.className = 'service-card liquid-glass';
+        card.className = 'service-card liquid-glass' + (isHighlight ? ' service-highlight' : '');
         card.innerHTML = `
+          ${isHighlight ? `<span class="service-ribbon">熱門推薦</span>` : ''}
           <div class="service-img-wrap">${sv.image_url ? `<img class="service-img" src="${sv.image_url}" alt="" loading="lazy" decoding="async">` : ''}</div>
           <div class="service-body">
             <span class="service-badge">${sv.badge||''}</span>
             <h3 class="service-name">${sv.name||''}</h3>
+            ${sv.label ? `<span class="service-label">${sv.label}</span>` : ''}
+            ${sv.audience ? `<p class="service-audience">適合對象：${sv.audience}</p>` : ''}
             ${sv.price ? `<p class="service-price">${sv.price}</p>` : ''}
-            <p class="service-desc">${sv.description||''}</p>
-            ${sv.note ? `<p class="service-note">${sv.note}</p>` : ''}
+            <button type="button" class="service-more-btn" data-service-detail>了解完整內容</button>
             <a class="service-btn" href="${sv.button_url||IG_DM_URL}" target="_blank" rel="noopener">${sv.button_text||'私訊預約仙子'}</a>
           </div>
         `;
         cardWrap.appendChild(mask);
         cardWrap.appendChild(card);
+        const moreBtn = card.querySelector('[data-service-detail]');
+        moreBtn && moreBtn.addEventListener('click', ()=> openServiceDetail(sv));
         panel.appendChild(cardWrap);
       });
     }
@@ -2265,6 +2374,29 @@ function renderServices(rows){
   /* 等按鈕實際排版完成才量得到寬度／位置，指示條與滑軌才能準確定位到第一個分頁 */
   requestAnimationFrame(()=> switchTab(tabDefs[0].key));
 }
+
+/* ---------- 服務方案：完整說明彈窗（首頁卡片只留關鍵四要素，其餘點開才看） ---------- */
+function openServiceDetail(sv){
+  const overlay = document.getElementById('serviceDetailOverlay');
+  const body = document.getElementById('serviceDetailBody');
+  if(!overlay || !body) return;
+  body.innerHTML = `
+    <span class="service-detail-badge">${sv.badge||''}</span>
+    <h3 class="service-detail-name">${sv.name||''}</h3>
+    ${sv.price ? `<p class="service-detail-price">${sv.price}</p>` : ''}
+    <p class="service-detail-desc">${sv.description||''}</p>
+    ${sv.note ? `<p class="service-detail-note">${sv.note}</p>` : ''}
+    <a class="service-btn service-detail-btn" href="${sv.button_url||IG_DM_URL}" target="_blank" rel="noopener">${sv.button_text||'私訊預約仙子'}</a>
+  `;
+  overlay.classList.add('open');
+}
+(function(){
+  const overlay = document.getElementById('serviceDetailOverlay');
+  const closeBtn = document.getElementById('serviceDetailClose');
+  if(!overlay) return;
+  closeBtn && closeBtn.addEventListener('click', ()=> overlay.classList.remove('open'));
+  overlay.addEventListener('click', (e)=>{ if(e.target === overlay) overlay.classList.remove('open'); });
+})();
 
 window.addEventListener('resize', ()=>{
   const active = document.querySelector('.tab-btn.active');
@@ -2752,6 +2884,67 @@ function handleChatQuickReply(opt, replyBox, msgBox, preOpenedWindow){
   closeBtn && closeBtn.addEventListener('click', closeModal);
   overlay.addEventListener('click', (e)=>{ if(e.target === overlay) closeModal(); });
   tabBtns.forEach(btn => btn.addEventListener('click', ()=> showDoc(btn.dataset.doc)));
+})();
+
+/* ---------- 尋光指引：一鍵複製／分享至 IG ---------- */
+(function(){
+  function buildShareText(btn){
+    const name = btn.dataset.shareName || '';
+    const quote = btn.dataset.shareQuote || '';
+    const text = btn.dataset.shareText || '';
+    const affirm = btn.dataset.shareAffirm || '';
+    let out = `✨ 我抽到的女巫符文指引：${name}\n`;
+    if(quote) out += `「${quote}」\n\n`;
+    if(text) out += `${text}\n`;
+    if(affirm) out += `\n今日肯定句：「${affirm}」\n`;
+    out += `\n— Morningstar 見習仙子++ 尋光指引`;
+    return out;
+  }
+
+  async function copyText(str){
+    try{
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        await navigator.clipboard.writeText(str);
+        return true;
+      }
+    }catch(e){ /* 繼續走 fallback */ }
+    try{
+      const ta = document.createElement('textarea');
+      ta.value = str;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      return true;
+    }catch(e){ return false; }
+  }
+
+  document.addEventListener('click', async (e)=>{
+    const copyBtn = e.target.closest('[data-share-copy]');
+    const igBtn = e.target.closest('[data-share-ig]');
+    if(!copyBtn && !igBtn) return;
+
+    const btn = copyBtn || igBtn;
+    const text = buildShareText(btn);
+
+    if(igBtn && navigator.share){
+      /* 有原生分享功能（多數手機瀏覽器）就優先用系統分享面板，可直接選 IG 限動／訊息 */
+      try{
+        await navigator.share({ text });
+        return;
+      }catch(e){ /* 使用者取消分享或不支援，落到下方複製＋提示 */ }
+    }
+
+    const ok = await copyText(text);
+    if(ok){
+      const original = btn.innerHTML;
+      btn.classList.add('copied');
+      btn.innerHTML = igBtn ? '<span class="gem-share-icon">✅</span>已複製，去 IG 貼上吧' : '<span class="gem-share-icon">✅</span>已複製指引';
+      setTimeout(()=>{ btn.classList.remove('copied'); btn.innerHTML = original; }, 2200);
+    }
+  });
 })();
 
 /* ---------- 進場儀式（Splash Screen） ---------- */
