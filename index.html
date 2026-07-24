@@ -961,7 +961,7 @@ body{
   flex:0 0 100%; min-width:0;
   display:flex; flex-direction:row; align-items:stretch;
   overflow-x:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
-  scrollbar-width:none;
+  scrollbar-width:none; touch-action:pan-y;
   /* 一次只完整顯示一張卡片，不再露出下一張的半截文字（避免跑版的尷尬感）；
      要不要滑到下一張，改由卡片下方的箭頭／圓點來提示，畫面更乾淨 */
   margin:0; padding:6px 2px 4px;
@@ -2477,6 +2477,44 @@ const ServiceCarousel = (function(){
       if(raf) return;
       raf = requestAnimationFrame(()=>{ syncDots(panel); raf = null; });
     }, { passive:true });
+
+    /* 手指左右滑動：不完全依賴各瀏覽器／內嵌 WebView（IG、LINE 等）對巢狀
+       overflow-x 容器的原生觸控支援，改用 JS 主動判斷水平拖曳並貼齊卡片，
+       放手後的落點行為和點箭頭／圓點時一致 */
+    let startX = 0, startY = 0, startScrollLeft = 0;
+    let dragging = false, horizontal = null;
+
+    panel.addEventListener('touchstart', (e)=>{
+      if(e.touches.length !== 1) return;
+      const t = e.touches[0];
+      startX = t.clientX; startY = t.clientY;
+      startScrollLeft = panel.scrollLeft;
+      dragging = true; horizontal = null;
+    }, { passive:true });
+
+    panel.addEventListener('touchmove', (e)=>{
+      if(!dragging) return;
+      const t = e.touches[0];
+      const dx = t.clientX - startX;
+      const dy = t.clientY - startY;
+      if(horizontal === null){
+        if(Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+        horizontal = Math.abs(dx) > Math.abs(dy);
+      }
+      if(horizontal){
+        e.preventDefault();
+        panel.scrollLeft = startScrollLeft - dx;
+      }
+    }, { passive:false });
+
+    function endDrag(){
+      if(!dragging) return;
+      dragging = false;
+      if(horizontal){ scrollToIndex(panel, closestIndex(panel)); }
+      horizontal = null;
+    }
+    panel.addEventListener('touchend', endDrag);
+    panel.addEventListener('touchcancel', endDrag);
   }
 
   /* 依目前分頁的方案數量重建圓點；只有 1 個方案時不顯示圓點 */
