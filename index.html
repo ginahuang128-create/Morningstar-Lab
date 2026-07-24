@@ -412,7 +412,7 @@ body{
      在轉場／不同尺寸內容時邊角會出現鋸齒破碎的假影，故移除，只保留純淨模糊玻璃感 */
   backdrop-filter: blur(16px) saturate(150%) contrast(1.03) brightness(1.03);
   -webkit-backdrop-filter: blur(16px) saturate(150%) contrast(1.03) brightness(1.03);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   /* 陰影已完全取消：不再用 inset box-shadow 模擬邊框亮線，改用真正的細邊框（0.75px），
      跟著 JS 算出的 squircle clip-path 走，線條會更細緻、不會出現硬邊直線 */
   /* 注意：外層投影不能放在這個元素自己身上 —— 實測 Chromium 只要同一個元素同時有
@@ -492,10 +492,10 @@ body{
    但降低字重與邊框亮度，讓兩者一眼就能分出主從，不是同一層級的兩顆按鈕 */
 .service-btn{
   font-weight:600; letter-spacing:1.5px;
-  background: transparent; border-color: rgba(255,255,255,.55);
+  background: rgba(255,255,255,.07); border-color: transparent;
 }
 .service-btn:hover, .service-btn:active{
-  background: rgba(255,255,255,.08); color:#FFFFFF; border-color:#FFFFFF;
+  background: rgba(255,255,255,.14); color:#FFFFFF; border-color:transparent;
 }
 .gem-btn:hover, .service-btn:hover{
   transform: translateY(-3px);
@@ -1010,26 +1010,25 @@ body{
   border:3px solid var(--void-2);
   box-shadow: 0 0 0 2px rgba(124,148,230,.5), 0 12px 26px rgba(0,0,0,.45);
 }
-.service-body{ padding: 4px 22px 18px; text-align:center; flex:1; display:flex; flex-direction:column; }
+.service-body{ padding: 8px 26px 22px; text-align:center; flex:1; display:flex; flex-direction:column; }
 .service-body .service-btn{ margin-top:auto; align-self:center; }
 .service-badge{
   display:block; font-size:11.5px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase;
-  color:rgba(255,255,255,.75);
-  margin-bottom:10px;
+  color:rgba(159,203,245,.85);
+  margin-bottom:12px;
 }
 .service-name{
   font-family:var(--serif); font-size:20px; font-weight:700; color:#FFFFFF;
-  margin:0 0 10px; letter-spacing:.3px;
+  margin:0 0 12px; letter-spacing:.3px;
 }
 .service-price{
-  display:inline-block; align-self:center;
-  font-family:var(--serif); font-size:14.5px; font-weight:700; letter-spacing:.3px;
+  display:block; align-self:center;
+  font-family:var(--serif); font-size:15px; font-weight:700; letter-spacing:.3px;
   color:#FFFFFF;
-  background: rgba(124,148,230,.2);
-  padding:5px 16px; border-radius:999px; margin:0 0 16px;
+  margin:0 0 18px;
 }
-.service-desc{ font-family:var(--sans); font-size:13.5px; line-height:2.05; color:var(--parchment-soft); margin:0 0 8px; }
-.service-note{ font-family:var(--sans); font-size:11.5px; color:rgba(255,255,255,.7); line-height:1.9; margin:0 0 6px; }
+.service-desc{ font-family:var(--sans); font-size:13.5px; line-height:2.3; color:var(--parchment-soft); margin:0 0 10px; }
+.service-note{ font-family:var(--sans); font-size:11.5px; color:rgba(255,255,255,.7); line-height:2.1; margin:0 0 8px; }
 
 /* ============================================================
    底部
@@ -1065,7 +1064,9 @@ body.splash-active{ overflow:hidden; height:100vh; }
   position:fixed; inset:0; z-index:10000;
   display:flex; align-items:center; justify-content:center; flex-direction:column;
   background:
-    radial-gradient(ellipse at 50% 38%, rgba(70,32,66,.9), transparent 62%),
+    radial-gradient(ellipse at 15% -10%, rgba(124,148,230,.16) 0%, transparent 45%),
+    radial-gradient(ellipse at 100% 15%, rgba(124,148,230,.1) 0%, transparent 42%),
+    radial-gradient(ellipse at 50% 38%, rgba(124,148,230,.22), transparent 62%),
     var(--void);
   transition: opacity 1.15s ease, visibility 1.15s ease;
 }
