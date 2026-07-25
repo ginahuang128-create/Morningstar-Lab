@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Morningstar ｜ 見習仙子的魔法傳送門</title>
+<!-- [優化-4] 尋光指引「分享至 IG」：將指引卡繪製為長圖所需的函式庫 -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
 <meta name="description" content="Morningstar 見習仙子的魔法傳送門——查看最新活動仙子近況，預約線上諮詢或實體面談，讓仙子陪你找到內心的答案。">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Morningstar ｜ 見習仙子的魔法傳送門">
@@ -378,12 +380,23 @@ body{
 }
 .news-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
 .news-thumb svg{ width:24px; height:24px; color:#fff; opacity:.85; }
-.news-body{ flex:1 1 auto; min-width:0; }
+.news-body{ flex:1 1 auto; min-width:0; position:relative; }
+.news-date-row{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
 .news-date{
   display:inline-block; font-size:11px; font-weight:700; letter-spacing:1.4px; text-transform:uppercase;
   color:#fff; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.4);
-  padding:3px 10px; border-radius:999px; margin-bottom:8px;
+  padding:3px 10px; border-radius:999px; margin-bottom:0;
 }
+/* [優化-3] 活動狀態標籤：報名中／即滿額／已結束，可由 Google Sheets 開關與文字控制
+   （status 欄位留空即代表關閉，不顯示標籤） */
+.news-status{
+  display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:1.2px;
+  padding:3px 10px; border-radius:999px; color:#fff;
+  background: rgba(176,150,255,.28); border:1px solid rgba(196,160,255,.55);
+}
+.news-status[data-status="報名中"]{ background: rgba(140,225,178,.22); border-color: rgba(140,225,178,.55); color:#DFFFEE; }
+.news-status[data-status="即滿額"]{ background: rgba(255,199,120,.22); border-color: rgba(255,199,120,.55); color:#FFEBC7; }
+.news-status[data-status="已結束"]{ background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.28); color: rgba(255,255,255,.6); }
 .news-title{
   display:block; font-size:13.5px; font-weight:600; color:var(--parchment);
   line-height:1.6; margin-bottom:8px;
@@ -484,16 +497,35 @@ body{
   border-color:#FFFFFF;
   text-shadow:none;
 }
-/* 服務方案卡片內的按鈕定位為「次要」動作，權重要明顯低於全站唯一的主要 CTA
-   （浮動的「預約專屬指引」／手機底部的「與仙子連線」），所以維持空心、
-   但降低字重與邊框亮度，讓兩者一眼就能分出主從，不是同一層級的兩顆按鈕 */
+/* ---------- [優化-1] 服務方案卡片：主行動按鈕（各方案自己的預約按鈕）改為
+   全卡片第一視覺焦點：實心微亮紫底＋柔和外光暈，並帶有緩慢的呼吸光動畫，
+   跟卡片內「了解完整內容」（.service-more-btn，維持半透明文字連結）拉開明顯的主次視覺階層。
+   方案名稱／文案／按鈕文字皆可由 Google Sheets「services」工作表的 button_text 欄位覆蓋，
+   詳見本檔案最下方「Google Sheets 資料庫架構規劃表」。 */
 .service-btn{
-  font-weight:600; letter-spacing:1.5px;
-  background: rgba(255,255,255,.07); border-color: transparent;
+  font-weight:700; letter-spacing:1.8px;
+  color:#FFFFFF;
+  background: linear-gradient(135deg, rgba(150,130,235,.95), rgba(196,150,235,.9));
+  border: 1.5px solid rgba(214,196,255,.9);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.12) inset,
+    0 10px 26px rgba(120,80,220,.4),
+    0 0 20px rgba(196,160,255,.55);
+  animation: serviceBtnGlow 3.2s ease-in-out infinite;
 }
 .service-btn:hover, .service-btn:active{
-  background: rgba(255,255,255,.14); color:#FFFFFF; border-color:transparent;
+  background: linear-gradient(135deg, rgba(168,150,255,1), rgba(214,176,255,1));
+  color:#241226; border-color:#FFFFFF;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.2) inset,
+    0 14px 32px rgba(120,80,220,.5),
+    0 0 30px rgba(214,176,255,.85);
 }
+@keyframes serviceBtnGlow{
+  0%,100%{ box-shadow: 0 0 0 1px rgba(255,255,255,.12) inset, 0 10px 26px rgba(120,80,220,.4), 0 0 20px rgba(196,160,255,.55); }
+  50%{ box-shadow: 0 0 0 1px rgba(255,255,255,.16) inset, 0 10px 26px rgba(120,80,220,.5), 0 0 30px rgba(196,160,255,.8); }
+}
+@media (prefers-reduced-motion: reduce){ .service-btn{ animation:none; } }
 .gem-btn:hover, .service-btn:hover{
   transform: translateY(-3px);
   box-shadow: 0 14px 28px rgba(10,14,36,.32);
@@ -822,6 +854,18 @@ body{
   display:flex; align-items:center; justify-content:center;
   font-size:18px; background:rgba(124,148,230,.18);
   border:1px solid rgba(176,196,250,.4);
+  overflow:hidden;
+}
+/* [優化-5] 頭像圖片：水晶球個人照片圓形頭像，取代原本的卡通 emoji 小圖示 */
+.chat-avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+/* 對話框內每則仙子訊息旁的小頭像（比頂部頭像再更小一點）；
+   只包住仙子（fairy）的訊息，訪客（visitor）訊息維持原本靠右純泡泡樣式 */
+.chat-bubble-row{ display:flex; align-items:flex-end; gap:7px; align-self:flex-start; max-width:88%; }
+.chat-bubble-row .chat-bubble{ max-width:100%; }
+.chat-bubble-avatar{
+  width:22px; height:22px; border-radius:50%; flex:0 0 auto;
+  object-fit:cover; border:1px solid rgba(176,196,250,.4);
+  margin-bottom:2px;
 }
 .chat-header-info{ display:flex; flex-direction:column; gap:2px; }
 .chat-header-name{ font-family:var(--serif); font-weight:700; font-size:14.5px; color:#fff; }
@@ -841,7 +885,18 @@ body{
   padding:18px 18px 6px; min-height:120px;
   display:flex; flex-direction:column; gap:10px;
   max-height:340px; overflow-y:auto;
+  /* [優化-2] Firefox：細縮、半透明深紫滾動條，融進玻璃質感框內 */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(150,130,235,.55) transparent;
 }
+/* [優化-2] Chrome / Safari / Edge：客製化滾動條，取代原生灰白色 */
+.chat-messages::-webkit-scrollbar{ width:5px; }
+.chat-messages::-webkit-scrollbar-track{ background:transparent; }
+.chat-messages::-webkit-scrollbar-thumb{
+  background: rgba(150,130,235,.45);
+  border-radius:99px;
+}
+.chat-messages::-webkit-scrollbar-thumb:hover{ background: rgba(176,150,255,.7); }
 .chat-bubble{
   font-family:var(--sans);
   max-width:78%; padding:10px 15px; border-radius:18px;
@@ -890,6 +945,24 @@ body{
 }
 .chat-reply-btn:hover{ border-color:rgba(176,196,250,.75); background:rgba(124,148,230,.16); transform:translateY(-2px); }
 .chat-reply-btn:disabled{ opacity:.4; cursor:default; transform:none; }
+
+/* [優化-2] 對話框最下方的常駐引導按鈕：點擊直接開啟私訊連結（IG DM / LINE），
+   文案與連結皆可由 Google Sheets「settings」工作表的 chat_dm_button_text／chat_dm_button_url 覆蓋 */
+.chat-dm-row{ position:relative; z-index:1; padding: 0 18px 20px; }
+.chat-dm-btn{
+  display:flex; align-items:center; justify-content:center; width:100%;
+  min-height:46px; text-decoration:none; text-align:center;
+  font-family:var(--serif-tc); font-size:13px; font-weight:700; letter-spacing:.8px;
+  color:#FFFFFF; border-radius:999px;
+  background: linear-gradient(135deg, rgba(150,130,235,.9), rgba(196,150,235,.85));
+  border: 1.5px solid rgba(214,196,255,.85);
+  box-shadow: 0 8px 20px rgba(120,80,220,.35), 0 0 16px rgba(196,160,255,.45);
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+.chat-dm-btn:hover, .chat-dm-btn:active{
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px rgba(120,80,220,.45), 0 0 24px rgba(196,160,255,.65);
+}
 
 /* ============================================================
    魔法聊天室 — tabs ＋ 方案（不對稱玻璃卡，蠟封角標）
@@ -1032,11 +1105,11 @@ body{
 .service-more-btn{
   display:inline-flex; align-items:center; justify-content:center; min-height:44px;
   background:none; border:none; cursor:pointer;
-  font-family:var(--sans); font-size:12px; letter-spacing:.5px;
-  color: rgba(159,203,245,.9); text-decoration: underline; text-underline-offset:3px;
+  font-family:var(--sans); font-size:11.5px; letter-spacing:.5px; font-weight:400;
+  color: rgba(255,255,255,.55); text-decoration: underline; text-underline-offset:3px;
   margin:0 0 12px; padding:6px 4px;
 }
-.service-more-btn:hover, .service-more-btn:active{ color:#FFFFFF; }
+.service-more-btn:hover, .service-more-btn:active{ color:rgba(255,255,255,.85); }
 
 /* 方案 B 外框微光已依需求取消，僅保留邊框顏色識別，不再加任何光暈/陰影 */
 .service-highlight{ border-color: rgba(159,203,245,.55) !important; }
@@ -1071,6 +1144,79 @@ body{
 }
 
 .loading-text{ text-align:center; color:var(--parchment-soft); font-size:12.5px; padding:14px 0; }
+
+/* ============================================================
+   [優化-4] 尋光指引：分享長圖彈窗
+   ============================================================ */
+.share-img-modal-overlay{
+  display:none; position:fixed; inset:0; z-index:85;
+  align-items:flex-end; justify-content:center;
+  background: rgba(6,6,10,.65); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  padding:0 28px;
+}
+.share-img-modal-overlay.open{ display:flex; animation: ctaOverlayIn .25s ease; }
+.share-img-modal-shadow{ width:100%; max-width:450px; border-radius:28px 28px 0 0; }
+.share-img-modal{
+  position:relative; width:100%; max-height:86vh; overflow-y:auto;
+  padding:26px 22px 24px; border-radius:28px 28px 0 0;
+}
+.share-img-modal-close{
+  position:absolute; top:14px; right:14px; width:32px; height:32px; border-radius:50%;
+  background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.3); color:#fff;
+  font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+}
+.share-img-modal-body{ display:flex; flex-direction:column; align-items:center; text-align:center; }
+.share-img-loading{ font-size:12.5px; color:var(--parchment-soft); padding:30px 0; }
+.share-img-loading:empty{ display:none; }
+.share-img-preview{
+  width:100%; max-width:280px; border-radius:20px; display:none;
+  box-shadow: 0 14px 34px rgba(0,0,0,.45); border:1px solid rgba(255,255,255,.18);
+  margin: 4px 0 16px;
+}
+.share-img-preview.show{ display:block; }
+.share-img-tip{
+  font-family:var(--sans); font-size:12.5px; line-height:1.8; color:var(--parchment-soft);
+  margin:0 0 18px;
+}
+.share-img-download{ display:none; }
+.share-img-download.show{ display:inline-flex; }
+
+/* [優化-4] 分享長圖的離屏繪製來源：固定寬度、深色星空漸層背景，
+   純視覺卡片，不含按鈕等互動元素，畫完後由 html2canvas 轉成圖片再移除 */
+.share-export-card{
+  position:fixed; left:-9999px; top:0; width:640px;
+  padding:56px 48px 48px;
+  background:
+    radial-gradient(120% 90% at 20% 0%, rgba(150,130,235,.35), transparent 55%),
+    radial-gradient(100% 80% at 85% 100%, rgba(196,150,235,.28), transparent 55%),
+    linear-gradient(160deg, #1C1030 0%, #0A0A14 100%);
+  color:#fff; text-align:center; box-sizing:border-box;
+}
+.share-export-brand{
+  font-family:var(--serif-tc); font-size:14px; letter-spacing:4px; text-transform:uppercase;
+  color:rgba(255,255,255,.6); margin-bottom:26px;
+}
+.share-export-name{
+  font-family:var(--serif); font-weight:700; font-size:34px; color:#fff;
+  margin-bottom:20px; letter-spacing:1px;
+}
+.share-export-quote{
+  font-family:var(--serif); font-style:italic; font-weight:600; font-size:22px;
+  line-height:1.7; color:#fff; margin-bottom:26px;
+}
+.share-export-text{
+  font-family:var(--sans); font-weight:500; font-size:17px; line-height:1.95;
+  color:rgba(255,255,255,.92); margin-bottom:30px;
+}
+.share-export-affirm{
+  font-family:var(--serif); font-style:italic; font-weight:600; font-size:17px;
+  color:#fff; padding:18px 22px; border-radius:20px;
+  background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.22);
+  margin-bottom:34px;
+}
+.share-export-footer{
+  font-family:var(--serif-tc); font-size:13px; letter-spacing:2px; color:rgba(255,255,255,.55);
+}
 
 @media (max-width:360px){
   .brand-title{ font-size:30px; }
@@ -1156,25 +1302,13 @@ body.splash-active .section-hero .tagline{ opacity:0; transform:translateY(20px)
 .section-hero .tagline{ transition-delay:.32s; }
 
 /* ============================================================
-   全站單一 CTA 系統：桌面浮動按鈕 + 手機底部固定列 + 服務選擇彈窗
-   目的：整併原本散落在各卡片以外的重複預約按鈕，統一入口、減少選擇焦慮
+   全站單一 CTA 系統：手機底部固定列 + 服務選擇彈窗
+   （原本桌面版右下角浮動按鈕 .primary-cta 已依需求移除）
    ============================================================ */
 body{ padding-bottom: 96px; } /* 預留手機底部固定列高度，避免遮住頁尾 */
 
-.primary-cta{
-  position:fixed; right:22px; bottom:26px; z-index:60;
-  display:inline-flex; align-items:center; gap:8px;
-  padding:14px 24px; border-radius:999px;
-  font-family:var(--serif-tc); font-weight:700; font-size:13.5px; letter-spacing:.5px;
-  color:#FFFFFF; background:var(--cta-gradient); border:1px solid rgba(176,196,250,.55);
-  box-shadow: 0 10px 28px rgba(10,14,36,.4), 0 0 22px rgba(124,148,230,.32);
-  cursor:pointer; transition: transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s ease;
-}
-.primary-cta:hover{ transform: translateY(-3px); box-shadow: 0 16px 34px rgba(10,14,36,.45), 0 0 28px rgba(124,148,230,.45); }
-.primary-cta:active{ transform: translateY(-1px); background:var(--cta-gradient-active); }
-
 .sticky-cta-bar{
-  display:none; /* 預設隱藏，手機寬度才顯示，與桌面浮動按鈕互斥 */
+  display:none; /* 預設隱藏，手機寬度才顯示 */
   position:fixed; left:0; right:0; bottom:0; z-index:60;
   padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
   background: linear-gradient(180deg, rgba(24,10,30,0) 0%, rgba(24,10,30,.7) 35%, rgba(24,10,30,.9) 100%);
@@ -1194,7 +1328,6 @@ body{ padding-bottom: 96px; } /* 預留手機底部固定列高度，避免遮�
 .sticky-cta-btn:active{ transform: scale(.97); background: rgba(124,148,230,.4); }
 
 @media (max-width: 640px){
-  .primary-cta{ display:none; }
   .sticky-cta-bar{ display:block; }
 }
 
@@ -1409,14 +1542,17 @@ body{ padding-bottom: 96px; } /* 預留手機底部固定列高度，避免遮�
         <div class="card-backdrop-mask"></div>
         <div class="chat-window liquid-glass">
           <div class="chat-header">
-            <span class="chat-avatar">🧚</span>
+            <span class="chat-avatar"><img id="chatAvatarImg" src="https://i.meee.com.tw/hs44NV5.jpg" alt="頭像" loading="lazy" decoding="async"></span>
             <span class="chat-header-info">
-              <span class="chat-header-name">見習仙子</span>
+              <span class="chat-header-name" id="chatHeaderName">見習仙子</span>
               <span class="chat-header-status"><span class="chat-status-dot"></span>在線中</span>
             </span>
           </div>
           <div class="chat-messages" id="chatMessages"></div>
           <div class="chat-quick-replies" id="chatQuickReplies"></div>
+          <div class="chat-dm-row">
+            <a class="chat-dm-btn" id="chatDmBtn" href="#" target="_blank" rel="noopener">點我私訊仙子聊聊</a>
+          </div>
         </div>
       </div>
     </div>
@@ -1440,9 +1576,10 @@ body{ padding-bottom: 96px; } /* 預留手機底部固定列高度，避免遮�
 
 </div>
 
-<!-- ============ 主要 CTA：全站單一入口按鈕 + 手機固定列 ============ -->
-<button class="primary-cta" id="primaryCtaBtn" type="button">🔮 預約專屬指引</button>
-
+<!-- ============ 主要 CTA：手機底部固定列 ============ -->
+<!-- [優化] 右下角桌面版浮動按鈕（原 #primaryCtaBtn／🔮 預約專屬指引）已依需求取消，
+     服務方案卡片自身的主行動按鈕已是高對比實心發光樣式，足以承擔預約入口的角色，
+     不再需要另外一顆常駐浮動按鈕。手機底部固定列（與仙子連線）維持不變。 -->
 <div class="sticky-cta-bar" id="stickyCtaBar">
   <button class="sticky-cta-btn" id="stickyCtaBtn" type="button">✨ 與仙子連線</button>
 </div>
@@ -1497,6 +1634,21 @@ body{ padding-bottom: 96px; } /* 預留手機底部固定列高度，避免遮�
   </div>
 </div>
 
+<!-- ============ [優化-4] 尋光指引：分享長圖彈窗 ============ -->
+<div class="share-img-modal-overlay" id="shareImgModalOverlay">
+  <div class="glass-shadow-wrap share-img-modal-shadow">
+    <div class="share-img-modal liquid-glass" id="shareImgModal">
+      <button class="share-img-modal-close" id="shareImgModalClose" type="button" aria-label="關閉">✕</button>
+      <div class="share-img-modal-body">
+        <div class="share-img-loading" id="shareImgLoading">正在繪製指引長圖．．．</div>
+        <img class="share-img-preview" id="shareImgPreview" alt="尋光指引分享長圖">
+        <p class="share-img-tip" id="shareImgTip">長按圖片即可儲存至相簿，趕快分享至 IG 動態吧 ✨</p>
+        <a class="service-btn share-img-download" id="shareImgDownloadBtn" download="morningstar-guidance.png">下載圖片</a>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ============================================================
    ▍設定區
@@ -1507,10 +1659,28 @@ body{ padding-bottom: 96px; } /* 預留手機底部固定列高度，避免遮�
    ▍工作表欄位規劃：
 
    1) profile 工作表（僅用來放「仙子近況」橫幅，品牌文字已寫死於 HTML）
-      category   | title        | url          | date       | image_url
-      仙子近況    | 活動標題      | 連結         | 日期（自行填寫，例如 2026/7/31，會顯示在標題上方） | 縮圖網址（選填）
+      category   | title        | url          | date       | image_url    | status
+      仙子近況    | 活動標題      | 連結         | 日期（自行填寫，例如 2026/7/31，會顯示在標題上方） | 縮圖網址（選填） | 狀態標籤（選填，例如 報名中／即滿額／已結束）
       （無資料則此卡片自動隱藏。image_url 為選填：有填就會顯示該圖片當卡片縮圖，
-        留空則自動顯示帶星芒圖示的漸層縮圖，不會出現破圖或空白）
+        留空則自動顯示帶星芒圖示的漸層縮圖，不會出現破圖或空白。
+        status 為選填：留空則不顯示狀態標籤，等於關閉這個功能的開關；
+        填「報名中」會顯示綠色標籤、「即滿額」顯示琥珀色、「已結束」顯示灰階，其餘文字則顯示預設紫色標籤）
+
+   1b) settings 工作表（key-value 通用設定，用來放【魔法聊天室】頭像／底部私訊按鈕
+       與【尋光指引】分享彈窗提示文字；欄位如下，留空則使用內建預設值）
+      key                    | value
+      chat_avatar_url        | 頭像圖片網址（水晶球個人照片，圓形頭像用）
+      chat_avatar_name       | 聊天室頂部顯示名稱，例如 見習仙子
+      chat_dm_button_text    | 聊天室最下方引導按鈕文案，例如 點我私訊仙子聊聊
+      chat_dm_button_url     | 按鈕點擊後開啟的私訊連結（IG DM／LINE 皆可）
+      share_tip_text         | 【尋光指引】分享長圖彈窗內的提示文字
+
+   1c) chat_messages 工作表（【魔法聊天室】開場的仙子訊息流，依 order 由小到大依序顯示；
+       留空則使用內建預設的三句開場白）
+      order | text
+      1     | 歡迎來到 Morningstar Lab 💜
+      2     | 心裡總是有一些卡卡的心事嗎？
+      3     | 或者，你也想和我聊聊符文或魔法儀式？
 
    2) quiz 工作表（【尋光指引】用，可覆蓋預設的三張女巫符文，欄位如下；留空則使用內建預設文案）
       symbol(star/scythe/waves) | name | quote | guidance_text | affirmation | crystal | scent | button_text | button_url | image_url
@@ -1563,6 +1733,27 @@ const AUTO_REFRESH_SECONDS = 60;
 const IG_DM_URL = 'https://ig.me/m/morningstar.lab';
 /* 星芒圖示路徑：共用於「按鈕點擊碎星特效」與「仙子近況」縮圖沒有 image_url 時的預設圖示 */
 const SPARK_PATH = "M50 0 C53 33 67 47 100 50 C67 53 53 67 50 100 C47 67 33 53 0 50 C33 47 47 33 50 0 Z";
+
+/* ============================================================
+   ▍品牌 LOGO 設定區
+   ============================================================
+   請準備「透明背景 PNG（高解析度）」或「SVG（向量檔，推薦首選）」，
+   上傳到你自己的圖床／CDN／Google Drive（記得設為公開分享），把網址填進下面的
+   LOGO_URL。這一顆 LOGO 檔案會被同時套用在以下 4 個地方，各自用 CSS 做出
+   不同的色彩效果，不需要準備多個版本：
+     1) 首頁頂部主招牌（Hero，純白 + 溫暖淡金 CSS 微光）
+     2) 開場儀式感畫面中央（Splash，淡入 + 呼吸光暈）
+     3) 尋光指引分享長圖頁首（品牌浮水印）
+     4) 頁尾（半透明 60% 呈現，低調收尾）
+   LOGO_URL 留空時，以上 4 處都會自動退回原本的純文字／圖示版本，不會破版。
+
+   Favicon（瀏覽器分頁圖示）建議另外準備一個「只裁切 LOGO 最上方八角晨星圖案」
+   的正方形透明 PNG／SVG（因為瀏覽器分頁圖示通常縮得很小，完整 LOGO 文字會糊掉、
+   認不出來，只留最具識別度的星芒圖騰效果最好），做好後把網址填進 FAVICON_URL；
+   同時建議準備 180x180 的 apple-touch-icon 給 iOS 加到主畫面時使用。 */
+const LOGO_URL = ''; // TODO：換成你的 LOGO 圖片網址（PNG 透明背景或 SVG）
+const FAVICON_URL = ''; // TODO：換成裁切好的「八角晨星」單獨圖示網址
+const APPLE_TOUCH_ICON_URL = ''; // TODO（選填）：180x180 的 iOS 主畫面圖示網址
 
 /* ---------- 星空粒子（純 CSS box-shadow） ---------- */
 (function initStars(){
@@ -1664,7 +1855,7 @@ async function fetchSheet(sheetName){
    一旦 SPREADSHEET_ID 設定正確且 profile 工作表有資料，會自動改用真實資料；
    若 Sheet 已連上但單純沒有「仙子近況」的資料列，仍會照規則自動隱藏此卡片。 */
 const DEFAULT_NEWS = [
-  { category:'仙子近況', title:'（示範預覽）七月限定占星工作坊開放報名中', url:'#', date:'2026/7/31' }
+  { category:'仙子近況', title:'（示範預覽）七月限定占星工作坊開放報名中', url:'#', date:'2026/7/31', status:'報名中' }
 ];
 
 const DEFAULT_QUIZ = [
@@ -1702,6 +1893,23 @@ const DEFAULT_SERVICES = [
   { tab:'線上諮詢', badge:'方案 B', name:'能量梳理', label:'全方位拆解', audience:'面臨抉擇卡關、想梳理事件走向者', price:'NT$888 / 次（20 min）', description:'結合女巫符文與神諭卡，全方位拆解事件的深層走向，溫柔梳理妳卡住的思緒與能量。', note:'', image_url:'', button_text:'私訊仙子，預約梳理', button_url:IG_DM_URL, highlight:true },
   { tab:'線上諮詢', badge:'方案 C', name:'深度療癒', label:'靈魂對話', audience:'處於人生大迷惘、需要釋放情緒者', price:'預約制｜請敲小盒子評估（50 min）', description:'一場一對一的靈魂深處對話。適合正處於巨大迷惘、需要釋放情感並找回內在力量的妳。', note:'', image_url:'', button_text:'開啟聊天室，深度對話', button_url:IG_DM_URL },
   { tab:'實體面談', badge:'方案 D', name:'實體深度面談', label:'面對面沉浸連結', audience:'重視現場真實能量交流者', price:'專屬預約｜私訊仙子為你安排（60 min）', description:'面對面感受最強大的能量連結，結合符文與直覺感應。由 見習仙子++ 陪妳在城市的優雅咖啡廳裡，靜心尋找屬於妳的光。', note:'地點以雙北捷運沿線咖啡廳為主。費用不含店內低消，需預先支付全額或訂金以完成預約。', image_url:'', button_text:'私訊仙子，預約面談', button_url:IG_DM_URL }
+];
+
+/* DEFAULT_SETTINGS：settings 工作表尚未設定，或找不到對應 key 時的預設值
+   （【優化-2／5】魔法聊天室頭像與底部私訊按鈕、【優化-4】尋光指引分享彈窗提示文字） */
+const DEFAULT_SETTINGS = {
+  chat_avatar_url: 'https://i.meee.com.tw/hs44NV5.jpg',
+  chat_avatar_name: '見習仙子',
+  chat_dm_button_text: '點我私訊仙子聊聊',
+  chat_dm_button_url: IG_DM_URL,
+  share_tip_text: '長按圖片即可儲存至相簿，趕快分享至 IG 動態吧 ✨'
+};
+
+/* DEFAULT_CHAT_MESSAGES：chat_messages 工作表尚未設定，或沒有資料列時的預設開場白 */
+const DEFAULT_CHAT_MESSAGES = [
+  { order:1, text:'歡迎來到 Morningstar Lab 💜' },
+  { order:2, text:'心裡總是有一些卡卡的心事嗎？' },
+  { order:3, text:'或者，你也想和我聊聊符文或魔法儀式？' }
 ];
 
 /* DEFAULT_LEGAL：僅在 legal 工作表尚未設定，或該分頁找不到任何一列資料時顯示，
@@ -2048,10 +2256,19 @@ function renderNews(rows){
     const thumbInner = it.image_url
       ? `<img src="${it.image_url}" alt="" loading="lazy" decoding="async">`
       : `<svg viewBox="0 0 100 100"><path d="${SPARK_PATH}" fill="currentColor"/></svg>`;
+    /* status 為選填的活動狀態標籤（報名中／即滿額／已結束），留空則不顯示，
+       等於是內建的顯示開關，不需要額外的欄位來控制開／關 */
+    const statusText = (it.status||'').toString().trim();
+    const statusHtml = statusText
+      ? `<span class="news-status" data-status="${statusText}">${statusText}</span>`
+      : '';
     card.innerHTML = `
       <div class="news-thumb">${thumbInner}</div>
       <div class="news-body">
-        <span class="news-date">${it.date || '仙子近況'}</span>
+        <div class="news-date-row">
+          <span class="news-date">${it.date || '仙子近況'}</span>
+          ${statusHtml}
+        </div>
         <span class="news-title">${it.title||''}</span>
         <span class="news-cta">查看詳情 →</span>
       </div>
@@ -2315,6 +2532,40 @@ function buildLegalHtml(rows, docKey){
   }).join('');
 }
 
+/* ---------- [優化-2／5] 套用 settings 工作表：頭像／DM 按鈕／分享提示文字 ---------- */
+function buildSettingsObject(rows){
+  const obj = Object.assign({}, DEFAULT_SETTINGS);
+  (rows||[]).forEach(r=>{
+    const key = (r.key||'').toString().trim();
+    const value = (r.value==null ? '' : r.value.toString().trim());
+    if(key && value) obj[key] = value;
+  });
+  return obj;
+}
+
+function applySettings(rows){
+  CURRENT_SETTINGS = buildSettingsObject(rows);
+  const avatarImg = document.getElementById('chatAvatarImg');
+  const nameEl = document.getElementById('chatHeaderName');
+  const dmBtn = document.getElementById('chatDmBtn');
+  if(avatarImg) avatarImg.src = CURRENT_SETTINGS.chat_avatar_url;
+  if(nameEl) nameEl.textContent = CURRENT_SETTINGS.chat_avatar_name;
+  if(dmBtn){
+    dmBtn.textContent = CURRENT_SETTINGS.chat_dm_button_text;
+    dmBtn.href = CURRENT_SETTINGS.chat_dm_button_url;
+  }
+  const tipEl = document.getElementById('shareImgTip');
+  if(tipEl) tipEl.textContent = CURRENT_SETTINGS.share_tip_text;
+}
+
+/* ---------- [優化-2] 套用 chat_messages 工作表：聊天室開場訊息流 ---------- */
+function applyChatMessages(rows){
+  const source = (rows && rows.length) ? rows : DEFAULT_CHAT_MESSAGES;
+  const sorted = source.slice().sort((a,b)=> (parseFloat(a.order)||0) - (parseFloat(b.order)||0));
+  const texts = sorted.map(r => (r.text||'').toString().trim()).filter(Boolean);
+  FAIRY_OPENING_MESSAGES = texts.length ? texts : DEFAULT_CHAT_MESSAGES.map(m=>m.text);
+}
+
 function renderLegal(rows){
   const docDisclaimer = document.getElementById('legalDocDisclaimer');
   const docTerms = document.getElementById('legalDocTerms');
@@ -2501,16 +2752,20 @@ const ServiceCarousel = (function(){
 renderGemsIfChanged(null);
 
 async function init(){
-  const [profileRows, quizRows, serviceRows, legalRows] = await Promise.all([
+  const [profileRows, quizRows, serviceRows, legalRows, settingsRows, chatMsgRows] = await Promise.all([
     fetchSheet('profile'),
     fetchSheet('quiz'),
     fetchSheet('services'),
-    fetchSheet('legal')
+    fetchSheet('legal'),
+    fetchSheet('settings'),
+    fetchSheet('chat_messages')
   ]);
   renderNews(profileRows);
   renderGemsIfChanged(quizRows);
   renderServices(serviceRows);
   renderLegal(legalRows);
+  applySettings(settingsRows);
+  applyChatMessages(chatMsgRows);
 }
 init();
 
@@ -2685,11 +2940,10 @@ const revealObserver = new IntersectionObserver((entries) => {
 document.querySelectorAll('.section.reveal').forEach(el => revealObserver.observe(el));
 
 /* ---------- 魔法聊天室：偽聊天引導，降低訪客開口的心理門檻 ---------- */
-const FAIRY_OPENING_MESSAGES = [
-  '歡迎來到 Morningstar Lab 💜',
-  '心裡總是有一些卡卡的心事嗎？',
-  '或者，你也想和我聊聊符文或魔法儀式？'
-];
+let FAIRY_OPENING_MESSAGES = DEFAULT_CHAT_MESSAGES.map(m => m.text);
+/* 目前生效中的通用設定（含頭像／DM 按鈕／分享提示文字），初始為預設值，
+   Google Sheet 讀取成功後會在 applySettings() 內被覆蓋更新 */
+let CURRENT_SETTINGS = Object.assign({}, DEFAULT_SETTINGS);
 const CHAT_QUICK_REPLIES = [
   { label:'我有些心事想分享...', action:'talk' },
   { label:'我想預約符文服務', action:'book' },
@@ -2701,18 +2955,40 @@ function appendChatBubble(container, text, who){
   const bubble = document.createElement('div');
   bubble.className = `chat-bubble chat-bubble-${who}`;
   bubble.textContent = text;
-  container.appendChild(bubble);
+  if(who === 'fairy'){
+    const row = document.createElement('div');
+    row.className = 'chat-bubble-row';
+    const avatar = document.createElement('img');
+    avatar.className = 'chat-bubble-avatar';
+    avatar.src = CURRENT_SETTINGS.chat_avatar_url || DEFAULT_SETTINGS.chat_avatar_url;
+    avatar.alt = '';
+    avatar.loading = 'lazy';
+    row.appendChild(avatar);
+    row.appendChild(bubble);
+    container.appendChild(row);
+  }else{
+    container.appendChild(bubble);
+  }
   container.scrollTop = container.scrollHeight;
   return bubble;
 }
 
 function appendChatTyping(container){
+  const row = document.createElement('div');
+  row.className = 'chat-bubble-row';
+  const avatar = document.createElement('img');
+  avatar.className = 'chat-bubble-avatar';
+  avatar.src = CURRENT_SETTINGS.chat_avatar_url || DEFAULT_SETTINGS.chat_avatar_url;
+  avatar.alt = '';
+  avatar.loading = 'lazy';
   const typing = document.createElement('div');
   typing.className = 'chat-bubble chat-bubble-fairy chat-typing';
   typing.innerHTML = '<span></span><span></span><span></span>';
-  container.appendChild(typing);
+  row.appendChild(avatar);
+  row.appendChild(typing);
+  container.appendChild(row);
   container.scrollTop = container.scrollHeight;
-  return typing;
+  return row;
 }
 
 function sendFairyMessage(container, text, delay){
@@ -2806,7 +3082,7 @@ function handleChatQuickReply(opt, replyBox, msgBox, preOpenedWindow){
 /* ---------- 主要 CTA：開啟／關閉服務選擇彈窗，並平滑捲動到對應區塊 ---------- */
 (function(){
   const overlay = document.getElementById('ctaModalOverlay');
-  const openBtns = [document.getElementById('primaryCtaBtn'), document.getElementById('stickyCtaBtn')];
+  const openBtns = [document.getElementById('stickyCtaBtn')];
   const closeBtn = document.getElementById('ctaModalClose');
   if(!overlay) return;
 
@@ -2904,24 +3180,95 @@ function handleChatQuickReply(opt, replyBox, msgBox, preOpenedWindow){
     if(!copyBtn && !igBtn) return;
 
     const btn = copyBtn || igBtn;
-    const text = buildShareText(btn);
 
-    if(igBtn && navigator.share){
-      /* 有原生分享功能（多數手機瀏覽器）就優先用系統分享面板，可直接選 IG 限動／訊息 */
-      try{
-        await navigator.share({ text });
-        return;
-      }catch(e){ /* 使用者取消分享或不支援，落到下方複製＋提示 */ }
+    /* [優化-4] 分享至 IG：改為自動把當前指引卡繪製成長圖，跳出彈窗引導存圖分享，
+       而不是分享一段文字。「複製指引」按鈕維持原本的文字複製行為不變。 */
+    if(igBtn){
+      openShareImageModal(btn);
+      return;
     }
 
+    const text = buildShareText(btn);
     const ok = await copyText(text);
     if(ok){
       const original = btn.innerHTML;
       btn.classList.add('copied');
-      btn.innerHTML = igBtn ? '<span class="gem-share-icon">✅</span>已複製，去 IG 貼上吧' : '<span class="gem-share-icon">✅</span>已複製指引';
+      btn.innerHTML = '<span class="gem-share-icon">✅</span>已複製指引';
       setTimeout(()=>{ btn.classList.remove('copied'); btn.innerHTML = original; }, 2200);
     }
   });
+})();
+
+/* ---------- [優化-4] 尋光指引：分享至 IG＝繪製長圖＋彈窗提示存圖分享 ---------- */
+function buildShareExportCard(btn){
+  const name = btn.dataset.shareName || '';
+  const quote = btn.dataset.shareQuote || '';
+  const text = btn.dataset.shareText || '';
+  const affirm = btn.dataset.shareAffirm || '';
+  const card = document.createElement('div');
+  card.className = 'share-export-card';
+  card.innerHTML = `
+    <div class="share-export-brand">Morningstar Lab</div>
+    <div class="share-export-name">${escapeHtml(name)}</div>
+    ${quote ? `<div class="share-export-quote">「${escapeHtml(quote)}」</div>` : ''}
+    ${text ? `<p class="share-export-text">${escapeHtml(text)}</p>` : ''}
+    ${affirm ? `<div class="share-export-affirm">今日肯定句：「${escapeHtml(affirm)}」</div>` : ''}
+    <div class="share-export-footer">見習仙子++．尋光指引</div>
+  `;
+  return card;
+}
+
+async function openShareImageModal(btn){
+  const overlay = document.getElementById('shareImgModalOverlay');
+  const loading = document.getElementById('shareImgLoading');
+  const previewImg = document.getElementById('shareImgPreview');
+  const tipEl = document.getElementById('shareImgTip');
+  const downloadBtn = document.getElementById('shareImgDownloadBtn');
+  if(!overlay) return;
+
+  /* 每次開啟先重置畫面：只顯示載入文字，圖片與下載鈕都先藏起來 */
+  loading.textContent = '正在繪製指引長圖．．．';
+  loading.style.display = 'block';
+  previewImg.classList.remove('show');
+  previewImg.removeAttribute('src');
+  downloadBtn.classList.remove('show');
+  tipEl.textContent = CURRENT_SETTINGS.share_tip_text || DEFAULT_SETTINGS.share_tip_text;
+  overlay.classList.add('open');
+
+  if(typeof html2canvas !== 'function'){
+    loading.textContent = '圖片繪製功能載入失敗，請檢查網路連線後再試一次';
+    return;
+  }
+
+  const exportNode = buildShareExportCard(btn);
+  document.body.appendChild(exportNode);
+  try{
+    const canvas = await html2canvas(exportNode, {
+      backgroundColor: null,
+      scale: 2,
+      useCORS: true
+    });
+    const dataUrl = canvas.toDataURL('image/png');
+    previewImg.src = dataUrl;
+    previewImg.classList.add('show');
+    downloadBtn.href = dataUrl;
+    downloadBtn.classList.add('show');
+    loading.style.display = 'none';
+  }catch(err){
+    console.warn('分享長圖繪製失敗', err);
+    loading.textContent = '圖片繪製失敗，請稍後再試一次';
+  }finally{
+    exportNode.remove();
+  }
+}
+
+(function(){
+  const overlay = document.getElementById('shareImgModalOverlay');
+  const closeBtn = document.getElementById('shareImgModalClose');
+  if(!overlay) return;
+  function closeModal(){ overlay.classList.remove('open'); }
+  closeBtn && closeBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e)=>{ if(e.target === overlay) closeModal(); });
 })();
 
 /* ---------- 進場儀式（Splash Screen） ---------- */
