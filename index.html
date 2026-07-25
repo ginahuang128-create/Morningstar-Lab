@@ -22,15 +22,12 @@
   --void:#0A0A0A;
   --void-2:#151515;
   --void-3:#1C1C1C;
-  --glass:#181818;
   --gold-1:#FFFFFF;
   --gold-2:#FFFFFF;
   --gold-3:rgba(255,255,255,.8);
   --parchment:#FFFFFF;
   --parchment-soft:rgba(255,255,255,0.95);
   --line: rgba(124,148,230,0.35);
-  --neon-blue:#9FCBF5;
-  --neon-blue-soft:rgba(159,203,245,0.45);
   /* 全站「唯一主要 CTA」的品牌識別色：桌機浮動按鈕與手機底部固定列都用同一組漸層，
      讓使用者不管在哪個裝置上，一看到這個顏色就知道「這是本站最重要的那顆按鈕」 */
   --cta-gradient: linear-gradient(135deg, #7C94E6 0%, #10173A 100%);
@@ -178,10 +175,6 @@ body{
   /* 標題發光：貼近品牌的淡藍紫光暈，兩層疊加（近端小範圍亮、遠端大範圍柔），
      用 text-shadow 而不是 filter，避免影響到其他毛玻璃卡片的模糊效果 */
   text-shadow: 0 0 12px rgba(176,196,250,.55), 0 0 28px rgba(124,148,230,.35);
-}
-.section-title-icon{
-  display:inline-block; margin-right:8px; font-style:normal;
-  filter: drop-shadow(0 0 8px rgba(124,148,230,.55));
 }
 .section-sub{
   font-family:var(--sans);
@@ -409,12 +402,12 @@ body{
   position:relative;
   border-radius: 46px; /* fallback shape until JS applies the true squircle clip-path below */
   /* 玻璃擬態質感：晶瑩透光的紫粉色極光玻璃感 */
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.05);
   /* 原本這裡疊加了 SVG 扭曲濾鏡（url(#liquid-distortion)），
      它會跟 JS 算出來的 squircle clip-path 邊緣互相打架，
      在轉場／不同尺寸內容時邊角會出現鋸齒破碎的假影，故移除，只保留純淨模糊玻璃感 */
-  backdrop-filter: blur(10px) saturate(150%) contrast(1.03) brightness(1.03);
-  -webkit-backdrop-filter: blur(10px) saturate(150%) contrast(1.03) brightness(1.03);
+  backdrop-filter: blur(7px) saturate(150%) contrast(1.03) brightness(1.03);
+  -webkit-backdrop-filter: blur(7px) saturate(150%) contrast(1.03) brightness(1.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
   /* 陰影已完全取消：不再用 inset box-shadow 模擬邊框亮線，改用真正的細邊框（0.75px），
      跟著 JS 算出的 squircle clip-path 走，線條會更細緻、不會出現硬邊直線 */
@@ -665,30 +658,6 @@ body{
   opacity:.7;
 }
 
-/* ---------- 抽卡儀式感：點下寶石先醞釀，像真的在感應，而不是瞬間攤牌 ---------- */
-.gem-circle.brewing{
-  animation: gemBrew 1.4s ease-in-out;
-}
-@keyframes gemBrew{
-  0%{ transform:translateY(0) scale(1) rotate(0deg); box-shadow:0 0 0 3px rgba(124,148,230,.3), 0 0 20px rgba(124,148,230,.25); }
-  28%{ transform:translateY(-9px) scale(1.1) rotate(7deg); box-shadow:0 0 0 4px rgba(176,196,250,.7), 0 0 38px rgba(176,196,250,.65); }
-  55%{ transform:translateY(-13px) scale(.96) rotate(-6deg); box-shadow:0 0 0 3px rgba(159,203,245,.55), 0 0 30px rgba(159,203,245,.45); }
-  80%{ transform:translateY(-4px) scale(1.04) rotate(3deg); box-shadow:0 0 0 3px rgba(176,196,250,.5), 0 0 24px rgba(176,196,250,.4); }
-  100%{ transform:translateY(0) scale(1) rotate(0deg); box-shadow:0 0 0 0 rgba(124,148,230,0); }
-}
-.gem-loading{ text-align:center; padding:14px 0 6px; }
-.gem-loading-rune{
-  width:34px; height:34px; margin:0 auto 14px; color:#fff;
-  animation: runeSpin 1.1s linear infinite;
-}
-.gem-loading-rune svg{ width:100%; height:100%; display:block; }
-.gem-loading-rune path{ fill:currentColor; filter: drop-shadow(0 0 8px rgba(176,196,250,.75)); }
-@keyframes runeSpin{ to{ transform: rotate(360deg); } }
-.gem-loading-text{
-  font-size:12px; letter-spacing:2.5px; color:var(--parchment-soft);
-  animation: loadingPulse 1.4s ease-in-out infinite;
-}
-@keyframes loadingPulse{ 0%,100%{ opacity:.55; } 50%{ opacity:1; } }
 .gem-name-tag{
   display:inline-block; font-size:11.5px; font-weight:700; letter-spacing:2px; text-transform:uppercase;
   color:var(--gold-2); margin-bottom:10px;
@@ -790,8 +759,6 @@ body{
 }
 .gem-item:hover .charge-hint{ opacity:.7; }
 .gem-item.charging .charge-hint, .gem-item.active .charge-hint{ opacity:0; }
-.gem-row.locked-mode .charge-hint{ display:none; }
-.gem-item.locked-inactive{ opacity:.32; filter:grayscale(.5); pointer-events:none; }
 
 /* ---------- 3D 翻牌卡片：取代原本純文字的醞釀畫面 ---------- */
 .flip-stage{ perspective:900px; width:150px; height:210px; margin:0 auto 18px; }
@@ -828,6 +795,7 @@ body{
   font-size:12px; letter-spacing:2.5px; color:var(--parchment-soft); text-align:center;
   animation: loadingPulse 1.4s ease-in-out infinite; margin-top:2px;
 }
+@keyframes loadingPulse{ 0%,100%{ opacity:.55; } 50%{ opacity:1; } }
 
 /* 翻牌後底下的解讀內容：逐段 fade-in-up，取代整塊一次淡入 */
 .gem-panel-inner .reveal-fade{ opacity:0; transform:translateY(10px); animation: revealFadeIn .6s ease forwards; }
@@ -1059,9 +1027,6 @@ body{
   color:#FFFFFF;
   margin:0 0 16px;
 }
-.service-desc{ font-family:var(--sans); font-size:13.5px; line-height:2.3; color:var(--parchment-soft); margin:0 0 10px; }
-.service-note{ font-family:var(--sans); font-size:11.5px; color:rgba(255,255,255,.7); line-height:2.1; margin:0 0 8px; }
-
 /* ---------- 服務方案：了解完整內容（次要文字連結，點開才看到全文） ---------- */
 .service-more-btn{
   display:inline-flex; align-items:center; justify-content:center; min-height:44px;
@@ -1246,7 +1211,7 @@ body{ padding-bottom: 96px; } /* 預留手機底部固定列高度，避免遮�
 }
 .cta-modal-overlay.open{ display:flex; animation: ctaOverlayIn .25s ease; }
 @keyframes ctaOverlayIn{ from{ opacity:0; } to{ opacity:1; } }
-.cta-modal-shadow{ width:100%; max-width:400px; border-radius:32px; }
+.cta-modal-shadow{ width:100%; max-width:450px; border-radius:32px; }
 .cta-modal{
   position:relative; width:100%; padding:30px 24px 26px;
   border-radius:32px; text-align:center;
@@ -2125,29 +2090,7 @@ function formatGemBtnText(text){
   return str;
 }
 
-/* ---------- 今日限定運勢：LocalStorage 鎖定 ---------- */
-/* Key 格式：ms_daily_<storageKey>，值為 { date:'YYYY-MM-DD', name, percentage, element }
-   date 用「本機今天」的年月日字串比對，隔天字串自然不同、視同過期，不需要另外排程清除。 */
-function todayStr(){
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-function getDailyResult(storageKey){
-  if(!storageKey) return null;
-  try{
-    const raw = localStorage.getItem(`ms_daily_${storageKey}`);
-    if(!raw) return null;
-    const parsed = JSON.parse(raw);
-    return (parsed && parsed.date === todayStr()) ? parsed : null;
-  }catch(e){ return null; }
-}
-function saveDailyResult(storageKey, payload){
-  if(!storageKey) return;
-  try{ localStorage.setItem(`ms_daily_${storageKey}`, JSON.stringify({ ...payload, date: todayStr() })); }
-  catch(e){ /* 私密瀏覽模式等情境下 localStorage 可能不可用，靜默失敗即可，不影響抽卡本身 */ }
-}
-
-/* renderGemDeck：全站唯一的抽選體驗（尋光指引）共用「點擊解鎖→3D翻牌→今日鎖定」互動邏輯，
+/* renderGemDeck：全站唯一的抽選體驗（尋光指引）共用「點擊解鎖→3D翻牌」互動邏輯，
    資料來源、預設內容、掛載的元素 id、LocalStorage 的 storageKey 由呼叫端傳入，抽成通用函式維護。 */
 function renderGemDeck(rows, defaultData, ids){
   const data = (rows && rows.length) ? rows : defaultData;
