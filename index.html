@@ -1072,13 +1072,7 @@ body{
 }
 .service-more-btn:hover, .service-more-btn:active{ color:#FFFFFF; }
 
-/* ---------- 服務方案：B 案視覺強化（外框微光，不再用緞帶標籤） ----------
-   註：這裡原本用 filter: drop-shadow() 疊加光暈，但跟上面 .glass-shadow-wrap
-   遇到的問題一模一樣——filter 加在「有 backdrop-filter 子層」的父層上，會強迫
-   子層離屏點陣化重繪，導致子層 .liquid-glass 的毛玻璃模糊完全失效，讓方案 B
-   卡片看起來比其他卡片「更清楚、更不模糊」。改用 box-shadow 就不會有這個副作用，
-   模糊度會跟其他卡片一致，光暈用一圈柔和的外光模擬即可，視覺上差異極小。 */
-.service-highlight-wrap{ box-shadow: 0 0 26px 2px rgba(124,148,230,.4); }
+/* 方案 B 外框微光已依需求取消，僅保留邊框顏色識別，不再加任何光暈/陰影 */
 .service-highlight{ border-color: rgba(159,203,245,.55) !important; }
 
 /* ---------- 服務方案：完整說明彈窗內文樣式 ---------- */
