@@ -133,6 +133,7 @@ body{
 .section{ position:relative; padding: 8px 28px 56px; }
 @media (max-width:380px){
   .section{ padding-left:20px; padding-right:20px; }
+  .legal-modal-overlay{ padding-left:20px; padding-right:20px; }
 }
 
 /* ---------- 滾動進場：讓每個篇章不是一次攤開，而是滑入 ---------- */
@@ -1040,26 +1041,21 @@ body{
 /* 方案 B 外框微光已依需求取消，僅保留邊框顏色識別，不再加任何光暈/陰影 */
 .service-highlight{ border-color: rgba(159,203,245,.55) !important; }
 
-/* ---------- 服務方案：完整說明彈窗內文樣式 ---------- */
-.service-detail-body{ text-align:center; }
-.service-detail-badge{
-  display:block; font-size:11.5px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase;
-  color:rgba(159,203,245,.85); margin-bottom:10px;
+/* ---------- 服務方案：內容直接在卡片內展開，不再跳出另一個彈窗 ---------- */
+.service-more-panel{
+  display:grid; grid-template-rows:0fr; overflow:hidden; opacity:0;
+  transition: grid-template-rows .45s ease, opacity .35s ease, margin .35s ease;
 }
-.service-detail-name{
-  font-family:var(--serif); font-size:22px; font-weight:700; color:#FFFFFF;
-  margin:0 0 10px;
+.service-more-panel.show{ grid-template-rows:1fr; opacity:1; margin:0 0 14px; }
+.service-more-panel > div{ min-height:0; overflow:hidden; }
+.service-more-desc{
+  font-family:var(--sans); font-size:12.5px; line-height:1.95; color:var(--parchment-soft);
+  margin:0 0 10px; text-align:left;
 }
-.service-detail-price{
-  font-family:var(--serif); font-size:15px; font-weight:700; color:#FFFFFF; margin:0 0 18px;
+.service-more-note{
+  font-family:var(--sans); font-size:11px; line-height:1.85; color:rgba(255,255,255,.7);
+  margin:0; text-align:left;
 }
-.service-detail-desc{
-  font-family:var(--sans); font-size:14px; line-height:2.1; color:var(--parchment-soft); margin:0 0 14px; text-align:left;
-}
-.service-detail-note{
-  font-family:var(--sans); font-size:12px; line-height:1.9; color:rgba(255,255,255,.7); margin:0 0 20px; text-align:left;
-}
-.service-detail-btn{ display:inline-block; min-height:44px; line-height:20px; }
 
 /* ============================================================
    底部
@@ -1260,7 +1256,7 @@ body{ padding-bottom: 96px; } /* 預留手機底部固定列高度，避免遮�
   display:none; position:fixed; inset:0; z-index:80;
   align-items:flex-end; justify-content:center;
   background: rgba(6,6,10,.65); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-  padding:0;
+  padding:0 28px; /* 跟 .section 內距一致，避免這片面板貼齊螢幕邊緣，寬度才跟其他卡片一致 */
 }
 .legal-modal-overlay.open{ display:flex; animation: ctaOverlayIn .25s ease; }
 .legal-modal-shadow{ width:100%; max-width:450px; border-radius:28px 28px 0 0; }
@@ -1437,7 +1433,7 @@ body{ padding-bottom: 96px; } /* 預留手機底部固定列高度，避免遮�
       <div class="footer-legal">
         <button type="button" class="footer-legal-link" id="openDisclaimerBtn">免責聲明</button>
         <span class="footer-legal-dot">．</span>
-        <button type="button" class="footer-legal-link" id="openTermsBtn">服務條款</button>
+        <button type="button" class="footer-legal-link" id="openTermsBtn">服務與預約條款</button>
       </div>
     </div>
   </div>
@@ -1491,22 +1487,12 @@ body{ padding-bottom: 96px; } /* 預留手機底部固定列高度，避免遮�
       <button class="legal-modal-close" id="legalModalClose" type="button" aria-label="關閉">✕</button>
       <div class="legal-modal-tabs">
         <button class="legal-tab-btn" type="button" data-doc="disclaimer">免責聲明</button>
-        <button class="legal-tab-btn" type="button" data-doc="terms">服務條款</button>
+        <button class="legal-tab-btn" type="button" data-doc="terms">服務與預約條款</button>
       </div>
       <div class="legal-modal-body">
         <div class="legal-doc" id="legalDocDisclaimer"></div>
         <div class="legal-doc" id="legalDocTerms"></div>
       </div>
-    </div>
-  </div>
-</div>
-
-<!-- ============ 服務方案：完整說明彈窗（首頁卡片只留關鍵四要素） ============ -->
-<div class="legal-modal-overlay service-detail-overlay" id="serviceDetailOverlay">
-  <div class="glass-shadow-wrap legal-modal-shadow">
-    <div class="legal-modal liquid-glass" id="serviceDetailModal">
-      <button class="legal-modal-close" id="serviceDetailClose" type="button" aria-label="關閉">✕</button>
-      <div class="legal-modal-body service-detail-body" id="serviceDetailBody"></div>
     </div>
   </div>
 </div>
@@ -1722,7 +1708,7 @@ const DEFAULT_SERVICES = [
    避免彈窗開起來整片空白；正式內容請直接在 Google Sheet 的 legal 分頁填寫。 */
 const DEFAULT_LEGAL = [
   { doc:'disclaimer', order:1, heading:'服務性質', content:'（示範預覽）本網站提供之占卜、能量梳理內容僅供心靈參考與陪伴，請自行在 Google Sheet 的 legal 工作表填寫正式的免責聲明內文。' },
-  { doc:'terms', order:1, heading:'服務條款', content:'（示範預覽）請自行在 Google Sheet 的 legal 工作表填寫正式的服務條款內文。' }
+  { doc:'terms', order:1, heading:'服務與預約條款', content:'（示範預覽）請自行在 Google Sheet 的 legal 工作表填寫正式的服務與預約條款內文。' }
 ];
 
 /* ---------- 符文圖騰 SVG ---------- */
@@ -2263,6 +2249,7 @@ function renderServices(rows){
         mask.className = 'card-backdrop-mask';
         const card = document.createElement('div');
         card.className = 'service-card liquid-glass' + (isHighlight ? ' service-highlight' : '');
+        const hasMore = !!(sv.description || sv.note);
         card.innerHTML = `
           <div class="service-img-wrap">${sv.image_url ? `<img class="service-img" src="${sv.image_url}" alt="" loading="lazy" decoding="async">` : ''}</div>
           <div class="service-body">
@@ -2271,14 +2258,28 @@ function renderServices(rows){
             ${sv.label ? `<span class="service-label">${sv.label}</span>` : ''}
             ${sv.audience ? `<p class="service-audience">適合對象：${sv.audience}</p>` : ''}
             ${sv.price ? `<p class="service-price">${sv.price}</p>` : ''}
-            <button type="button" class="service-more-btn" data-service-detail>了解完整內容</button>
+            ${hasMore ? `<button type="button" class="service-more-btn" data-more-toggle aria-expanded="false">了解完整內容</button>` : ''}
+            ${hasMore ? `
+            <div class="service-more-panel">
+              <div class="service-more-inner">
+                ${sv.description ? `<p class="service-more-desc">${sv.description}</p>` : ''}
+                ${sv.note ? `<p class="service-more-note">${sv.note}</p>` : ''}
+              </div>
+            </div>` : ''}
             <a class="service-btn" href="${sv.button_url||IG_DM_URL}" target="_blank" rel="noopener">${sv.button_text||'私訊預約仙子'}</a>
           </div>
         `;
         cardWrap.appendChild(mask);
         cardWrap.appendChild(card);
-        const moreBtn = card.querySelector('[data-service-detail]');
-        moreBtn && moreBtn.addEventListener('click', ()=> openServiceDetail(sv));
+        const moreBtn = card.querySelector('[data-more-toggle]');
+        const morePanel = card.querySelector('.service-more-panel');
+        if(moreBtn && morePanel){
+          moreBtn.addEventListener('click', ()=>{
+            const isOpen = morePanel.classList.toggle('show');
+            moreBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            moreBtn.textContent = isOpen ? '收合內容' : '了解完整內容';
+          });
+        }
         track.appendChild(cardWrap);
       });
       panel.appendChild(track);
@@ -2326,29 +2327,6 @@ function renderLegal(rows){
   docDisclaimer.innerHTML = disclaimerHtml;
   docTerms.innerHTML = termsHtml;
 }
-
-/* ---------- 服務方案：完整說明彈窗（首頁卡片只留關鍵四要素，其餘點開才看） ---------- */
-function openServiceDetail(sv){
-  const overlay = document.getElementById('serviceDetailOverlay');
-  const body = document.getElementById('serviceDetailBody');
-  if(!overlay || !body) return;
-  body.innerHTML = `
-    <span class="service-detail-badge">${sv.badge||''}</span>
-    <h3 class="service-detail-name">${sv.name||''}</h3>
-    ${sv.price ? `<p class="service-detail-price">${sv.price}</p>` : ''}
-    <p class="service-detail-desc">${sv.description||''}</p>
-    ${sv.note ? `<p class="service-detail-note">${sv.note}</p>` : ''}
-    <a class="service-btn service-detail-btn" href="${sv.button_url||IG_DM_URL}" target="_blank" rel="noopener">${sv.button_text||'私訊預約仙子'}</a>
-  `;
-  overlay.classList.add('open');
-}
-(function(){
-  const overlay = document.getElementById('serviceDetailOverlay');
-  const closeBtn = document.getElementById('serviceDetailClose');
-  if(!overlay) return;
-  closeBtn && closeBtn.addEventListener('click', ()=> overlay.classList.remove('open'));
-  overlay.addEventListener('click', (e)=>{ if(e.target === overlay) overlay.classList.remove('open'); });
-})();
 
 window.addEventListener('resize', ()=>{
   const active = document.querySelector('.tab-btn.active');
