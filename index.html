@@ -234,7 +234,7 @@ body{
 .brand-logo-wrap{ margin:0 0 28px; }
 .brand-logo{
   display:none; /* 預設隱藏，JS 偵測到 LOGO_URL 有值時才會加上 .show 顯示 */
-  width: clamp(149px, 42vw, 186px); /* 大頭貼直徑 186px 的 0.8～1 倍 */
+  width: clamp(180px, 50vw, 224px); /* [優化] 依需求放大 LOGO 尺寸 */
   height:auto; margin:0 auto; position:relative; z-index:2; opacity:0;
   transition: opacity .6s ease;
   /* 主視覺＝純白／半透明白＋溫暖淡金 CSS 微光，不需要另外準備金色版本檔案 */
@@ -256,13 +256,13 @@ body{
 }
 .tagline{
   font-family:var(--serif); font-style:italic; font-size:15px; line-height:1.95;
-  color:var(--parchment-soft); letter-spacing:.5px; margin:30px auto 0; max-width:300px;
+  color:var(--parchment-soft); letter-spacing:.5px; margin:14px auto 0; max-width:300px;
   position:relative;
 }
 /* 標語上方加一顆極小的星芒作為分隔，取代原本的大頭照，
    讓招牌收尾更有儀式感、也維持版面呼吸感 */
 .tagline::before{
-  content:'✦'; display:block; margin:0 0 18px; font-size:11px;
+  content:'✦'; display:block; margin:0 0 10px; font-size:11px;
   color:var(--gold-3); opacity:.75; letter-spacing:0;
   text-shadow:0 0 12px rgba(243,229,171,.5);
 }
@@ -1251,36 +1251,11 @@ body.splash-active .section-hero .tagline{ opacity:0; transform:translateY(20px)
 .section-hero .tagline{ transition-delay:.32s; }
 
 /* ============================================================
-   全站單一 CTA 系統：手機底部固定列 + 服務選擇彈窗
-   （原本桌面版右下角浮動按鈕 .primary-cta 已依需求移除）
+   [優化] 手機底部固定列「與仙子連線」已依需求移除，
+   服務方案卡片與聊天室自身的按鈕已足以承擔預約入口的角色。
    ============================================================ */
-body{ padding-bottom: 96px; } /* 預留手機底部固定列高度，避免遮住頁尾 */
 
-.sticky-cta-bar{
-  display:none; /* 預設隱藏，手機寬度才顯示 */
-  position:fixed; left:0; right:0; bottom:0; z-index:60;
-  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
-  background: linear-gradient(180deg, rgba(24,10,30,0) 0%, rgba(24,10,30,.7) 35%, rgba(24,10,30,.9) 100%);
-  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-}
-.sticky-cta-btn{
-  width:100%; display:flex; align-items:center; justify-content:center; gap:8px;
-  padding:14px 20px; border-radius:999px;
-  font-family:var(--serif-tc); font-weight:700; font-size:14px; letter-spacing:.5px;
-  color:#fff; cursor:pointer;
-  background: rgba(124,148,230,.28);
-  border: 1px solid rgba(176,196,250,.55);
-  box-shadow: 0 0 18px rgba(124,148,230,.22), 0 10px 26px rgba(0,0,0,.35);
-  backdrop-filter: blur(14px) saturate(160%); -webkit-backdrop-filter: blur(14px) saturate(160%);
-  transition: transform .25s ease, box-shadow .25s ease, background .25s ease;
-}
-.sticky-cta-btn:active{ transform: scale(.97); background: rgba(124,148,230,.4); }
-
-@media (max-width: 640px){
-  .sticky-cta-bar{ display:block; }
-}
-
-/* ---------- 服務選擇彈窗（點擊主按鈕觸發） ---------- */
+/* ---------- 服務選擇彈窗（原由底部固定列觸發，樣式保留備用） ---------- */
 .cta-modal-overlay{
   display:none; position:fixed; inset:0; z-index:70;
   align-items:flex-end; justify-content:center;
@@ -1515,7 +1490,7 @@ body{ padding-bottom: 96px; } /* 預留手機底部固定列高度，避免遮�
     <div class="footer">
       <span class="footer-brand">
         <img class="footer-logo" id="footerLogoImg" src="" alt="Morningstar">
-        <span id="footerTextFallback">© Morningstar．願你記得，你就是光</span>
+        <span id="footerTextFallback">✦ Morningstar-Lab ‧ 願你記得 ‧ 你就是光 ✦</span>
       </span>
       <div class="footer-legal">
         <button type="button" class="footer-legal-link" id="openDisclaimerBtn">免責聲明</button>
@@ -1525,47 +1500,6 @@ body{ padding-bottom: 96px; } /* 預留手機底部固定列高度，避免遮�
     </div>
   </div>
 
-</div>
-
-<!-- ============ 主要 CTA：手機底部固定列 ============ -->
-<!-- [優化] 右下角桌面版浮動按鈕（原 #primaryCtaBtn／🔮 預約專屬指引）已依需求取消，
-     服務方案卡片自身的主行動按鈕已是高對比實心發光樣式，足以承擔預約入口的角色，
-     不再需要另外一顆常駐浮動按鈕。手機底部固定列（與仙子連線）維持不變。 -->
-<div class="sticky-cta-bar" id="stickyCtaBar">
-  <button class="sticky-cta-btn" id="stickyCtaBtn" type="button">✨ 與仙子連線</button>
-</div>
-
-<div class="cta-modal-overlay" id="ctaModalOverlay">
-  <div class="glass-shadow-wrap cta-modal-shadow">
-    <div class="cta-modal liquid-glass" id="ctaModal">
-      <button class="cta-modal-close" id="ctaModalClose" type="button" aria-label="關閉">✕</button>
-      <span class="section-eyebrow">Choose Your Path</span>
-      <h3 class="cta-modal-title">想先從哪裡開始呢？</h3>
-      <div class="cta-modal-options">
-        <button class="cta-modal-option" type="button" data-target="guideSection">
-          <span class="cta-modal-option-icon">🔮</span>
-          <span class="cta-modal-option-text">
-            <span class="cta-modal-option-title">尋光指引</span>
-            <span class="cta-modal-option-sub">抽一顆女巫符文，梳理當下困惑</span>
-          </span>
-        </button>
-        <button class="cta-modal-option" type="button" data-target="serviceSection">
-          <span class="cta-modal-option-icon">✨</span>
-          <span class="cta-modal-option-text">
-            <span class="cta-modal-option-title">服務方案</span>
-            <span class="cta-modal-option-sub">了解一對一線上諮詢與療癒細節</span>
-          </span>
-        </button>
-        <button class="cta-modal-option" type="button" data-target="chatSection">
-          <span class="cta-modal-option-icon">🧚</span>
-          <span class="cta-modal-option-text">
-            <span class="cta-modal-option-title">新手諮詢</span>
-            <span class="cta-modal-option-sub">開啟聊天室，跟見習仙子聊聊</span>
-          </span>
-        </button>
-      </div>
-    </div>
-  </div>
 </div>
 
 <!-- ============ 免責聲明／線上服務條款彈窗 ============ -->
@@ -1686,13 +1620,14 @@ const SPARK_PATH = "M50 0 C53 33 67 47 100 50 C67 53 53 67 50 100 C47 67 33 53 0
    ============================================================
    請準備「透明背景 PNG（高解析度）」或「SVG（向量檔，推薦首選）」，
    上傳到你自己的圖床／CDN／Google Drive（記得設為公開分享），把網址填進下面的
-   LOGO_URL。這一顆 LOGO 檔案會被同時套用在以下 4 個地方，各自用 CSS 做出
+   LOGO_URL。這一顆 LOGO 檔案會被同時套用在以下 3 個地方，各自用 CSS 做出
    不同的色彩效果，不需要準備多個版本：
      1) 首頁頂部主招牌（Hero，純白 + 溫暖淡金 CSS 微光）
      2) 開場儀式感畫面中央（Splash，淡入 + 呼吸光暈）
      3) 尋光指引分享長圖頁首（品牌浮水印）
-     4) 頁尾（半透明 60% 呈現，低調收尾）
-   LOGO_URL 留空時，以上 4 處都會自動退回原本的純文字／圖示版本，不會破版。
+   LOGO_URL 留空時，以上 3 處都會自動退回原本的純文字／圖示版本，不會破版。
+   頁尾（Footer）依需求固定顯示文字版「✦ Morningstar-Lab ‧ 願你記得 ‧ 你就是光 ✦」，
+   不再套用 LOGO 圖片。
 
    Favicon（瀏覽器分頁圖示）建議另外準備一個「只裁切 LOGO 最上方八角晨星圖案」
    的正方形透明 PNG／SVG（因為瀏覽器分頁圖示通常縮得很小，完整 LOGO 文字會糊掉、
@@ -2277,10 +2212,10 @@ function renderGemDeck(rows, defaultData, ids){
         </div>` : ''}
         <div class="gem-share-row reveal-fade" style="animation-delay:.46s">
           <button type="button" class="gem-share-btn" data-share-copy data-share-name="${(g.name||'').replace(/"/g,'&quot;')}" data-share-quote="${(g.quote||'').replace(/"/g,'&quot;')}" data-share-text="${(g.guidance_text||'').replace(/"/g,'&quot;')}" data-share-affirm="${(g.affirmation||'').replace(/"/g,'&quot;')}">
-            <span class="gem-share-icon">📋</span>複製指引
+            <span class="gem-share-icon">📋</span>複製
           </button>
           <button type="button" class="gem-share-btn" data-share-ig data-share-name="${(g.name||'').replace(/"/g,'&quot;')}" data-share-quote="${(g.quote||'').replace(/"/g,'&quot;')}" data-share-text="${(g.guidance_text||'').replace(/"/g,'&quot;')}" data-share-affirm="${(g.affirmation||'').replace(/"/g,'&quot;')}">
-            <span class="gem-share-icon">📤</span>分享至 IG
+            <span class="gem-share-icon">📤</span>分享
           </button>
         </div>
         <div class="gem-action-row reveal-fade" style="animation-delay:.5s">
@@ -2718,18 +2653,8 @@ function applyLogoAssets(){
     }
   }
 
-  const footerLogo = document.getElementById('footerLogoImg');
-  const footerFallback = document.getElementById('footerTextFallback');
-  if(footerLogo && footerFallback){
-    if(hasLogo){
-      footerLogo.src = LOGO_URL;
-      footerLogo.classList.add('show');
-      footerFallback.style.display = 'none';
-    }else{
-      footerLogo.classList.remove('show');
-      footerFallback.style.display = '';
-    }
-  }
+  /* [優化] 依需求：頁尾一律顯示文字版品牌收尾（✦ Morningstar-Lab ‧ 願你記得 ‧ 你就是光 ✦），
+     不再套用半透明 LOGO 圖片（先前效果太不明顯）。footerLogoImg 保留於 HTML 中但維持隱藏。 */
 
   /* Favicon／iOS 主畫面圖示：若已填寫裁切好的獨立星芒版本網址，才覆蓋掉預設的 emoji 版本 */
   if(FAVICON_URL && FAVICON_URL.trim()){
@@ -3198,7 +3123,7 @@ function handleChatQuickReply(opt, replyBox, msgBox, preOpenedWindow){
     if(ok){
       const original = btn.innerHTML;
       btn.classList.add('copied');
-      btn.innerHTML = '<span class="gem-share-icon">✅</span>已複製指引';
+      btn.innerHTML = '<span class="gem-share-icon">✅</span>已複製';
       setTimeout(()=>{ btn.classList.remove('copied'); btn.innerHTML = original; }, 2200);
     }
   });
@@ -3257,12 +3182,37 @@ async function openShareImageModal(btn){
       scale: 2,
       useCORS: true
     });
-    const dataUrl = canvas.toDataURL('image/png');
-    previewImg.src = dataUrl;
+
+    /* [修復] 改用 canvas.toBlob 產生真正的檔案物件，而不是原本的 dataURL：
+       手機瀏覽器（尤其 iOS Safari／IG 內建瀏覽器）常常不支援 <a download> 搭配
+       dataURL 直接下載，點了沒反應。改成 Blob 網址相容性更好，
+       同時優先嘗試 Web Share API（navigator.share 帶 files），
+       能直接跳出手機原生的「儲存圖片／分享」選單，是目前最穩定的做法。 */
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    if(!blob){ throw new Error('canvas toBlob 失敗'); }
+
+    const objectUrl = URL.createObjectURL(blob);
+    previewImg.src = objectUrl;
     previewImg.classList.add('show');
-    downloadBtn.href = dataUrl;
+    downloadBtn.href = objectUrl;
     downloadBtn.classList.add('show');
     loading.style.display = 'none';
+
+    const shareFile = new File([blob], 'morningstar-guidance.png', { type: 'image/png' });
+    const canUseShare = navigator.share && navigator.canShare && navigator.canShare({ files: [shareFile] });
+
+    downloadBtn.onclick = async (e) => {
+      if(canUseShare){
+        e.preventDefault();
+        try{
+          await navigator.share({ files: [shareFile], title: 'Morningstar 尋光指引' });
+        }catch(shareErr){
+          /* 使用者取消分享或裝置不支援時，不當作錯誤處理 */
+        }
+      }
+      /* 不支援 Web Share 的裝置（多數桌機瀏覽器）則維持原本的 <a download> 行為 */
+    };
+    downloadBtn.textContent = canUseShare ? '儲存 / 分享圖片' : '下載圖片';
   }catch(err){
     console.warn('分享長圖繪製失敗', err);
     loading.textContent = '圖片繪製失敗，請稍後再試一次';
@@ -3275,7 +3225,13 @@ async function openShareImageModal(btn){
   const overlay = document.getElementById('shareImgModalOverlay');
   const closeBtn = document.getElementById('shareImgModalClose');
   if(!overlay) return;
-  function closeModal(){ overlay.classList.remove('open'); }
+  function closeModal(){
+    overlay.classList.remove('open');
+    const previewImg = document.getElementById('shareImgPreview');
+    if(previewImg && previewImg.src && previewImg.src.startsWith('blob:')){
+      URL.revokeObjectURL(previewImg.src);
+    }
+  }
   closeBtn && closeBtn.addEventListener('click', closeModal);
   overlay.addEventListener('click', (e)=>{ if(e.target === overlay) closeModal(); });
 })();
