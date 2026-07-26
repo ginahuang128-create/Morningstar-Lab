@@ -52,7 +52,10 @@ body{
     radial-gradient(ellipse at 100% 15%, rgba(124,148,230,0.055) 0%, transparent 42%),
     radial-gradient(ellipse at 50% 100%, rgba(124,148,230,0.05) 0%, transparent 50%),
     var(--void);
-  background-attachment:fixed;
+  /* [效能優化] 移除 background-attachment:fixed：這個屬性在手機 Safari 上
+     是造成捲動卡頓（jank）最常見的元兇之一，因為瀏覽器得在每一幀捲動時
+     重新合成整個背景。視覺上幾乎沒有差異，因為底下另外還有 .bg-photo／
+     .cosmic-bg／.glow-orb 用 position:fixed 撐滿全螢幕的固定背景層。 */
   position:relative;
   overflow-x:hidden;
   -webkit-font-smoothing:antialiased;
@@ -76,13 +79,14 @@ body{
      跟旁邊 JS 隨機生成的星點疊在一起會出現不自然的規則網格感，故停用 */
   display:none;
 }
-.glow-orb{ position:fixed; border-radius:50%; pointer-events:none; z-index:0; filter:blur(90px); }
-.glow-orb.g1{ width:340px; height:340px; top:-70px; left:-100px; background:rgba(255,214,160,0.24); }
-.glow-orb.g2{ width:300px; height:300px; top:34%; right:-110px; background:rgba(140,225,210,0.2); }
-.glow-orb.g3{ width:300px; height:300px; bottom:-70px; left:10%; background:rgba(150,170,240,0.19); }
-.glow-orb.g4{ width:240px; height:240px; top:60%; left:36%; background:rgba(150,180,244,0.16); }
-.glow-orb.g5{ width:260px; height:260px; top:14%; right:8%; background:rgba(255,206,150,0.19); }
-.glow-orb.g6{ width:230px; height:230px; bottom:18%; right:-60px; background:rgba(180,150,244,0.11); }
+/* [效能優化] 依需求：發光球體數量從 6 顆減為 4 顆，模糊半徑從 90px 降到 56px。
+   大範圍高強度模糊（blur）是最吃 GPU 合成效能的效果之一，尤其在手機上，
+   調降後光暈效果仍在，但明顯減輕渲染負擔。 */
+.glow-orb{ position:fixed; border-radius:50%; pointer-events:none; z-index:0; filter:blur(56px); }
+.glow-orb.g1{ width:300px; height:300px; top:-70px; left:-100px; background:rgba(255,214,160,0.24); }
+.glow-orb.g2{ width:280px; height:280px; top:34%; right:-110px; background:rgba(140,225,210,0.2); }
+.glow-orb.g3{ width:280px; height:280px; bottom:-70px; left:10%; background:rgba(150,170,240,0.19); }
+.glow-orb.g5{ width:240px; height:240px; top:14%; right:8%; background:rgba(255,206,150,0.19); }
 
 /* ---------- 全域顆粒質感（已依需求取消） ---------- */
 .grain-overlay{ display:none; }
@@ -231,7 +235,7 @@ body{
 .brand-row{ margin:0 0 30px; position:relative; z-index:2; }
 /* [優化] 已移除大頭照後的招牌排版：LOGO → 副標「見習仙子++」→ 標語，
    三段式垂直堆疊，段落間留白拉大到 24–32px 區間，讓頂部更乾淨、更有儀式感。 */
-.brand-logo-wrap{ margin:0 0 28px; }
+.brand-logo-wrap{ margin:0 0 10px; }
 .brand-logo{
   display:none; /* 預設隱藏，JS 偵測到 LOGO_URL 有值時才會加上 .show 顯示 */
   width: clamp(180px, 50vw, 224px); /* [優化] 依需求放大 LOGO 尺寸 */
@@ -256,13 +260,13 @@ body{
 }
 .tagline{
   font-family:var(--serif); font-style:italic; font-size:15px; line-height:1.95;
-  color:var(--parchment-soft); letter-spacing:.5px; margin:14px auto 0; max-width:300px;
+  color:var(--parchment-soft); letter-spacing:.5px; margin:8px auto 0; max-width:300px;
   position:relative;
 }
 /* 標語上方加一顆極小的星芒作為分隔，取代原本的大頭照，
    讓招牌收尾更有儀式感、也維持版面呼吸感 */
 .tagline::before{
-  content:'✦'; display:block; margin:0 0 10px; font-size:11px;
+  content:'✦'; display:block; margin:0 0 6px; font-size:11px;
   color:var(--gold-3); opacity:.75; letter-spacing:0;
   text-shadow:0 0 12px rgba(243,229,171,.5);
 }
@@ -1393,9 +1397,7 @@ body.splash-active .section-hero .tagline{ opacity:0; transform:translateY(20px)
 <div class="glow-orb g1"></div>
 <div class="glow-orb g2"></div>
 <div class="glow-orb g3"></div>
-<div class="glow-orb g4"></div>
 <div class="glow-orb g5"></div>
-<div class="glow-orb g6"></div>
 <div class="grain-overlay"></div>
 
 <div class="page">
@@ -1551,14 +1553,17 @@ body.splash-active .section-hero .tagline{ opacity:0; transform:translateY(20px)
         status 為選填：留空則不顯示狀態標籤，等於關閉這個功能的開關；
         填「報名中」會顯示綠色標籤、「即滿額」顯示琥珀色、「已結束」顯示灰階，其餘文字則顯示預設紫色標籤）
 
-   1b) settings 工作表（key-value 通用設定，用來放【魔法聊天室】頭像／底部私訊按鈕
-       與【尋光指引】分享彈窗提示文字；欄位如下，留空則使用內建預設值）
-      key                    | value
-      chat_avatar_url        | 頭像圖片網址（水晶球個人照片，圓形頭像用）
-      chat_avatar_name       | 聊天室頂部顯示名稱，例如 見習仙子
-      chat_dm_button_text    | 聊天室最下方引導按鈕文案，例如 點我私訊仙子聊聊
-      chat_dm_button_url     | 按鈕點擊後開啟的私訊連結（IG DM／LINE 皆可）
-      share_tip_text         | 【尋光指引】分享長圖彈窗內的提示文字
+   1b) settings 工作表（key-value 通用設定，用來放【魔法聊天室】頭像／底部私訊按鈕／
+       快速回覆按鈕文字，與【尋光指引】分享彈窗提示文字；欄位如下，留空則使用內建預設值）
+      key                      | value
+      chat_avatar_url          | 頭像圖片網址（水晶球個人照片，圓形頭像用）
+      chat_avatar_name         | 聊天室頂部顯示名稱，例如 見習仙子
+      chat_dm_button_text      | 聊天室最下方引導按鈕文案，例如 點我私訊仙子聊聊
+      chat_dm_button_url       | 按鈕點擊後開啟的私訊連結（IG DM／LINE 皆可）
+      chat_quick_reply_1_text  | 聊天室第 1 顆快速回覆按鈕文字（點下去會跳去私訊仙子）
+      chat_quick_reply_2_text  | 聊天室第 2 顆快速回覆按鈕文字（點下去會捲到「線上諮詢」方案）
+      chat_quick_reply_3_text  | 聊天室第 3 顆快速回覆按鈕文字（點下去會捲到「尋光指引」）
+      share_tip_text           | 【尋光指引】分享長圖彈窗內的提示文字
 
    1c) chat_messages 工作表（【魔法聊天室】開場的仙子訊息流，依 order 由小到大依序顯示；
        留空則使用內建預設的三句開場白）
@@ -1654,13 +1659,16 @@ const APPLE_TOUCH_ICON_URL = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDov
     /* box-shadow 清單中越前面的越蓋在上層，核心點要放前面才不會被光暈糊掉 */
     return coreArr.concat(glowArr).join(',');
   }
+  /* [效能優化] 依需求整體調降星點數量（約減半）：星點是用大量 box-shadow 疊出來的，
+     shadow 層數越多，瀏覽器要合成的圖層就越重，尤其在手機上特別明顯，
+     調降後視覺上依然有星空感，但明顯減輕渲染負擔。 */
   const style = document.createElement('style');
   style.textContent = `
-    .star-dot.a{ box-shadow:${genShadow(34,1400,'#E6A8D6','rgba(230,168,214,.4)')}; }
-    .star-dot.b{ box-shadow:${genShadow(20,1400,'#FFFFFF','rgba(255,255,255,.35)')}; }
-    .star-dot.c{ box-shadow:${genShadow(10,1400,'#9FCBF5','rgba(159,203,245,.4)')}; }
-    .card-dark-star.a{ box-shadow:${genShadow(12,300,'#E6A8D6','rgba(230,168,214,.35)')}; }
-    .card-dark-star.b{ box-shadow:${genShadow(6,300,'#FFFFFF','rgba(255,255,255,.3)')}; }
+    .star-dot.a{ box-shadow:${genShadow(16,1400,'#E6A8D6','rgba(230,168,214,.4)')}; }
+    .star-dot.b{ box-shadow:${genShadow(10,1400,'#FFFFFF','rgba(255,255,255,.35)')}; }
+    .star-dot.c{ box-shadow:${genShadow(6,1400,'#9FCBF5','rgba(159,203,245,.4)')}; }
+    .card-dark-star.a{ box-shadow:${genShadow(6,300,'#E6A8D6','rgba(230,168,214,.35)')}; }
+    .card-dark-star.b{ box-shadow:${genShadow(3,300,'#FFFFFF','rgba(255,255,255,.3)')}; }
   `;
   document.head.appendChild(style);
   const bg = document.getElementById('cosmicBg');
@@ -1683,9 +1691,7 @@ const APPLE_TOUCH_ICON_URL = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDov
     { el: document.querySelector('.glow-orb.g1'), speed: 0.05 },
     { el: document.querySelector('.glow-orb.g2'), speed: 0.09 },
     { el: document.querySelector('.glow-orb.g3'), speed: 0.04 },
-    { el: document.querySelector('.glow-orb.g4'), speed: 0.12 },
     { el: document.querySelector('.glow-orb.g5'), speed: 0.07 },
-    { el: document.querySelector('.glow-orb.g6'), speed: 0.10 },
     { el: document.getElementById('cosmicBg'), speed: 0.02 },
   ].filter(l => l.el);
 
@@ -1785,7 +1791,12 @@ const DEFAULT_SETTINGS = {
   chat_dm_button_url: IG_DM_URL,
   share_tip_text: '長按圖片即可儲存至相簿，趕快分享至 IG 動態吧 ✨',
   /* [優化-4] 尋光指引大標題旁的每週更新提示標籤，可於 Google Sheet 設定或更新頻率文案 */
-  guide_update_badge_text: '每週一更新 ‧ 宇宙給妳的本週符文指引'
+  guide_update_badge_text: '每週一更新 ‧ 宇宙給妳的本週符文指引',
+  /* 魔法聊天室下方 3 顆快速回覆按鈕的文字，可於 Google Sheet 設定或更新；
+     按鈕點擊後的動作（跳去私訊／捲到方案／捲到尋光指引）是固定行為，不會跟著文字改變 */
+  chat_quick_reply_1_text: '我有些心事想分享...',
+  chat_quick_reply_2_text: '我想預約符文服務',
+  chat_quick_reply_3_text: '我也喜歡水晶！'
 };
 
 /* DEFAULT_CHAT_MESSAGES：chat_messages 工作表尚未設定，或沒有資料列時的預設開場白 */
@@ -2430,6 +2441,13 @@ function applySettings(rows){
   if(tipEl) tipEl.textContent = CURRENT_SETTINGS.share_tip_text;
   const guideBadgeEl = document.getElementById('guideUpdateBadge');
   if(guideBadgeEl) guideBadgeEl.textContent = CURRENT_SETTINGS.guide_update_badge_text;
+  /* 若聊天室快速回覆按鈕已經先渲染過（例如訪客動作比 Sheet 資料回來得快），
+     這裡再用最新設定重新刷新一次按鈕文字，避免顯示到舊的預設文案 */
+  const quickReplyBtns = document.querySelectorAll('#chatQuickReplies .chat-reply-btn');
+  if(quickReplyBtns.length){
+    const latest = getChatQuickReplies();
+    quickReplyBtns.forEach((btn, i)=>{ if(latest[i]) btn.textContent = latest[i].label; });
+  }
 }
 
 /* ---------- [優化-2] 套用 chat_messages 工作表：聊天室開場訊息流 ---------- */
@@ -2874,11 +2892,17 @@ let FAIRY_OPENING_MESSAGES = DEFAULT_CHAT_MESSAGES.map(m => m.text);
 /* 目前生效中的通用設定（含頭像／DM 按鈕／分享提示文字），初始為預設值，
    Google Sheet 讀取成功後會在 applySettings() 內被覆蓋更新 */
 let CURRENT_SETTINGS = Object.assign({}, DEFAULT_SETTINGS);
-const CHAT_QUICK_REPLIES = [
-  { label:'我有些心事想分享...', action:'talk' },
-  { label:'我想預約符文服務', action:'book' },
-  { label:'我也喜歡水晶！', action:'crystal' }
-];
+/* [優化] 3 顆快速回覆按鈕的文字改由 CURRENT_SETTINGS 提供（可在 Google Sheet 的
+   settings 工作表用 chat_quick_reply_1_text／2_text／3_text 編輯）；
+   每顆按鈕點擊後的動作（action）維持固定行為，不隨文字變動。
+   寫成函式而非常數，是為了在 Google Sheet 資料回來後，畫面上也能拿到最新文字。 */
+function getChatQuickReplies(){
+  return [
+    { label: CURRENT_SETTINGS.chat_quick_reply_1_text || DEFAULT_SETTINGS.chat_quick_reply_1_text, action:'talk' },
+    { label: CURRENT_SETTINGS.chat_quick_reply_2_text || DEFAULT_SETTINGS.chat_quick_reply_2_text, action:'book' },
+    { label: CURRENT_SETTINGS.chat_quick_reply_3_text || DEFAULT_SETTINGS.chat_quick_reply_3_text, action:'crystal' }
+  ];
+}
 let chatSequenceStarted = false;
 
 function appendChatBubble(container, text, who){
@@ -2951,7 +2975,8 @@ function startChatSequence(){
 
 function renderChatQuickReplies(replyBox, msgBox){
   replyBox.innerHTML = '';
-  CHAT_QUICK_REPLIES.forEach(opt=>{
+  const quickReplies = getChatQuickReplies();
+  quickReplies.forEach(opt=>{
     const btn = document.createElement('button');
     btn.className = 'chat-reply-btn';
     btn.type = 'button';
