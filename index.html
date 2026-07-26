@@ -15,7 +15,7 @@
 <meta name="twitter:title" content="Morningstar ｜ 見習仙子的魔法傳送門">
 <meta name="twitter:description" content="查看最新活動仙子近況，預約線上諮詢或實體面談，讓仙子陪你找到內心的答案。">
 <meta name="twitter:image" content="https://images.unsplash.com/photo-1760437429636-2e280cf3726f?q=80&w=1200&auto=format&fit=crop">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9C%A8%3C/text%3E%3C/svg%3E">
+<link rel="icon" id="faviconLink" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9C%A8%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -185,6 +185,27 @@ body{
   text-align:center; margin: 0 auto 22px; max-width:300px; letter-spacing:.2px;
 }
 
+/* ---------- [優化-4] 尋光指引：每週更新提示標籤 ----------
+   放在 Eyebrow 與大標題之間，輕盈的膠囊小字＋緩慢呼吸微光，
+   帶出「限時、值得每週回來」的靈性精緻感，不會搶走標題本身的視覺份量 */
+.guide-update-badge{
+  display:inline-block; margin: 0 auto 14px; padding: 5px 16px;
+  font-family:var(--sans); font-size:11px; font-weight:600; letter-spacing:1.2px;
+  color: rgba(255,255,255,.88);
+  background: rgba(196,160,255,.14);
+  border: 1px solid rgba(214,196,255,.4);
+  border-radius: 999px;
+  text-align:center;
+  box-shadow: 0 0 12px rgba(196,160,255,.28);
+  animation: guideBadgeGlow 3.6s ease-in-out infinite;
+}
+#guideSection{ text-align:center; }
+@keyframes guideBadgeGlow{
+  0%,100%{ box-shadow: 0 0 10px rgba(196,160,255,.22); border-color: rgba(214,196,255,.32); }
+  50%{ box-shadow: 0 0 18px rgba(196,160,255,.42); border-color: rgba(214,196,255,.55); }
+}
+@media (prefers-reduced-motion: reduce){ .guide-update-badge{ animation:none; } }
+
 /* ---------- 尋光指引：標題與其他區塊一致置中 ---------- */
 #guideSection .gem-row{ justify-content:center; }
 
@@ -339,11 +360,31 @@ body{
 }
 .avatar-img{ width:100%; height:100%; object-fit:cover; display:block; background:var(--void-2); }
 
-.brand-row{ margin-top:-10px; position:relative; z-index:2; }
+.brand-row{ margin:0 0 28px; position:relative; z-index:2; }
+/* [Debug 修復] LOGO 完全沒顯示的原因：先前只加了 LOGO_URL 這個設定值，
+   卻忘了在 Hero 區塊實際加上 <img> 標籤與對應的顯示/隱藏切換邏輯——
+   等於檔案裡有變數、但頁面上沒有任何元素會去讀它，所以畫面當然是空的。
+   這裡補上完整的 <img id="brandLogoImg"> 結構＋ JS 顯示切換（見 applyLogoAssets()），
+   並確保 display / opacity / z-index 都明確設定，不會被其他樣式覆蓋掉。
+   LOGO 與下方頭像圓圈之間留白 28px（落在需求的 24–32px 區間內）。 */
+.brand-logo-wrap{ margin:0; }
+.brand-logo{
+  display:none; /* 預設隱藏，JS 偵測到 LOGO_URL 有值時才會加上 .show 顯示 */
+  width: clamp(149px, 42vw, 186px); /* 大頭貼直徑 186px 的 0.8～1 倍 */
+  height:auto; margin:0 auto; position:relative; z-index:2; opacity:0;
+  transition: opacity .6s ease;
+  /* 主視覺＝純白／半透明白＋溫暖淡金 CSS 微光，不需要另外準備金色版本檔案 */
+  filter:
+    drop-shadow(0 0 10px rgba(243,229,171,.4))
+    drop-shadow(0 0 22px rgba(243,229,171,.22));
+}
+.brand-logo.show{ display:block; opacity:.92; }
 .brand-title{
   font-family:var(--serif); font-weight:600; font-style:italic;
   font-size:35px; letter-spacing:0.12em; color:#FFFFFF; margin:0;
 }
+/* LOGO 圖片成功顯示後，原本純文字的 Morningstar 字樣就退場，避免重複 */
+.brand-title.logo-active{ display:none; }
 .brand-sub{
   font-size:12.5px; letter-spacing:4px; color:var(--gold-3);
   margin: 6px 0 22px; text-transform:uppercase;
@@ -499,9 +540,17 @@ body{
 }
 /* ---------- [優化-1] 服務方案卡片：主行動按鈕（各方案自己的預約按鈕）改為
    全卡片第一視覺焦點：實心微亮紫底＋柔和外光暈，並帶有緩慢的呼吸光動畫，
-   跟卡片內「了解完整內容」（.service-more-btn，維持半透明文字連結）拉開明顯的主次視覺階層。
+   卡片內完整內容（含價格、簡介、注意事項）已依需求直接展開顯示，不再有次要展開按鈕，
+   讓這顆按鈕成為卡片上唯一、也是最終的行動呼籲，主次階層更單純明確。
    方案名稱／文案／按鈕文字皆可由 Google Sheets「services」工作表的 button_text 欄位覆蓋，
-   詳見本檔案最下方「Google Sheets 資料庫架構規劃表」。 */
+   詳見本檔案最下方「Google Sheets 資料庫架構規劃表」。
+   ---- [Debug 修復] ----
+   卡片外層 .liquid-glass 是用 JS 算出來的 squircle clip-path（見 applySquircle()），
+   clip-path 會把「整個子樹」都裁在卡片形狀內，包含子元素的 box-shadow／filter 光暈——
+   原本的光暈半徑（26px/20px blur）加上卡片底部只留 22px 內距，光暈還沒暈開就先被
+   clip-path 從邊界切掉了，所以肉眼幾乎看不到發光效果。修復方式：
+   1) 縮小陰影的擴散半徑，讓光暈能完整落在卡片邊界內；
+   2) 對應加大 .service-body 的下方內距，給光暈多一點呼吸空間。 */
 .service-btn{
   font-weight:700; letter-spacing:1.8px;
   color:#FFFFFF;
@@ -509,8 +558,8 @@ body{
   border: 1.5px solid rgba(214,196,255,.9);
   box-shadow:
     0 0 0 1px rgba(255,255,255,.12) inset,
-    0 10px 26px rgba(120,80,220,.4),
-    0 0 20px rgba(196,160,255,.55);
+    0 6px 16px rgba(120,80,220,.42),
+    0 0 14px rgba(196,160,255,.6);
   animation: serviceBtnGlow 3.2s ease-in-out infinite;
 }
 .service-btn:hover, .service-btn:active{
@@ -518,12 +567,12 @@ body{
   color:#241226; border-color:#FFFFFF;
   box-shadow:
     0 0 0 1px rgba(255,255,255,.2) inset,
-    0 14px 32px rgba(120,80,220,.5),
-    0 0 30px rgba(214,176,255,.85);
+    0 8px 20px rgba(120,80,220,.52),
+    0 0 20px rgba(214,176,255,.85);
 }
 @keyframes serviceBtnGlow{
-  0%,100%{ box-shadow: 0 0 0 1px rgba(255,255,255,.12) inset, 0 10px 26px rgba(120,80,220,.4), 0 0 20px rgba(196,160,255,.55); }
-  50%{ box-shadow: 0 0 0 1px rgba(255,255,255,.16) inset, 0 10px 26px rgba(120,80,220,.5), 0 0 30px rgba(196,160,255,.8); }
+  0%,100%{ box-shadow: 0 0 0 1px rgba(255,255,255,.12) inset, 0 6px 16px rgba(120,80,220,.42), 0 0 14px rgba(196,160,255,.6); }
+  50%{ box-shadow: 0 0 0 1px rgba(255,255,255,.16) inset, 0 6px 16px rgba(120,80,220,.5), 0 0 20px rgba(196,160,255,.85); }
 }
 @media (prefers-reduced-motion: reduce){ .service-btn{ animation:none; } }
 .gem-btn:hover, .service-btn:hover{
@@ -1074,7 +1123,7 @@ body{
   border:3px solid var(--void-2);
   box-shadow: 0 0 0 2px rgba(124,148,230,.5), 0 12px 26px rgba(0,0,0,.45);
 }
-.service-body{ padding: 8px 26px 22px; text-align:center; flex:1; display:flex; flex-direction:column; }
+.service-body{ padding: 8px 26px 38px; text-align:center; flex:1; display:flex; flex-direction:column; }
 .service-body .service-btn{ margin-top:auto; align-self:center; }
 .service-badge{
   display:block; font-size:11.5px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase;
@@ -1101,33 +1150,22 @@ body{
   color:#FFFFFF;
   margin:0 0 16px;
 }
-/* ---------- 服務方案：了解完整內容（次要文字連結，點開才看到全文） ---------- */
-.service-more-btn{
-  display:inline-flex; align-items:center; justify-content:center; min-height:44px;
-  background:none; border:none; cursor:pointer;
-  font-family:var(--sans); font-size:11.5px; letter-spacing:.5px; font-weight:400;
-  color: rgba(255,255,255,.55); text-decoration: underline; text-underline-offset:3px;
-  margin:0 0 12px; padding:6px 4px;
-}
-.service-more-btn:hover, .service-more-btn:active{ color:rgba(255,255,255,.85); }
-
 /* 方案 B 外框微光已依需求取消，僅保留邊框顏色識別，不再加任何光暈/陰影 */
 .service-highlight{ border-color: rgba(159,203,245,.55) !important; }
 
-/* ---------- 服務方案：內容直接在卡片內展開，不再跳出另一個彈窗 ---------- */
-.service-more-panel{
-  display:grid; grid-template-rows:0fr; overflow:hidden; opacity:0;
-  transition: grid-template-rows .45s ease, opacity .35s ease, margin .35s ease;
+/* ---------- [優化-5] 服務方案：完整內容直接展示在卡片內，
+   不再需要點擊「了解完整內容」才看得到全文；用左對齊＋寬鬆行距＋
+   一條淡淡的分隔線把「摘要資訊」跟「完整說明」分成兩個閱讀段落，
+   文字量較大時也不會糊成一整片，維持清楚易讀 ---------- */
+.service-full-desc{
+  font-family:var(--sans); font-size:12.5px; line-height:2; color:var(--parchment-soft);
+  margin:14px 0 0; padding-top:14px; text-align:left;
+  border-top:1px solid rgba(255,255,255,.12);
+  white-space:pre-line; /* 保留 Google Sheet 儲存格內的換行分段 */
 }
-.service-more-panel.show{ grid-template-rows:1fr; opacity:1; margin:0 0 14px; }
-.service-more-panel > div{ min-height:0; overflow:hidden; }
-.service-more-desc{
-  font-family:var(--sans); font-size:12.5px; line-height:1.95; color:var(--parchment-soft);
-  margin:0 0 10px; text-align:left;
-}
-.service-more-note{
-  font-family:var(--sans); font-size:11px; line-height:1.85; color:rgba(255,255,255,.7);
-  margin:0; text-align:left;
+.service-full-note{
+  font-family:var(--sans); font-size:11px; line-height:1.9; color:rgba(255,255,255,.65);
+  margin:10px 0 0; text-align:left; white-space:pre-line;
 }
 
 /* ============================================================
@@ -1142,6 +1180,12 @@ body{
   content:''; display:block; width:40px; height:1px; margin:0 auto 16px;
   background: var(--line);
 }
+/* [優化] 頁尾品牌收尾：LOGO 圖片以 60% 透明度低調呈現，取代原本的純文字 @ Morningstar；
+   LOGO_URL 沒填時自動退回原本的文字版本，不會出現空白 */
+.footer-brand{ display:inline-flex; align-items:center; justify-content:center; }
+.footer-logo{ display:none; height:22px; width:auto; opacity:.6; }
+.footer-logo.show{ display:block; }
+.footer-logo.show + #footerTextFallback{ display:none; }
 
 .loading-text{ text-align:center; color:var(--parchment-soft); font-size:12.5px; padding:14px 0; }
 
@@ -1196,6 +1240,7 @@ body{
   font-family:var(--serif-tc); font-size:14px; letter-spacing:4px; text-transform:uppercase;
   color:rgba(255,255,255,.6); margin-bottom:26px;
 }
+.share-export-logo{ width:64px; height:auto; margin:0 auto; display:block; opacity:.92; }
 .share-export-name{
   font-family:var(--serif); font-weight:700; font-size:34px; color:#fff;
   margin-bottom:20px; letter-spacing:1px;
@@ -1247,15 +1292,24 @@ body.splash-active{ overflow:hidden; height:100vh; }
 .splash-inner{ text-align:center; padding:0 40px; position:relative; }
 
 .splash-symbol{
-  width:52px; height:52px; margin:0 auto 34px; color:#fff;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  margin:0 auto 34px; color:#fff;
   opacity:0; transform:scale(.55);
   animation: splashSymbolIn 1.6s cubic-bezier(.2,.8,.2,1) forwards, splashSymbolGlow 2.8s ease-in-out .9s infinite;
 }
-.splash-symbol svg{ width:100%; height:100%; display:block; }
+.splash-symbol svg{ width:52px; height:52px; display:block; }
 .splash-symbol path{
   fill:currentColor;
   filter: drop-shadow(0 0 10px rgba(176,196,250,.9)) drop-shadow(0 0 24px rgba(159,203,245,.55));
 }
+/* [優化] 開場儀式感畫面（Splash）：正上方置中的 LOGO，淡入＋呼吸光暈
+   （呼吸光暈直接沿用上面 splashSymbolIn / splashSymbolGlow 兩組既有動畫，
+   套在整個 .splash-symbol 容器上，圖片與備援星芒圖示都會一起套用到） */
+.splash-logo-img{
+  display:none; width:132px; height:auto;
+  filter: drop-shadow(0 0 10px rgba(243,229,171,.55)) drop-shadow(0 0 26px rgba(243,229,171,.35));
+}
+.splash-logo-img.show{ display:block; }
 @keyframes splashSymbolIn{ to{ opacity:1; transform:scale(1); } }
 @keyframes splashSymbolGlow{ 0%,100%{ filter:brightness(1); } 50%{ filter:brightness(1.45); } }
 
@@ -1444,7 +1498,8 @@ body{ padding-bottom: 96px; } /* 預留手機底部固定列高度，避免遮�
 <div class="splash-screen" id="splashScreen">
   <div class="splash-inner">
     <div class="splash-symbol">
-      <svg viewBox="0 0 100 100"><path d="M50 0 C53 33 67 47 100 50 C67 53 53 67 50 100 C47 67 33 53 0 50 C33 47 47 33 50 0 Z"/></svg>
+      <img class="splash-logo-img" id="splashLogoImg" src="" alt="Morningstar">
+      <svg id="splashLogoFallback" viewBox="0 0 100 100"><path d="M50 0 C53 33 67 47 100 50 C67 53 53 67 50 100 C47 67 33 53 0 50 C33 47 47 33 50 0 Z"/></svg>
     </div>
     <p class="splash-line splash-line-1">請閉上眼睛，深呼吸，</p>
     <p class="splash-line splash-line-1b">願你記得．．．</p>
@@ -1482,6 +1537,14 @@ body{ padding-bottom: 96px; } /* 預留手機底部固定列高度，避免遮�
     <span class="sparkle lg" style="top:8px; right:10%;"><svg viewBox="0 0 100 100"><path d="M50 0 C53 33 67 47 100 50 C67 53 53 67 50 100 C47 67 33 53 0 50 C33 47 47 33 50 0 Z"/></svg></span>
     <span class="sparkle sm" style="top:210px; left:9%; animation-delay:1.1s;"><svg viewBox="0 0 100 100"><path d="M50 0 C53 33 67 47 100 50 C67 53 53 67 50 100 C47 67 33 53 0 50 C33 47 47 33 50 0 Z"/></svg></span>
 
+    <div class="brand-row" id="brandRow">
+      <div class="brand-logo-wrap">
+        <img class="brand-logo" id="brandLogoImg" src="" alt="Morningstar">
+        <h1 class="brand-title" id="brandTitleFallback">Morningstar</h1>
+      </div>
+      <p class="brand-sub">見習仙子++</p>
+    </div>
+
     <div class="avatar-wrap">
       <span class="avatar-mist" aria-hidden="true"></span>
       <span class="avatar-dust" aria-hidden="true"></span>
@@ -1490,20 +1553,45 @@ body{ padding-bottom: 96px; } /* 預留手機底部固定列高度，避免遮�
       </div>
     </div>
 
-    <div class="brand-row">
-      <h1 class="brand-title">Morningstar</h1>
-      <p class="brand-sub">見習仙子++</p>
-    </div>
-
     <p class="tagline">
       靈感・女巫符文・水晶・魔法儀式<br>
       願你記得，你就是光
     </p>
   </div>
 
+  <!-- ============ 魔法聊天室（依需求移至 Hero 正下方，第一眼就迎客） ============ -->
+  <div class="section section-service" id="chatSection">
+    <span class="section-eyebrow">New Here</span>
+    <h2 class="section-title">魔法聊天室</h2>
+    <p class="section-sub">按下傳送鍵，把你的心事打包交給見習仙子吧</p>
+
+    <div class="chat-widget">
+      <div class="glass-shadow-wrap chat-window-shadow">
+        <div class="card-backdrop-mask"></div>
+        <div class="chat-window liquid-glass">
+          <div class="chat-header">
+            <span class="chat-avatar"><img id="chatAvatarImg" src="https://i.meee.com.tw/hs44NV5.jpg" alt="頭像" loading="lazy" decoding="async"></span>
+            <span class="chat-header-info">
+              <span class="chat-header-name" id="chatHeaderName">見習仙子</span>
+              <span class="chat-header-status"><span class="chat-status-dot"></span>在線中</span>
+            </span>
+          </div>
+          <div class="chat-messages" id="chatMessages"></div>
+          <div class="chat-quick-replies" id="chatQuickReplies"></div>
+          <div class="chat-dm-row">
+            <a class="chat-dm-btn" id="chatDmBtn" href="#" target="_blank" rel="noopener">點我私訊仙子聊聊</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ============ 尋光指引（全站唯一抽選體驗） ============ -->
   <div class="section section-guide reveal" id="guideSection">
     <span class="section-eyebrow">Witch Runes Reading</span>
+    <!-- [優化-4] 每週更新提示標籤：輕盈、帶靈性精緻感的微光小字，文案可於 Google Sheets
+         「settings」工作表的 guide_update_badge_text 欄位設定與更新 -->
+    <span class="guide-update-badge" id="guideUpdateBadge">每週一更新 ‧ 宇宙給妳的本週符文指引</span>
     <h2 class="section-title">尋光指引</h2>
     <p class="section-sub">心裡卡卡的？點擊一顆女巫符文，解鎖宇宙給你的突破指引</p>
     <div class="gem-row" id="gemRow"></div>
@@ -1531,33 +1619,6 @@ body{ padding-bottom: 96px; } /* 預留手機底部固定列高度，避免遮�
     </div>
   </div>
 
-  <!-- ============ 魔法聊天室 ============ -->
-  <div class="section section-service reveal" id="chatSection">
-    <span class="section-eyebrow">New Here</span>
-    <h2 class="section-title">魔法聊天室</h2>
-    <p class="section-sub">按下傳送鍵，把你的心事打包交給見習仙子吧</p>
-
-    <div class="chat-widget">
-      <div class="glass-shadow-wrap chat-window-shadow">
-        <div class="card-backdrop-mask"></div>
-        <div class="chat-window liquid-glass">
-          <div class="chat-header">
-            <span class="chat-avatar"><img id="chatAvatarImg" src="https://i.meee.com.tw/hs44NV5.jpg" alt="頭像" loading="lazy" decoding="async"></span>
-            <span class="chat-header-info">
-              <span class="chat-header-name" id="chatHeaderName">見習仙子</span>
-              <span class="chat-header-status"><span class="chat-status-dot"></span>在線中</span>
-            </span>
-          </div>
-          <div class="chat-messages" id="chatMessages"></div>
-          <div class="chat-quick-replies" id="chatQuickReplies"></div>
-          <div class="chat-dm-row">
-            <a class="chat-dm-btn" id="chatDmBtn" href="#" target="_blank" rel="noopener">點我私訊仙子聊聊</a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- ============ 仙子近況 ============ -->
   <div class="section section-news reveal hidden" id="newsSection">
     <span class="section-eyebrow">Fairy Updates</span>
@@ -1565,7 +1626,10 @@ body{ padding-bottom: 96px; } /* 預留手機底部固定列高度，避免遮�
     <p class="section-sub">看看最近有什麼好玩的魔法限定活動？錯過就敲不到囉！</p>
     <div class="news-grid" id="newsList"></div>
     <div class="footer">
-      © Morningstar．願你記得，你就是光
+      <span class="footer-brand">
+        <img class="footer-logo" id="footerLogoImg" src="" alt="Morningstar">
+        <span id="footerTextFallback">© Morningstar．願你記得，你就是光</span>
+      </span>
       <div class="footer-legal">
         <button type="button" class="footer-legal-link" id="openDisclaimerBtn">免責聲明</button>
         <span class="footer-legal-dot">．</span>
@@ -1902,7 +1966,9 @@ const DEFAULT_SETTINGS = {
   chat_avatar_name: '見習仙子',
   chat_dm_button_text: '點我私訊仙子聊聊',
   chat_dm_button_url: IG_DM_URL,
-  share_tip_text: '長按圖片即可儲存至相簿，趕快分享至 IG 動態吧 ✨'
+  share_tip_text: '長按圖片即可儲存至相簿，趕快分享至 IG 動態吧 ✨',
+  /* [優化-4] 尋光指引大標題旁的每週更新提示標籤，可於 Google Sheet 設定或更新頻率文案 */
+  guide_update_badge_text: '每週一更新 ‧ 宇宙給妳的本週符文指引'
 };
 
 /* DEFAULT_CHAT_MESSAGES：chat_messages 工作表尚未設定，或沒有資料列時的預設開場白 */
@@ -2466,7 +2532,8 @@ function renderServices(rows){
         mask.className = 'card-backdrop-mask';
         const card = document.createElement('div');
         card.className = 'service-card liquid-glass' + (isHighlight ? ' service-highlight' : '');
-        const hasMore = !!(sv.description || sv.note);
+        /* [優化-5] 「了解完整內容」的展開/收合互動已依需求移除，
+           description／note 兩段內容直接完整顯示在卡片內，不再需要點擊才看得到全文 */
         card.innerHTML = `
           <div class="service-img-wrap">${sv.image_url ? `<img class="service-img" src="${sv.image_url}" alt="" loading="lazy" decoding="async">` : ''}</div>
           <div class="service-body">
@@ -2475,28 +2542,13 @@ function renderServices(rows){
             ${sv.label ? `<span class="service-label">${sv.label}</span>` : ''}
             ${sv.audience ? `<p class="service-audience">適合對象：${sv.audience}</p>` : ''}
             ${sv.price ? `<p class="service-price">${sv.price}</p>` : ''}
-            ${hasMore ? `<button type="button" class="service-more-btn" data-more-toggle aria-expanded="false">了解完整內容</button>` : ''}
-            ${hasMore ? `
-            <div class="service-more-panel">
-              <div class="service-more-inner">
-                ${sv.description ? `<p class="service-more-desc">${sv.description}</p>` : ''}
-                ${sv.note ? `<p class="service-more-note">${sv.note}</p>` : ''}
-              </div>
-            </div>` : ''}
+            ${sv.description ? `<p class="service-full-desc">${sv.description}</p>` : ''}
+            ${sv.note ? `<p class="service-full-note">${sv.note}</p>` : ''}
             <a class="service-btn" href="${sv.button_url||IG_DM_URL}" target="_blank" rel="noopener">${sv.button_text||'私訊預約仙子'}</a>
           </div>
         `;
         cardWrap.appendChild(mask);
         cardWrap.appendChild(card);
-        const moreBtn = card.querySelector('[data-more-toggle]');
-        const morePanel = card.querySelector('.service-more-panel');
-        if(moreBtn && morePanel){
-          moreBtn.addEventListener('click', ()=>{
-            const isOpen = morePanel.classList.toggle('show');
-            moreBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-            moreBtn.textContent = isOpen ? '收合內容' : '了解完整內容';
-          });
-        }
         track.appendChild(cardWrap);
       });
       panel.appendChild(track);
@@ -2556,6 +2608,8 @@ function applySettings(rows){
   }
   const tipEl = document.getElementById('shareImgTip');
   if(tipEl) tipEl.textContent = CURRENT_SETTINGS.share_tip_text;
+  const guideBadgeEl = document.getElementById('guideUpdateBadge');
+  if(guideBadgeEl) guideBadgeEl.textContent = CURRENT_SETTINGS.guide_update_badge_text;
 }
 
 /* ---------- [優化-2] 套用 chat_messages 工作表：聊天室開場訊息流 ---------- */
@@ -2746,6 +2800,70 @@ const ServiceCarousel = (function(){
   return { setup };
 })();
 
+/* ---------- [Debug 修復] 套用品牌 LOGO：Hero／開場儀式畫面／頁尾／分享長圖 ----------
+   這支函式不等 Google Sheet，頁面一載入就立刻執行——LOGO 是寫死在程式碼裡的
+   固定資產（見上方 LOGO_URL 設定區），不需要跟著網路資料一起等待，
+   避免使用者在資料回來前一直看到空白或錯位。 */
+function applyLogoAssets(){
+  const hasLogo = !!(LOGO_URL && LOGO_URL.trim());
+
+  const heroImg = document.getElementById('brandLogoImg');
+  const heroFallback = document.getElementById('brandTitleFallback');
+  if(heroImg && heroFallback){
+    if(hasLogo){
+      heroImg.src = LOGO_URL;
+      heroImg.classList.add('show');
+      heroFallback.classList.add('logo-active');
+    }else{
+      heroImg.classList.remove('show');
+      heroFallback.classList.remove('logo-active');
+    }
+  }
+
+  const splashImg = document.getElementById('splashLogoImg');
+  const splashFallbackSvg = document.getElementById('splashLogoFallback');
+  if(splashImg && splashFallbackSvg){
+    if(hasLogo){
+      splashImg.src = LOGO_URL;
+      splashImg.classList.add('show');
+      splashFallbackSvg.style.display = 'none';
+    }else{
+      splashImg.classList.remove('show');
+      splashFallbackSvg.style.display = '';
+    }
+  }
+
+  const footerLogo = document.getElementById('footerLogoImg');
+  const footerFallback = document.getElementById('footerTextFallback');
+  if(footerLogo && footerFallback){
+    if(hasLogo){
+      footerLogo.src = LOGO_URL;
+      footerLogo.classList.add('show');
+      footerFallback.style.display = 'none';
+    }else{
+      footerLogo.classList.remove('show');
+      footerFallback.style.display = '';
+    }
+  }
+
+  /* Favicon／iOS 主畫面圖示：若已填寫裁切好的獨立星芒版本網址，才覆蓋掉預設的 emoji 版本 */
+  if(FAVICON_URL && FAVICON_URL.trim()){
+    const iconLink = document.getElementById('faviconLink');
+    if(iconLink) iconLink.href = FAVICON_URL;
+  }
+  if(APPLE_TOUCH_ICON_URL && APPLE_TOUCH_ICON_URL.trim()){
+    let touchLink = document.getElementById('appleTouchIconLink');
+    if(!touchLink){
+      touchLink = document.createElement('link');
+      touchLink.id = 'appleTouchIconLink';
+      touchLink.rel = 'apple-touch-icon';
+      document.head.appendChild(touchLink);
+    }
+    touchLink.href = APPLE_TOUCH_ICON_URL;
+  }
+}
+applyLogoAssets();
+
 /* ---------- 初始化 ---------- */
 /* 先立刻用預設符文畫面把「尋光指引」畫出來，不等 Google Sheet 的網路回應，
    避免手機網路較慢時整排符文要等好幾秒才出現；等資料回來後才視需要換成真實內容 */
@@ -2932,7 +3050,9 @@ const revealObserver = new IntersectionObserver((entries) => {
     if(entry.isIntersecting){
       entry.target.classList.add('in-view');
       revealObserver.unobserve(entry.target);
-      if(entry.target.id === 'chatSection'){ startChatSequence(); }
+      /* [優化-2] 魔法聊天室不再等「滾動進入視窗」才觸發，
+         改成頁面一載入（開場儀式結束的當下）就直接播放，見下方進場儀式段落。
+         這裡只保留卡片淡入的視覺效果，不再耦合對話動畫的觸發時機。 */
     }
   });
 }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
@@ -3207,8 +3327,12 @@ function buildShareExportCard(btn){
   const affirm = btn.dataset.shareAffirm || '';
   const card = document.createElement('div');
   card.className = 'share-export-card';
+  const hasLogo = !!(LOGO_URL && LOGO_URL.trim());
+  const brandHtml = hasLogo
+    ? `<img class="share-export-logo" src="${LOGO_URL}" alt="Morningstar" crossorigin="anonymous">`
+    : `Morningstar Lab`;
   card.innerHTML = `
-    <div class="share-export-brand">Morningstar Lab</div>
+    <div class="share-export-brand">${brandHtml}</div>
     <div class="share-export-name">${escapeHtml(name)}</div>
     ${quote ? `<div class="share-export-quote">「${escapeHtml(quote)}」</div>` : ''}
     ${text ? `<p class="share-export-text">${escapeHtml(text)}</p>` : ''}
@@ -3283,7 +3407,12 @@ async function openShareImageModal(btn){
   /* 同一個瀏覽階段（分頁未關閉前）只播放一次，避免每次切換分頁都被迫重看開場 */
   const alreadySeen = sessionStorage.getItem('ms_splash_seen') === '1';
 
-  function revealPage(){ document.body.classList.remove('splash-active'); }
+  function revealPage(){
+    document.body.classList.remove('splash-active');
+    /* [優化-2] 訪客一打開網頁（開場儀式結束、畫面正式露出的當下）就立刻觸發
+       魔法聊天室的登場動畫與動態對話效果，不用等使用者滑到那個區塊才播放 */
+    startChatSequence();
+  }
 
   let timers = [];
   function clearTimers(){ timers.forEach(t=> clearTimeout(t)); timers = []; }
