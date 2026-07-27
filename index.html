@@ -82,7 +82,7 @@ body{
 /* [效能優化] 依需求：發光球體數量從 6 顆減為 4 顆，模糊半徑從 90px 降到 56px。
    大範圍高強度模糊（blur）是最吃 GPU 合成效能的效果之一，尤其在手機上，
    調降後光暈效果仍在，但明顯減輕渲染負擔。 */
-.glow-orb{ position:fixed; border-radius:50%; pointer-events:none; z-index:0; filter:blur(56px); }
+.glow-orb{ position:fixed; border-radius:50%; pointer-events:none; z-index:0; filter:blur(36px); }
 .glow-orb.g1{ width:300px; height:300px; top:-70px; left:-100px; background:rgba(255,214,160,0.24); }
 .glow-orb.g2{ width:280px; height:280px; top:34%; right:-110px; background:rgba(140,225,210,0.2); }
 .glow-orb.g3{ width:280px; height:280px; bottom:-70px; left:10%; background:rgba(150,170,240,0.19); }
@@ -232,10 +232,10 @@ body{
   filter: drop-shadow(0 0 5px rgba(176,196,250,.95)) drop-shadow(0 0 12px rgba(159,203,245,.55));
 }
 
-.brand-row{ margin:0 0 30px; position:relative; z-index:2; }
+.brand-row{ margin:0 0 12px; position:relative; z-index:2; }
 /* [優化] 已移除大頭照後的招牌排版：LOGO → 副標「見習仙子++」→ 標語，
    三段式垂直堆疊，段落間留白拉大到 24–32px 區間，讓頂部更乾淨、更有儀式感。 */
-.brand-logo-wrap{ margin:0 0 10px; }
+.brand-logo-wrap{ margin:0 0 3px; }
 .brand-logo{
   display:none; /* 預設隱藏，JS 偵測到 LOGO_URL 有值時才會加上 .show 顯示 */
   width: clamp(180px, 50vw, 224px); /* [優化] 依需求放大 LOGO 尺寸 */
@@ -338,8 +338,8 @@ body{
   /* 原本這裡疊加了 SVG 扭曲濾鏡（url(#liquid-distortion)），
      它會跟 JS 算出來的 squircle clip-path 邊緣互相打架，
      在轉場／不同尺寸內容時邊角會出現鋸齒破碎的假影，故移除，只保留純淨模糊玻璃感 */
-  backdrop-filter: blur(7px) saturate(150%) contrast(1.03) brightness(1.03);
-  -webkit-backdrop-filter: blur(7px) saturate(150%) contrast(1.03) brightness(1.03);
+  backdrop-filter: blur(5px) saturate(130%);
+  -webkit-backdrop-filter: blur(5px) saturate(130%);
   border: 1px solid rgba(255, 255, 255, 0.1);
   /* 陰影已完全取消：不再用 inset box-shadow 模擬邊框亮線，改用真正的細邊框（0.75px），
      跟著 JS 算出的 squircle clip-path 走，線條會更細緻、不會出現硬邊直線 */
@@ -405,7 +405,7 @@ body{
   background: rgba(255,255,255,.06);
   color:#FFFFFF; font-weight:700; letter-spacing:2.5px; text-transform:uppercase;
   border:1.5px solid rgba(255,255,255,.85);
-  backdrop-filter: blur(10px) saturate(180%); -webkit-backdrop-filter: blur(10px) saturate(180%);
+  backdrop-filter: blur(6px) saturate(140%); -webkit-backdrop-filter: blur(6px) saturate(140%);
   transition: transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s ease, background .25s ease, color .25s ease, border-color .25s ease;
 }
 .gem-btn:hover, .service-btn:hover,
@@ -652,7 +652,7 @@ body{
   font-family:var(--sans); font-size:12px; letter-spacing:.4px; line-height:1.5;
   color:var(--parchment); white-space:nowrap;
   background: rgba(255,255,255,.07);
-  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255,255,255,.18);
 }
 
@@ -905,7 +905,7 @@ body{
   position:absolute; top:0; left:0; height:100%; border-radius:999px;
   background: rgba(255,255,255,.08);
   border:1px solid rgba(255,255,255,.85);
-  backdrop-filter: blur(11px) saturate(190%) brightness(1.08); -webkit-backdrop-filter: blur(11px) saturate(190%) brightness(1.08);
+  backdrop-filter: blur(6px) saturate(140%); -webkit-backdrop-filter: blur(6px) saturate(140%);
   transition: transform .4s cubic-bezier(.2,.8,.2,1), width .4s cubic-bezier(.2,.8,.2,1);
   z-index:0; pointer-events:none;
 }
@@ -1129,10 +1129,11 @@ body{
 /* [優化-4] 分享長圖的離屏繪製來源：固定寬度、深色星空漸層背景，
    純視覺卡片，不含按鈕等互動元素，畫完後由 html2canvas 轉成圖片再移除 */
 .share-export-card{
-  position:fixed; left:-9999px; top:0; width:640px;
-  padding:56px 48px 48px;
+  position:fixed; left:-9999px; top:0; width:640px; min-height:800px;
+  padding:64px 48px;
   background: radial-gradient(circle at top, #1a1b3a 0%, #0b0c1e 70%, #050510 100%);
   color:#fff; text-align:center; box-sizing:border-box;
+  display:flex; flex-direction:column; justify-content:center;
 }
 .share-export-brand{
   font-family:var(--serif-tc); font-size:14px; letter-spacing:4px; text-transform:uppercase;
@@ -1664,11 +1665,11 @@ const APPLE_TOUCH_ICON_URL = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDov
      調降後視覺上依然有星空感，但明顯減輕渲染負擔。 */
   const style = document.createElement('style');
   style.textContent = `
-    .star-dot.a{ box-shadow:${genShadow(16,1400,'#E6A8D6','rgba(230,168,214,.4)')}; }
-    .star-dot.b{ box-shadow:${genShadow(10,1400,'#FFFFFF','rgba(255,255,255,.35)')}; }
-    .star-dot.c{ box-shadow:${genShadow(6,1400,'#9FCBF5','rgba(159,203,245,.4)')}; }
-    .card-dark-star.a{ box-shadow:${genShadow(6,300,'#E6A8D6','rgba(230,168,214,.35)')}; }
-    .card-dark-star.b{ box-shadow:${genShadow(3,300,'#FFFFFF','rgba(255,255,255,.3)')}; }
+    .star-dot.a{ box-shadow:${genShadow(9,1400,'#E6A8D6','rgba(230,168,214,.4)')}; }
+    .star-dot.b{ box-shadow:${genShadow(6,1400,'#FFFFFF','rgba(255,255,255,.35)')}; }
+    .star-dot.c{ box-shadow:${genShadow(4,1400,'#9FCBF5','rgba(159,203,245,.4)')}; }
+    .card-dark-star.a{ box-shadow:${genShadow(4,300,'#E6A8D6','rgba(230,168,214,.35)')}; }
+    .card-dark-star.b{ box-shadow:${genShadow(2,300,'#FFFFFF','rgba(255,255,255,.3)')}; }
   `;
   document.head.appendChild(style);
   const bg = document.getElementById('cosmicBg');
@@ -2800,7 +2801,7 @@ const SPARK_COLORS = ['#B0C4FA', '#7C94E6', '#FFD9F0', '#9FCBF5'];
 function spawnSparkleBurst(x, y){
   const layer = document.getElementById('sparkleLayer');
   if(!layer) return;
-  const count = 14 + Math.floor(Math.random() * 6);
+  const count = 8 + Math.floor(Math.random() * 4);
   for(let i = 0; i < count; i++){
     const size = 5 + Math.random() * 11;
     const angle = Math.random() * Math.PI * 2;
@@ -2845,7 +2846,7 @@ if (window.matchMedia('(pointer: fine)').matches) {
   let lastTrailTime = 0;
   document.addEventListener('mousemove', (e) => {
     const now = performance.now();
-    if (now - lastTrailTime < 90) return; /* 節流：約每 90ms 產生一顆星光 */
+    if (now - lastTrailTime < 180) return; /* 節流：約每 180ms 產生一顆星光，減輕效能負擔 */
     lastTrailTime = now;
     if (!trailLayer) return;
     const size = 4 + Math.random() * 5;
