@@ -1129,11 +1129,10 @@ body{
 /* [優化-4] 分享長圖的離屏繪製來源：固定寬度、深色星空漸層背景，
    純視覺卡片，不含按鈕等互動元素，畫完後由 html2canvas 轉成圖片再移除 */
 .share-export-card{
-  position:fixed; left:-9999px; top:0; width:640px; min-height:800px;
-  padding:64px 48px;
+  position:fixed; left:-9999px; top:0; width:640px;
+  padding:56px 48px 48px;
   background: radial-gradient(circle at top, #1a1b3a 0%, #0b0c1e 70%, #050510 100%);
   color:#fff; text-align:center; box-sizing:border-box;
-  display:flex; flex-direction:column; justify-content:center;
 }
 .share-export-brand{
   font-family:var(--serif-tc); font-size:14px; letter-spacing:4px; text-transform:uppercase;
