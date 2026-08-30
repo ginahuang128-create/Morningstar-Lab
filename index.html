@@ -2692,6 +2692,47 @@ function applyLogoAssets(){
 }
 applyLogoAssets();
 
+/* ---------- [修復] 分享長圖專用：把 LOGO 預先轉成 PNG ----------
+   問題根源：LOGO_URL 是一個很複雜、體積很大的內嵌 SVG（data:image/svg+xml;base64,...）。
+   html2canvas 在把這種複雜 SVG 當作 <img> 來源轉繪成圖片時，各瀏覽器的支援度落差很大，
+   手機瀏覽器（尤其 IG 內建瀏覽器、iOS Safari 的 WebView）常常只能繪出不完整、
+   殘缺的圖案（例如只剩一個小小的星芒符號），即使圖片本身已經完全載入也一樣——
+   這是 html2canvas 處理內嵌 SVG 的已知限制，不是「還沒載入完成」的問題。
+   桌機瀏覽器對這類內嵌 SVG 的 canvas 轉繪支援度較好，所以桌機看起來是正常的。
+
+   解法：頁面載入時，先把這顆 SVG 用瀏覽器原生的方式畫到一個離屏 canvas 上，
+   輸出成一般的 PNG 圖片（data:image/png;base64,...）。html2canvas 對點陣圖（PNG/JPG）
+   的支援非常穩定，所以分享長圖一律改用這份預先轉好的 PNG 版本，桌機／手機才會一致。 */
+let LOGO_PNG_URL = null;
+function prerenderLogoAsPng(){
+  return new Promise((resolve) => {
+    if(!LOGO_URL || !LOGO_URL.trim()){ resolve(null); return; }
+    const img = new Image();
+    img.onload = () => {
+      try{
+        // 輸出解析度抓高一點（等同 2 倍 retina 的 136px 顯示寬度），確保長圖仍然清晰
+        const targetW = 272;
+        const ratio = (img.naturalHeight && img.naturalWidth) ? (img.naturalHeight / img.naturalWidth) : 1;
+        const targetH = Math.max(1, Math.round(targetW * ratio));
+        const canvas = document.createElement('canvas');
+        canvas.width = targetW;
+        canvas.height = targetH;
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, targetW, targetH);
+        ctx.drawImage(img, 0, 0, targetW, targetH);
+        LOGO_PNG_URL = canvas.toDataURL('image/png');
+      }catch(err){
+        console.warn('LOGO 轉 PNG 失敗，分享長圖將改用原始 SVG', err);
+        LOGO_PNG_URL = null;
+      }
+      resolve(LOGO_PNG_URL);
+    };
+    img.onerror = () => { resolve(null); };
+    img.src = LOGO_URL;
+  });
+}
+prerenderLogoAsPng();
+
 /* ---------- 初始化 ---------- */
 /* 先立刻用預設符文畫面把「尋光指引」畫出來，不等 Google Sheet 的網路回應，
    避免手機網路較慢時整排符文要等好幾秒才出現；等資料回來後才視需要換成真實內容 */
@@ -3162,9 +3203,12 @@ function buildShareExportCard(btn){
   const affirm = btn.dataset.shareAffirm || '';
   const card = document.createElement('div');
   card.className = 'share-export-card';
-  const hasLogo = !!(LOGO_URL && LOGO_URL.trim());
+  // 分享長圖一律優先用預先轉好的 PNG 版本（html2canvas 對點陣圖支援最穩定）；
+  // 萬一 PNG 轉檔失敗（例如圖片載入被瀏覽器擋掉），才退回原始 SVG，避免整個功能掛掉
+  const logoSrc = LOGO_PNG_URL || LOGO_URL;
+  const hasLogo = !!(logoSrc && logoSrc.trim());
   const brandHtml = hasLogo
-    ? `<img class="share-export-logo" src="${LOGO_URL}" alt="Morningstar" crossorigin="anonymous">`
+    ? `<img class="share-export-logo" src="${logoSrc}" alt="Morningstar">`
     : `Morningstar Lab`;
   card.innerHTML = `
     <div class="share-export-brand">${brandHtml}</div>
@@ -3230,6 +3274,12 @@ async function openShareImageModal(btn){
   if(typeof html2canvas !== 'function'){
     loading.textContent = '圖片繪製功能載入失敗，請檢查網路連線後再試一次';
     return;
+  }
+
+  // 保險：若 PNG 版 LOGO 還在轉檔中（極少見，通常頁面一載入就轉好了），
+  // 這裡再等一次，確保分享卡片一定拿得到轉好的 PNG，而不是臨時退回複雜的原始 SVG
+  if(LOGO_PNG_URL === null && LOGO_URL && LOGO_URL.trim()){
+    await prerenderLogoAsPng();
   }
 
   const exportNode = buildShareExportCard(btn);
