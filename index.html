@@ -3177,6 +3177,39 @@ function buildShareExportCard(btn){
   return card;
 }
 
+/* [修復] 手機版分享長圖 Logo 殘缺問題：
+   html2canvas 在圖片（尤其是很大的 base64 SVG Logo）還沒真正載入／解碼完成前
+   就開始截圖，手機瀏覽器解碼速度較慢，因此常常截到畫一半的殘缺圖案。
+   這支函式會等節點內所有 <img> 都確定載入完成（並盡量呼叫 decode()
+   把圖片完整解碼進畫面）之後，才讓 html2canvas 開始擷取。 */
+function waitForImagesToLoad(node){
+  const imgs = Array.from(node.querySelectorAll('img'));
+  return Promise.all(imgs.map(img => {
+    return new Promise(resolve => {
+      const finish = () => resolve();
+      // 圖片已經載入完成（例如快取命中）
+      if(img.complete && img.naturalWidth > 0){
+        if(typeof img.decode === 'function'){
+          img.decode().then(finish).catch(finish);
+        } else {
+          finish();
+        }
+        return;
+      }
+      img.addEventListener('load', () => {
+        if(typeof img.decode === 'function'){
+          img.decode().then(finish).catch(finish);
+        } else {
+          finish();
+        }
+      }, { once:true });
+      img.addEventListener('error', finish, { once:true });
+      // 保險逾時：避免圖片異常時整個分享功能卡住不動
+      setTimeout(finish, 4000);
+    });
+  }));
+}
+
 async function openShareImageModal(btn){
   const overlay = document.getElementById('shareImgModalOverlay');
   const loading = document.getElementById('shareImgLoading');
@@ -3202,6 +3235,10 @@ async function openShareImageModal(btn){
   const exportNode = buildShareExportCard(btn);
   document.body.appendChild(exportNode);
   try{
+    /* 一定要先等 Logo 等圖片完全載入＋解碼完成，再讓 html2canvas 截圖，
+       不然手機上常常會截到圖片畫一半的殘缺畫面（見上方函式註解） */
+    await waitForImagesToLoad(exportNode);
+
     const canvas = await html2canvas(exportNode, {
       backgroundColor: null,
       scale: 2,
