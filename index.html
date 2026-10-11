@@ -189,26 +189,7 @@ body{
   text-align:center; margin: 0 auto 22px; max-width:300px; letter-spacing:.2px;
 }
 
-/* ---------- [優化-4] 尋光指引：每週更新提示標籤 ----------
-   放在 Eyebrow 與大標題之間，輕盈的膠囊小字＋緩慢呼吸微光，
-   帶出「限時、值得每週回來」的靈性精緻感，不會搶走標題本身的視覺份量 */
-.guide-update-badge{
-  display:inline-block; margin: 0 auto 14px; padding: 5px 16px;
-  font-family:var(--sans); font-size:11px; font-weight:600; letter-spacing:1.2px;
-  color: rgba(255,255,255,.88);
-  background: rgba(196,160,255,.14);
-  border: 1px solid rgba(214,196,255,.4);
-  border-radius: 999px;
-  text-align:center;
-  box-shadow: 0 0 12px rgba(196,160,255,.28);
-  animation: guideBadgeGlow 3.6s ease-in-out infinite;
-}
 #guideSection{ text-align:center; }
-@keyframes guideBadgeGlow{
-  0%,100%{ box-shadow: 0 0 10px rgba(196,160,255,.22); border-color: rgba(214,196,255,.32); }
-  50%{ box-shadow: 0 0 18px rgba(196,160,255,.42); border-color: rgba(214,196,255,.55); }
-}
-@media (prefers-reduced-motion: reduce){ .guide-update-badge{ animation:none; } }
 
 /* ---------- 尋光指引：標題與其他區塊一致置中 ---------- */
 #guideSection .gem-row{ justify-content:center; }
@@ -1453,9 +1434,6 @@ body.splash-active .section-hero .tagline{ opacity:0; transform:translateY(20px)
   <!-- ============ 尋光指引（全站唯一抽選體驗） ============ -->
   <div class="section section-guide reveal" id="guideSection">
     <span class="section-eyebrow">Witch Runes Reading</span>
-    <!-- [優化-4] 每週更新提示標籤：輕盈、帶靈性精緻感的微光小字，文案可於 Google Sheets
-         「settings」工作表的 guide_update_badge_text 欄位設定與更新 -->
-    <span class="guide-update-badge" id="guideUpdateBadge">每週一更新 ‧ 宇宙給妳的本週符文指引</span>
     <h2 class="section-title">尋光指引</h2>
     <p class="section-sub">心裡卡卡的？點擊一顆女巫符文，解鎖宇宙給你的突破指引</p>
     <div class="gem-row" id="gemRow"></div>
@@ -1792,8 +1770,6 @@ const DEFAULT_SETTINGS = {
   chat_dm_button_text: '點我私訊仙子聊聊',
   chat_dm_button_url: IG_DM_URL,
   share_tip_text: '長按圖片即可儲存至相簿，趕快分享至 IG 動態吧 ✨',
-  /* [優化-4] 尋光指引大標題旁的每週更新提示標籤，可於 Google Sheet 設定或更新頻率文案 */
-  guide_update_badge_text: '每週一更新 ‧ 宇宙給妳的本週符文指引',
   /* 魔法聊天室下方 3 顆快速回覆按鈕的文字，可於 Google Sheet 設定或更新；
      按鈕點擊後的動作（跳去私訊／捲到方案／捲到尋光指引）是固定行為，不會跟著文字改變 */
   chat_quick_reply_1_text: '我有些心事想分享...',
@@ -2441,8 +2417,6 @@ function applySettings(rows){
   }
   const tipEl = document.getElementById('shareImgTip');
   if(tipEl) tipEl.textContent = CURRENT_SETTINGS.share_tip_text;
-  const guideBadgeEl = document.getElementById('guideUpdateBadge');
-  if(guideBadgeEl) guideBadgeEl.textContent = CURRENT_SETTINGS.guide_update_badge_text;
   /* 若聊天室快速回覆按鈕已經先渲染過（例如訪客動作比 Sheet 資料回來得快），
      這裡再用最新設定重新刷新一次按鈕文字，避免顯示到舊的預設文案 */
   const quickReplyBtns = document.querySelectorAll('#chatQuickReplies .chat-reply-btn');
